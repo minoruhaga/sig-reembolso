@@ -5,63 +5,63 @@
 ,"A coluna ""OK"" indica se a compra tem comprovante ou não. Se não tiver, a célula terá um comentário explicando o porquê.",,,,,,,,
 ,,,,,,,,,
 ,ID,OK,Descrição,Período Alvo,Local,Data,Valor,Responsável,Reembolso
-,1,TRUE,Compra de Alimentos,Pré-Geral (Clã),Assaí Atacadista,05/01/23,"R$ 553,60",Lucas Matumoto,Feito
-,2,TRUE,Compra de Curry em Pó,Pré-Geral (Clã),Mercearia Enman,05/01/23,"R$ 13,50",Eduardo Matumoto,Feito
-,3,TRUE,Compra de Hidrosteril,Pré-Geral (Clã),Sacolão Imigrantes,05/01/23,"R$ 10,99",Lucas Matumoto,Feito
+,1,TRUE,Compra de Alimentos,Pré-Geral (Clã),Assaí Atacadista,05/01/23,"R$ 553,60",Lucas M.,Feito
+,2,TRUE,Compra de Curry em Pó,Pré-Geral (Clã),Mercearia Enman,05/01/23,"R$ 13,50",Eduardo M.,Feito
+,3,TRUE,Compra de Hidrosteril,Pré-Geral (Clã),Sacolão Imigrantes,05/01/23,"R$ 10,99",Lucas M.,Feito
 ,4,TRUE,Compra de Papel Higiênico,Pré-Geral (Clã),Oxxo,06/01/23,"R$ 20,49",,Feito
-,5,TRUE,Compra de Sacos Plásticos para Verduras,Geral,Mercado Livre,11/01/23,"R$ 43,86",Eduardo Matumoto,Feito
-,6,TRUE,Compra do Molho Tonkatsu,Geral,Kaisen,11/01/23,"R$ 53,50",Hiromi Otani,Feito
+,5,TRUE,Compra de Sacos Plásticos para Verduras,Geral,Mercado Livre,11/01/23,"R$ 43,86",Eduardo M.,Feito
+,6,TRUE,Compra do Molho Tonkatsu,Geral,Kaisen,11/01/23,"R$ 53,50",Hiromi O.,Feito
 ,7,TRUE,Compra de Curry em Pó,Geral,Marukai,11/01/23,"R$ 459,00",,Feito
-,8,TRUE,"Compra de Frutas, Verduras, Legumes e Diversos",Pré-Geral (Clã + TS&G),Assaí Atacadista,12/01/23,"R$ 1.557,22",Eduardo Matumoto,Feito
+,8,TRUE,"Compra de Frutas, Verduras, Legumes e Diversos",Pré-Geral (Clã + TS&G),Assaí Atacadista,12/01/23,"R$ 1.557,22",Eduardo M.,Feito
 ,9,TRUE,Compra de Carnes e Diversos,Pré-Geral (Clã + TS&G),Assaí Atacadista,12/01/23,"R$ 2.282,54",,Feito
 ,10,TRUE,Compra de Filtro de Café,Pré-Geral (Clã + TS&G),Oxxo,12/01/23,"R$ 10,98",,Feito
 ,11,TRUE,Compra de Maionese e Azeite,Pré-Geral (Clã + TS&G),Oxxo,13/01/23,"R$ 35,97",,Feito
 ,12,TRUE,Compra de Diversos,Geral,Vencedor Atacadista,13/01/23,"R$ 8.564,78",G.E. Caramuru,Não Aplicável
-,13,TRUE,"Compra de Carne Vegana, Macarrão Nissin, Temperos",Geral,Assaí Atacadista,14/01/23,"R$ 569,27",Eduardo Matumoto,Feito
-,14,TRUE,Compra de Macarrão Nissin de Yakissoba,Geral,Tateno,16/01/23,"R$ 202,50",João Hoshino,Feito
+,13,TRUE,"Compra de Carne Vegana, Macarrão Nissin, Temperos",Geral,Assaí Atacadista,14/01/23,"R$ 569,27",Eduardo M.,Feito
+,14,TRUE,Compra de Macarrão Nissin de Yakissoba,Geral,Tateno,16/01/23,"R$ 202,50",João H.,Feito
 ,15,TRUE,,Geral,Emporium Osiro,16/01/23,"R$ 105,00",,Feito
 ,16,TRUE,,Geral,Mercearia Enman,16/01/23,"R$ 135,00",,Feito
-,17,TRUE,Compra de Carne Vegana,Pré-Geral (Clã + TS&G),Fazenda Paulista,16/01/23,"R$ 40,23",Kathleen Chiang,Feito
+,17,TRUE,Compra de Carne Vegana,Pré-Geral (Clã + TS&G),Fazenda Paulista,16/01/23,"R$ 40,23",Kathleen C.,Feito
 ,18,TRUE,Compra de Pano de Prato,Pré-Geral (Clã + TS&G),?,16/01/23,"R$ 20,00",,Feito
 ,19,TRUE,Compra de Carne Vegana e Perflex,Pré-Geral (Clã + TS&G),Pão de Açúcar,16/01/23,"R$ 104,65",,Feito
-,20,TRUE,Compra de Maçã,Geral,CEAGESP,17/01/23,"R$ 180,00",Eduardo Matumoto,Feito
-,21,TRUE,Compra de Banana Pt. 1,Geral,CEAGESP,17/01/23,"R$ 110,00",Claudio Utida Tetsuo,Feito
+,20,TRUE,Compra de Maçã,Geral,CEAGESP,17/01/23,"R$ 180,00",Eduardo M.,Feito
+,21,TRUE,Compra de Banana Pt. 1,Geral,CEAGESP,17/01/23,"R$ 110,00",Claudio U.,Feito
 ,22,TRUE,Compra de Melancia,Geral,CEAGESP,17/01/23,"R$ 150,00",,Feito
 ,23,TRUE,Estacionamento do CEAGESP,Geral,CEAGESP,17/01/23,"R$ 28,00",,Feito
 ,-,FALSE,Carregador do CEAGESP,Geral,CEAGESP,17/01/23,"R$ 30,00",,Feito
-,24,TRUE,Compra de Alimentos e Outros,Geral,Assaí Atacadista,17/01/23,"R$ 516,65",Eduardo Matumoto,Feito
-,25,TRUE,Compra de Verduras Pt. 1,Geral,CEAGESP,17/01/23,"R$ 156,00",Claudio Utida Tetsuo,Feito
+,24,TRUE,Compra de Alimentos e Outros,Geral,Assaí Atacadista,17/01/23,"R$ 516,65",Eduardo M.,Feito
+,25,TRUE,Compra de Verduras Pt. 1,Geral,CEAGESP,17/01/23,"R$ 156,00",Claudio U.,Feito
 ,26,FALSE,Compra de Legumes,Geral,Benassi,18/01/23,,,Não Aplicável
-,27,TRUE,Compra de Alimentos,Geral,Assaí Atacadista,18/01/23,"R$ 430,96",Eduardo Matumoto,Feito
+,27,TRUE,Compra de Alimentos,Geral,Assaí Atacadista,18/01/23,"R$ 430,96",Eduardo M.,Feito
 ,28,TRUE,Compra de Cenoura e Hidrosteril,Geral,Sacolão Imigrantes,18/01/23,"R$ 87,41",,Feito
 ,29,TRUE,Compra do Açougue Pt. 1,Geral,Açougue Novo Boi,19/01/23,"R$ 5.730,38",G. E. Caramuru,Não Aplicável
-,30,TRUE,Compra de Verduras,Geral,Sacolão Feliciano,22/01/23,"R$ 108,00",Eduardo Matumoto,Feito
+,30,TRUE,Compra de Verduras,Geral,Sacolão Feliciano,22/01/23,"R$ 108,00",Eduardo M.,Feito
 ,-,FALSE,Compra de Alimentos,Geral,Frigoyama,22/01/23,"R$ 111,91",,Feito
 ,31,TRUE,Compra de Alimentos,Geral,Frigoyama,22/01/23,"R$ 84,31",,Feito
 ,32,TRUE,Compra de Fluido para Maçarico,Geral,Tabaco & Cia,22/01/23,"R$ 24,00",,Feito
 ,33,TRUE,Compra de Gás para Maçarico,Geral,Tabaco & Cia,22/01/23,"R$ 24,00",,Feito
 ,34,TRUE,Compra de Alimentos,Geral,Rod & Raf,22/01/23,"R$ 632,53",,Feito
 ,35,TRUE,Compra de Verduras,Geral,Sacolão Feliciano,22/01/23,"R$ 120,00",,Feito
-,36,TRUE,Compra de Butijão de Gás,Geral,JC Gás,23/01/23,"R$ 213,80",Kathleen Chiang,Feito
+,36,TRUE,Compra de Butijão de Gás,Geral,JC Gás,23/01/23,"R$ 213,80",Kathleen C.,Feito
 ,37,TRUE,Compra de Amido de Milho,Geral,JC Mercado,23/01/23,"R$ 43,92",,Feito
-,38,TRUE,Compra de Melancia,Geral,CEAGESP,23/01/23,"R$ 175,00",Claudio Utida Tetsuo,Feito
+,38,TRUE,Compra de Melancia,Geral,CEAGESP,23/01/23,"R$ 175,00",Claudio U.,Feito
 ,39,TRUE,Compra de Verduras e Legumes,Geral,CEAGESP,23/01/23,"R$ 685,00",,Feito
 ,40,TRUE,Compra de Maçã,Geral,CEAGESP,23/01/23,"R$ 225,00",,Feito
-,41,TRUE,Compra de Alimentos e Diversos,Geral,Assaí Atacadista,23/01/23,"R$ 964,80",Eduardo Matumoto,Feito
+,41,TRUE,Compra de Alimentos e Diversos,Geral,Assaí Atacadista,23/01/23,"R$ 964,80",Eduardo M.,Feito
 ,42,TRUE,Compra de Alimentos,Geral,Assaí Atacadista,23/01/23,"R$ 541,33",,Feito
 ,43,TRUE,Compra de Alimentos,Geral,Frigoyama,24/01/23,"R$ 44,44",,Feito
 ,44,TRUE,Compra de Desentupidor,Geral,Donke Materiais de Construção,24/01/23,"R$ 55,95",,Feito
 ,-,FALSE,Compra de Própolis,Geral,Drogaria Central Farma,24/01/23,"R$ 8,00",,Feito
-,45,TRUE,Compra de Acelga,Geral,Sacolão Feliciano,24/01/23,"R$ 160,00",Kathleen Chiang,Feito
-,46,TRUE,Compra de Diversos,Geral,Diversos,24/01/23,"R$ 311,44",Sheila Hamada,Feito
-,47,TRUE,Compra de Banana,Geral,Rod & Raf,25/01/23,"R$ 199,20",Victor Sbarufati,Feito
+,45,TRUE,Compra de Acelga,Geral,Sacolão Feliciano,24/01/23,"R$ 160,00",Kathleen C.,Feito
+,46,TRUE,Compra de Diversos,Geral,Diversos,24/01/23,"R$ 311,44",Sheila H.,Feito
+,47,TRUE,Compra de Banana,Geral,Rod & Raf,25/01/23,"R$ 199,20",Victor S.,Feito
 ,48,TRUE,Compra de Cebola,Geral,Rod & Raf,25/01/23,"R$ 149,50",,Feito
-,49,TRUE,Compra de Tomate,Geral,Rod & Raf,25/01/23,"R$ 159,60",Lucas Chiba,Pendente
-,50,TRUE,Compra de Repolho,Geral,Tanaka Supermercados,26/01/23,"R$ 80,06",Eduardo Matumoto,Feito
+,49,TRUE,Compra de Tomate,Geral,Rod & Raf,25/01/23,"R$ 159,60",Lucas C.,Pendente
+,50,TRUE,Compra de Repolho,Geral,Tanaka Supermercados,26/01/23,"R$ 80,06",Eduardo M.,Feito
 ,51,TRUE,Compra de Alimentos,Geral,Rod & Raf,26/01/23,"R$ 801,22",,Feito
-,52,TRUE,Compra de Hidrosteril,Geral,Ifood,26/01/23,"R$ 98,82",Aline Taguchi,Feito
-,53,TRUE,Compra de Ovos,Geral,Assaí Atacadista,26/01/23,"R$ 329,80",Tania Nishi,Feito
-,54,TRUE,Compra de Butijão de Gás,Geral,JC Gás,26/01/23,"R$ 427,60",Kathleen Chiang,Feito
+,52,TRUE,Compra de Hidrosteril,Geral,Ifood,26/01/23,"R$ 98,82",Aline T.,Feito
+,53,TRUE,Compra de Ovos,Geral,Assaí Atacadista,26/01/23,"R$ 329,80",Tania N.,Feito
+,54,TRUE,Compra de Butijão de Gás,Geral,JC Gás,26/01/23,"R$ 427,60",Kathleen C.,Feito
 ,55,TRUE,Compra de Bolos,Geral,Frigoyama,26/01/23,"R$ 44,42",,Feito
 ,56,TRUE,Compra do Açougue Pt. 2,Geral,Açougue Novo Boi,31/01/23,"R$ 8.572,70",G. E. Caramuru,Não Aplicável
 ,57,TRUE,Contratação de Transporte de Alimentos,Geral,Ito Carretos (Nilton),01/02/23,"R$ 1.800,00",G. E. Caramuru,Não Aplicável

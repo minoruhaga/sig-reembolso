@@ -1,92 +1,92 @@
-# Catálogo de Issues para o GitHub Projects - Fase 2
+# Catálogo de Issues no GitHub Projects - Fase 2
 
-Este documento reúne a lista pronta de Issues para serem criadas no GitHub da equipe, distribuídas entre os 4 integrantes para cobrir tanto o sistema funcionando quanto os itens avaliativos da 2ª Fase (**Itens 3.g a 3.l do edital**).
+Este documento reúne a lista oficial das 18 Issues abertas e concluídas no GitHub da equipe ([minoruhaga/sig-reembolso/issues](https://github.com/minoruhaga/sig-reembolso/issues)), distribuídas entre os 4 integrantes para cobrir tanto o sistema funcionando quanto os itens avaliativos da 2ª Fase (**Itens 3.g a 3.l do edital**).
 
 ---
 
-## 📌 Sprint 0: Fundação, DevOps e Governança (Minoru / Tech Lead)
+## 📌 Onda 0: Fundação, DevOps e Governança (`@minoruhaga` / Tech Lead)
 
-### Issue #01: `[Docs] Elaborar README.md completo e Onboarding de Desenvolvedores`
-* **Assignee:** `@minoru`
-* **Labels:** `documentation`, `onboarding`
+### [Issue #1](https://github.com/minoruhaga/sig-reembolso/issues/1): `[Docs] Elaborar README.md completo e Onboarding de Desenvolvedores`
+* **Assignee:** `@minoruhaga`
+* **Labels:** `documentation`, `onda-0`, `fase-2`
+* **Status:** Concluída (`Closed`)
 * **Descrição:**
   * Documentar visão geral do sistema e contexto real do AG VII (Grupo Escoteiro Caramuru).
   * Instruções passo a passo de setup multiplataforma (Linux via Nix e Windows via `venv + pip`).
   * Comandos de carga de dados (`popular_dados_demo`) e tabela de credenciais de teste.
-* **Critérios de Aceitação:**
-  - [x] README.md atualizado com setup reproduzível.
-  - [x] Comandos de execução testados em Nix e venv.
 
-### Issue #02: `[Gov] Definir Governança de IA, Diretrizes de Agentes e Decision Analysis`
-* **Assignee:** `@minoru`
-* **Labels:** `governance`, `ai-workflow`, `documentation`
+### [Issue #2](https://github.com/minoruhaga/sig-reembolso/issues/2): `[Gov] Definir Governança de IA, AGENTS.md e Prompts`
+* **Assignee:** `@minoruhaga`
+* **Labels:** `governance`, `onda-0`, `fase-2`
+* **Status:** Concluída (`Closed`)
 * **Descrição:**
   * Criar `AGENTS.md` na raiz e `src/AGENTS.md` com as regras arquiteturais invioláveis.
   * Configurar a skill `$decision-analysis-v4` e a estrutura de pastas em `prompts/`.
   * Elaborar o Guia de Governança de IA (`docs/guia-uso-ia-e-skills.md`).
-* **Critérios de Aceitação:**
-  - [x] `AGENTS.md` e `src/AGENTS.md` criados e integrados.
-  - [x] Skill `$decision-analysis-v4` funcional.
 
-### Issue #03: `[DevOps] Configurar Pipeline de CI/CD com GitHub Actions`
-* **Assignee:** `@minoru`
-* **Labels:** `devops`, `ci-cd`, `quality`
+### [Issue #3](https://github.com/minoruhaga/sig-reembolso/issues/3): `[DevOps] Pipeline de CI/CD com GitHub Actions + Nix`
+* **Assignee:** `@minoruhaga`
+* **Labels:** `devops`, `onda-0`, `fase-2`
+* **Status:** Concluída (`Closed`)
 * **Descrição:**
   * Criar workflow `.github/workflows/ci.yml`.
   * Executar linter Ruff, checagens do Django, ausência de migrações pendentes e suíte de testes.
   * Executar Gitleaks no histórico para impedir vazamento de credenciais.
-* **Critérios de Aceitação:**
-  - [x] Workflow `.github/workflows/ci.yml` criado.
-  - [x] Gates de qualidade validados localmente.
 
-### Issue #04: `[Gov] Criar CONTRIBUTING.md, .env.example e Templates de Pull Request`
-* **Assignee:** `@minoru`
-* **Labels:** `governance`, `git-flow`
+### [Issue #4](https://github.com/minoruhaga/sig-reembolso/issues/4): `[Gov] CONTRIBUTING.md, .env.example e Templates de Pull Request`
+* **Assignee:** `@minoruhaga`
+* **Labels:** `governance`, `onda-0`, `fase-2`
+* **Status:** Concluída (`Closed`)
 * **Descrição:**
   * Criar `.env.example` com as variáveis necessárias.
   * Criar `CONTRIBUTING.md` e `docs/manual-git.md` com fluxo de branches e prevenção de conflitos de migração.
   * Criar `.github/PULL_REQUEST_TEMPLATE.md` e template de Issue.
-* **Critérios de Aceitação:**
-  - [x] Arquivos criados e vinculados na documentação.
+
+### [Issue #5](https://github.com/minoruhaga/sig-reembolso/issues/5): `[Docs] Guia Completo de Configuração do Ambiente (WSL, Nix, Flakes e venv)`
+* **Assignee:** `@minoruhaga`
+* **Labels:** `documentation`, `onda-0`, `fase-2`
+* **Status:** Concluída (`Closed`)
+* **Descrição:**
+  * Elaborar tutorial passo a passo (`docs/configuracao-ambiente.md`) cobrindo WSL, Nix, Flakes, GitHub CLI (`gh`) e alternativa `venv + pip`.
 
 ---
 
-## 📌 Sprint 1: Backlog de Desenvolvimento e Entregas (Distribuído entre os 4 Integrantes)
+## 📌 Ondas 1 a 3: Backlog de Desenvolvimento e Entregas (Distribuído entre os 4 Integrantes)
 
-### 👤 Membro 1: Minoru (Tech Lead / Core Backend & RBAC)
-* **Issue #05: `[RBAC] Integrar views de login, autenticação customizada e controle de acesso por papel`**
+### 👤 Membro 1: Gustavo Minoru Haga (`@minoruhaga` — Tech Lead / Core Backend & RBAC)
+* **[Issue #6](https://github.com/minoruhaga/sig-reembolso/issues/6): `[RBAC] Telas de Login, Logout e Controle por Papel (Usuario)`** *(Milestone: Onda 1 - 04/11/2026)*
   * Implementar telas de login/logout customizadas no Django utilizando o modelo `Usuario`.
   * Restringir visualizações: Coordenador só vê sua área; Tesoureiro e Admin visualizam todas as 15 coordenações.
-* **Issue #06: `[Financeiro] View e API de consulta dinâmica de saldos e tetos das 15 coordenações (RF03)`**
+* **[Issue #10](https://github.com/minoruhaga/sig-reembolso/issues/10): `[Financeiro] API e View dinâmica de saldos e tetos das 15 coordenações (RF03)`** *(Milestone: Onda 2 - 13/11/2026)*
   * View dedicada para cálculo do termômetro de consumo de verba em tempo real.
   * Garantir integridade de centavos com `Decimal`.
-* **Issue #07: `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido`**
+* **[Issue #14](https://github.com/minoruhaga/sig-reembolso/issues/14): `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido`** *(Milestone: Onda 3 - 27/11/2026)*
   * Elaborar o documento formal exigido pela professora descrevendo os programas fontes, dependências e ambiente de execução.
 
 ### 👤 Membro 2: Backend de Despesas & Máquina de Estados
-* **Issue #08: `[Despesas] Implementar formulário de submissão de despesa com compressão Pillow (RF04 / RNF02)`**
+* **[Issue #7](https://github.com/minoruhaga/sig-reembolso/issues/7): `[Despesas] Formulário de Submissão com Pillow (RNF02 e RN01)`** *(Milestone: Onda 1 - 04/11/2026)*
   * Formulário web para lançamento de despesa em campo com anexo obrigatório de cupom fiscal (**RN01**).
   * Integração com `apps.core.services.otimizar_comprovante_fiscal` para compactar imagens pesadas de celular.
-* **Issue #09: `[Workflow] Implementar ações da Tesouraria na Triagem (RF06 / RF07)`**
+* **[Issue #11](https://github.com/minoruhaga/sig-reembolso/issues/11): `[Workflow] Ações de Triagem da Tesouraria: Aprovar, Rejeitar com Justificativa e Liquidar`** *(Milestone: Onda 2 - 13/11/2026)*
   * Endpoints e botões de ação para Aprovar, Rejeitar com Justificativa (**RN04**) e Liquidar Reembolso com anexo do comprovante Cora PJ.
-* **Issue #10: `[Regras] Validar soft-block com alerta de estouro e segregação de funções (RN02 / RN03)`**
+* **[Issue #12](https://github.com/minoruhaga/sig-reembolso/issues/12): `[Regras] Soft-block de estouro com alerta e Segregação de Funções (RN02 e RN03)`** *(Milestone: Onda 2 - 13/11/2026)*
   * Flag automática `excede_teto = True` e cálculo de `valor_excedente`.
   * Impedir que membros do Financeiro aprovem reembolsos de compras solicitadas por eles mesmos.
 
 ### 👤 Membro 3: Frontend, UX & Interfaces Mobile-First (Item 3.g)
-* **Issue #11: `[UI/UX] Desenvolver tela mobile-first de submissão rápida com câmera nativa (RNF01)`**
+* **[Issue #8](https://github.com/minoruhaga/sig-reembolso/issues/8): `[UI/UX] Interface Mobile-First com Câmera Nativa (RNF01)`** *(Milestone: Onda 1 - 04/11/2026)*
   * Tela de submissão otimizada para smartphones (360px–430px) com botão direto `<input type="file" accept="image/*" capture="environment">`.
-* **Issue #12: `[UI/UX] Desenvolver tela desktop da Tesouraria com cards de triagem e modal de zoom`**
+* **[Issue #13](https://github.com/minoruhaga/sig-reembolso/issues/13): `[UI/UX] Painel Desktop da Tesouraria com Modal de Zoom para Notas Fiscais`** *(Milestone: Onda 2 - 13/11/2026)*
   * Painel com cards de despesas pendentes, badges de status e modal em alta resolução para auditoria de comprovantes fiscais.
-* **Issue #13: `[Docs] Item 3.g - Definição e justificativa das interfaces com base na usabilidade`**
+* **[Issue #16](https://github.com/minoruhaga/sig-reembolso/issues/16): `[Docs] Item 3.g - Definição e justificativa das interfaces com base na usabilidade`** *(Milestone: Onda 3 - 27/11/2026)*
   * Redigir documento acadêmico justificando as decisões ergonômicas, acessibilidade, contraste para uso sob luz solar no campo e facilidade em conexões lentas (Starlink).
 
 ### 👤 Membro 4: QA, Testes, Manuais e Homologação (Itens 3.i a 3.l)
-* **Issue #14: `[Dados] Criar carga de dados com gastos históricos do AG VI e coordenadores do AG VII`**
-  * Criar comando ou fixture para carregar os dados reais de `docs/referencias/coordenadores_ag7.csv` e `gastos_historicos_ag6/alimentacao_gastos_ag6.csv`.
-* **Issue #15: `[Testes] Item 3.i - Procedimentos descritivos de testes e expansão de casos no Django`**
+* **[Issue #9](https://github.com/minoruhaga/sig-reembolso/issues/9): `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII`** *(Milestone: Onda 1 - 04/11/2026)*
+  * Criar comando ou fixture para carregar os dados anonimizados de `docs/referencias/coordenadores_ag7.csv` e `gastos_historicos_ag6/alimentacao_gastos_ag6.csv`.
+* **[Issue #17](https://github.com/minoruhaga/sig-reembolso/issues/17): `[Testes] Item 3.i - Procedimentos descritivos de testes e expansão de casos no Django`** *(Milestone: Onda 3 - 27/11/2026)*
   * Documentar os procedimentos descritivos de testes (Item 3.i) e expandir a cobertura automatizada (`TestCase`).
-* **Issue #16: `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)`**
+* **[Issue #19](https://github.com/minoruhaga/sig-reembolso/issues/19): `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)`** *(Milestone: Onda 3 - 27/11/2026)*
   * Guia ilustrado passo a passo ensinando os coordenadores a tirar fotos legíveis e enviar despesas.
-* **Issue #17: `[Docs] Itens 3.k e 3.l - Manual de Treinamento da Tesouraria e Homologação Formal`**
+* **[Issue #20](https://github.com/minoruhaga/sig-reembolso/issues/20): `[Docs] Itens 3.k e 3.l - Manual de Treinamento da Tesouraria e Homologação Formal`** *(Milestone: Onda 3 - 27/11/2026)*
   * Manual de operação da triagem financeira e minuta do Termo de Homologação com a Diretoria do GE Caramuru.

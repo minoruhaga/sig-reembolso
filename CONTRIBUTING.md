@@ -71,4 +71,4 @@ Ao concluir sua tarefa:
    ```
 2. Abra o Pull Request apontando para a branch **`dev`** (ou `main`).
 3. Preencha o template do PR informando a Issue correspondente (`Closes #...`).
-4. Solicite a revisão do Tech Lead (`@minoru`) ou de outro colega antes do merge.
+4. Solicite a revisão do Tech Lead (`@minoruhaga`) ou de outro colega antes do merge.
