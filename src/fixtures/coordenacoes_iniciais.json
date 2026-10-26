@@ -1,0 +1,182 @@
+[
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 1,
+    "fields": {
+      "nome": "Alimentação e Cozinha Central",
+      "sigla": "ALIM",
+      "descricao": "5 refeições diárias para ~400 pessoas por 7 dias; perecíveis de emergência",
+      "teto_orcamentario": "65000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 2,
+    "fields": {
+      "nome": "Infraestrutura e Manutenção",
+      "sigla": "INFRA",
+      "descricao": "Rede elétrica, hidráulica, geradores, bombas e ferragens",
+      "teto_orcamentario": "25000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 3,
+    "fields": {
+      "nome": "Transporte e Logística",
+      "sigla": "TRANS",
+      "descricao": "Vans de apoio, combustível de campo, pedágios e fretes locais",
+      "teto_orcamentario": "20000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 4,
+    "fields": {
+      "nome": "Programa e Atividades Gerais",
+      "sigla": "PROG",
+      "descricao": "Oficinas pedagógicas, gincanas, materiais dos 4 ramos escoteiros",
+      "teto_orcamentario": "14000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 5,
+    "fields": {
+      "nome": "Som, Iluminação e Multimídia",
+      "sigla": "MULT",
+      "descricao": "Equipamentos de som, iluminação cênica, cabos e adaptadores",
+      "teto_orcamentario": "12000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 6,
+    "fields": {
+      "nome": "Saúde e Primeiros Socorros",
+      "sigla": "SAUDE",
+      "descricao": "Farmácia de campo, curativos, medicamentos emergenciais e descartáveis",
+      "teto_orcamentario": "8000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 7,
+    "fields": {
+      "nome": "Segurança e Brigada de Campo",
+      "sigla": "SEG",
+      "descricao": "Rádios comunicadores, lanternas, pilhas e itens de vigília noturna",
+      "teto_orcamentario": "6000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 8,
+    "fields": {
+      "nome": "Secretaria e Recepção",
+      "sigla": "SEC",
+      "descricao": "Crachás, pulseiras de identificação, kits de boas-vindas e papelaria",
+      "teto_orcamentario": "5000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 9,
+    "fields": {
+      "nome": "Bazar e Cantina Operacional",
+      "sigla": "CANT",
+      "descricao": "Suprimentos de apoio e bem-estar contínuo aos voluntários de serviço",
+      "teto_orcamentario": "5000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 10,
+    "fields": {
+      "nome": "Almoxarifado e Compras de Campo",
+      "sigla": "ALMOX",
+      "descricao": "Ferramental rústico, machadinhas, cordas de sisal, fitas e lonas",
+      "teto_orcamentario": "4000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 11,
+    "fields": {
+      "nome": "Alojamentos e Barracas",
+      "sigla": "ALOJ",
+      "descricao": "Estrutura de abrigo, esteios, estacas extras e reparos de acantonamento",
+      "teto_orcamentario": "4000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 12,
+    "fields": {
+      "nome": "Limpeza e Gestão de Resíduos",
+      "sigla": "LIMP",
+      "descricao": "Produtos de desinfecção hospitalar/cozinha, sacos reforçados e lixeiras",
+      "teto_orcamentario": "4000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 13,
+    "fields": {
+      "nome": "Espiritualidade e Capelania",
+      "sigla": "ESPIR",
+      "descricao": "Materiais devocionais ecumênicos, velas e folhetos cerimoniais",
+      "teto_orcamentario": "3000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 14,
+    "fields": {
+      "nome": "Comunicação e Mídias",
+      "sigla": "COM",
+      "descricao": "Cartões de memória, baterias, backdrop e sinalização visual",
+      "teto_orcamentario": "3000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "financeiro.coordenacao",
+    "pk": 15,
+    "fields": {
+      "nome": "Fundo de Reserva da Tesouraria",
+      "sigla": "TES",
+      "descricao": "Reserva técnica para contingências orçamentárias e suplementações",
+      "teto_orcamentario": "6000.00",
+      "ativo": true,
+      "criado_em": "2026-10-22T00:00:00Z"
+    }
+  }
+]

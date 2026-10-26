@@ -1,0 +1,7 @@
+# Django e Extensões
+Django>=5.0,<5.3
+pillow>=10.0.0
+python-dotenv>=1.0.0
+
+# Opcional para produção / PostgreSQL
+# psycopg[binary]>=3.1.0

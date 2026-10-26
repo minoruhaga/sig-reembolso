@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Orçamentário e Operacional{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1">Painel Operacional do AG VII</h2>
+        <p class="text-muted mb-0">Acompanhamento em tempo real de tetos orçamentários, fila de triagem e liquidação de despesas.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="/admin/despesas/despesa/add/" class="btn btn-success fw-semibold shadow-sm">
+            <i class="bi bi-camera-fill me-1"></i> Nova Despesa (Campo)
+        </a>
+    </div>
+</div>
+
+<!-- Cards de Estatísticas Globais -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-primary">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Orçamento Global Previsto</span>
+                    <h3 class="fw-bold text-dark mt-1 mb-0">R$ {{ total_orcado|floatformat:2 }}</h3>
+                </div>
+                <div class="bg-primary-subtle text-primary p-3 rounded-circle">
+                    <i class="bi bi-wallet2 fs-4"></i>
+                </div>
+            </div>
+            <span class="small text-muted mt-2 d-block">Distribuído entre 15 coordenações</span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-warning">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Total Comprometido</span>
+                    <h3 class="fw-bold text-dark mt-1 mb-0">R$ {{ total_comprometido|floatformat:2 }}</h3>
+                </div>
+                <div class="bg-warning-subtle text-warning p-3 rounded-circle">
+                    <i class="bi bi-hourglass-split fs-4"></i>
+                </div>
+            </div>
+            <span class="small text-muted mt-2 d-block">Despesas em análise, aprovadas e pagas</span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-success">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small text-uppercase fw-semibold">Saldo Financeiro Livre</span>
+                    <h3 class="fw-bold text-success mt-1 mb-0">R$ {{ total_saldo_livre|floatformat:2 }}</h3>
+                </div>
+                <div class="bg-success-subtle text-success p-3 rounded-circle">
+                    <i class="bi bi-piggy-bank fs-4"></i>
+                </div>
+            </div>
+            <span class="small text-muted mt-2 d-block">Disponível na conta Banco Cora PJ</span>
+        </div>
+    </div>
+</div>
+
+<!-- Termômetros das Coordenações -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card card-stat bg-white p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-diagram-3 me-2 text-success"></i>Termômetro de Verba por Coordenação (15 Pastas)</h5>
+                <span class="badge bg-secondary-subtle text-dark">Atualização Dinâmica</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 10%">Sigla</th>
+                            <th style="width: 30%">Coordenação</th>
+                            <th style="width: 15%">Teto Orçado</th>
+                            <th style="width: 15%">Comprometido</th>
+                            <th style="width: 15%">Saldo Livre</th>
+                            <th style="width: 15%">Consumo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for coord in coordenacoes %}
+                        <tr>
+                            <td><span class="badge bg-dark-subtle text-dark fw-bold">{{ coord.sigla }}</span></td>
+                            <td>
+                                <strong>{{ coord.nome }}</strong>
+                                <div class="text-muted small text-truncate" style="max-width: 320px;">{{ coord.descricao }}</div>
+                            </td>
+                            <td>R$ {{ coord.teto_orcamentario|floatformat:2 }}</td>
+                            <td>
+                                {% if coord.total_comprometido > 0 %}
+                                    <span class="text-warning fw-semibold">R$ {{ coord.total_comprometido|floatformat:2 }}</span>
+                                {% else %}
+                                    <span class="text-muted">R$ 0,00</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong class="{% if coord.saldo_disponivel < 0 %}text-danger{% else %}text-success{% endif %}">
+                                    R$ {{ coord.saldo_disponivel|floatformat:2 }}
+                                </strong>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1 termometro-barra" role="progressbar">
+                                        <div class="progress-bar {% if coord.percentual_consumido > 90 %}bg-danger{% elif coord.percentual_consumido > 60 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ coord.percentual_consumido }}%"></div>
+                                    </div>
+                                    <span class="small fw-semibold text-muted">{{ coord.percentual_consumido }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Últimas Despesas Registradas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card card-stat bg-white p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-receipt me-2 text-primary"></i>Últimas Despesas Tramitadas</h5>
+                <a href="/admin/despesas/despesa/" class="btn btn-outline-secondary btn-sm">Ver Todas no Painel da Tesouraria</a>
+            </div>
+            {% if despesas_recentes %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Área</th>
+                            <th>Solicitante</th>
+                            <th>Data</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in despesas_recentes %}
+                        <tr>
+                            <td>#{{ d.id }}</td>
+                            <td>
+                                <strong>{{ d.titulo }}</strong>
+                                {% if d.excede_teto %}
+                                    <span class="badge bg-danger ms-1">Estouro de Teto (+R$ {{ d.valor_excedente }})</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-light text-dark">{{ d.coordenacao.sigla }}</span></td>
+                            <td>{{ d.solicitante.get_full_name|default:d.solicitante.username }}</td>
+                            <td>{{ d.data_despesa|date:"d/m/Y" }}</td>
+                            <td class="fw-bold">R$ {{ d.valor|floatformat:2 }}</td>
+                            <td>
+                                {% if d.status == 'PAGO' %}
+                                    <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Pago</span>
+                                {% elif d.status == 'APROVADO' %}
+                                    <span class="badge bg-info-subtle text-info"><i class="bi bi-hand-thumbs-up me-1"></i>Aprovado</span>
+                                {% elif d.status == 'ENVIADO' %}
+                                    <span class="badge bg-warning-subtle text-warning"><i class="bi bi-clock me-1"></i>Em Triagem</span>
+                                {% elif d.status == 'REJEITADO' %}
+                                    <span class="badge bg-danger-subtle text-danger"><i class="bi bi-x-circle me-1"></i>Rejeitado</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary">{{ d.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-muted text-center py-4 mb-0">Nenhuma despesa tramitada no momento.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
