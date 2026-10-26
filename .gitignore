@@ -28,7 +28,10 @@ media/
 *.swp
 *~
 
-# Sistema Operacional
+# Sistema Operacional e Logs Temporários
 .DS_Store
 Thumbs.db
 Zone.Identifier
+.tmp/
+*.tmp
+

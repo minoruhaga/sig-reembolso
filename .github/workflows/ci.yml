@@ -1,0 +1,59 @@
+name: Integração Contínua (CI) - SIG-Reembolso
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Verificação Estática (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Executar Ruff Lint
+        run: nix develop .#quality --command ruff check src
+
+  django-checks-and-tests:
+    name: Verificação do Django e Testes Automatizados
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Verificar integridade do Django (System Check)
+        run: nix develop --command python src/manage.py check
+
+      - name: Verificar ausência de migrações pendentes
+        run: nix develop --command python src/manage.py makemigrations --check --dry-run
+
+      - name: Executar suíte de testes unitários do Django
+        run: nix develop --command python src/manage.py test src/apps
+
+  secrets-scan:
+    name: Varredura de Segredos (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar histórico do repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instalar Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Executar Gitleaks no histórico Git
+        run: nix develop .#quality --command gitleaks git --redact --no-banner --exit-code 1

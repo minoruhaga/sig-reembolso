@@ -1,9 +1,11 @@
 from decimal import Decimal
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from apps.usuarios.models import Usuario, PapelUsuario
+
+from apps.despesas.models import CategoriaDespesa, Despesa, FormaPagamentoOriginal, StatusDespesa, TipoDespesa
 from apps.financeiro.models import Coordenacao
-from apps.despesas.models import Despesa, StatusDespesa, CategoriaDespesa, TipoDespesa, FormaPagamentoOriginal
+from apps.usuarios.models import PapelUsuario, Usuario
 
 
 class Command(BaseCommand):

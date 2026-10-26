@@ -1,11 +1,20 @@
-from decimal import Decimal
-from django.db.models import Sum
 from django.shortcuts import render
+
+from apps.despesas.models import Despesa
 from apps.financeiro.models import Coordenacao
-from apps.despesas.models import Despesa, StatusDespesa
 
 
 def dashboard_view(request):
+    """
+    Exibe o painel consolidado do evento e termômetros orçamentários.
+
+    - O que faz: Renderiza a visão geral do orçamento do AG VII, saldos livres, total comprometido
+      e a listagem das despesas recentemente tramitadas.
+    - Como faz: Consulta as coordenações ativas, soma dinamicamente os tetos e saldos livres calculados
+      nas propriedades do model e busca as últimas 10 despesas com joins otimizados (`select_related`).
+    - Qual finalidade atende: Atende ao requisito RF03 (consulta dinâmica de saldo e termômetro de verba)
+      oferecendo transparência imediata para a Tesouraria e coordenadores de campo.
+    """
     coordenacoes = list(Coordenacao.objects.filter(ativo=True).order_by('nome'))
     
     total_orcado = sum(c.teto_orcamentario for c in coordenacoes)

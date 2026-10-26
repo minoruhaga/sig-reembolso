@@ -5,6 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
+
 from apps.core.views import dashboard_view
 
 admin.site.site_header = "SIG-Reembolso | AG VII Caramuru"

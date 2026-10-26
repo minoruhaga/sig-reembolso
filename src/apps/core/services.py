@@ -1,16 +1,22 @@
 import os
 import uuid
 from io import BytesIO
-from PIL import Image
+
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from PIL import Image
 
 
 def otimizar_comprovante_fiscal(uploaded_file, max_width=1920, quality=75):
     """
-    RNF02: Comprime e otimiza imagens de notas fiscais/cupons antes do salvamento.
-    Reduz fotos pesadas de celulares (5MB) para versões legíveis (< 350KB),
-    viabilizando tráfego leve no link satelital Starlink.
-    Preserva arquivos PDF sem alteração.
+    Otimiza e anonimiza arquivos de notas e cupons fiscais para persistência.
+
+    - O que faz: Reduz fotografias pesadas de smartphones para versões JPEG leves (< 350KB),
+      renomeando os arquivos com UUID v4 para evitar colisões ou enumeração direta.
+    - Como faz: Utiliza a biblioteca Pillow para corrigir orientação EXIF de celulares, redimensionar
+      proporcionalmente caso exceda a largura máxima de 1920px e comprimir em JPEG otimizado. Arquivos
+      PDF são preservados integralmente sem conversão.
+    - Qual finalidade atende: Cumpre o requisito RNF02 (viabilizar uploads rápidos e estáveis sob a rede
+      satelital Starlink em Juquitiba) e RNF04 (segurança e anonimização de anexos).
     """
     nome_original, extensao = os.path.splitext(uploaded_file.name)
     extensao_lower = extensao.lower()

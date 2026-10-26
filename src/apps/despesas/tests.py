@@ -1,12 +1,13 @@
 from decimal import Decimal
+
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.utils import timezone
 
-from apps.usuarios.models import Usuario, PapelUsuario
+from apps.despesas.models import Despesa, HistoricoTransicaoStatus, StatusDespesa
 from apps.financeiro.models import Coordenacao
-from apps.despesas.models import Despesa, StatusDespesa, CategoriaDespesa, HistoricoTransicaoStatus
+from apps.usuarios.models import PapelUsuario, Usuario
 
 
 class DespesaRegrasNegocioTestCase(TestCase):
