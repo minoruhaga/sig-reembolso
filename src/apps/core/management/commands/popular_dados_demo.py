@@ -9,9 +9,26 @@ from apps.usuarios.models import PapelUsuario, Usuario
 
 
 class Command(BaseCommand):
+    """
+    Comando de gerenciamento Django para carga de usuários e despesas de demonstração do AG VII.
+
+    - O que faz: Cria de forma idempotente as contas padrão (`admin`, `tesoureiro`, `coord_cozinha`, `coord_infra`)
+      e insere despesas exemplares com histórico de auditoria nas coordenações de Alimentação e Infraestrutura.
+    - Como faz: Utiliza `get_or_create` nos modelos `Usuario` e `Despesa` para evitar duplicações em execuções repetidas.
+    - Qual finalidade atende: Permite que os 4 desenvolvedores da equipe e a banca avaliadora testem imediatamente
+      o dashboard e os fluxos de RBAC logo após clonar o repositório.
+    """
+
     help = 'Popula usuários de demonstração e despesas de exemplo baseadas no AG VI / AG VII (Grupo Escoteiro Caramuru)'
 
     def handle(self, *args, **options):
+        """
+        Executa a rotina principal de população de dados de demonstração no banco local.
+
+        - O que faz: Persiste os 4 usuários de teste com senhas conhecidas e 2 despesas representativas do campo.
+        - Como faz: Invoca métodos do ORM do Django e gera registros correspondentes de transição de status.
+        - Qual finalidade atende: Viabiliza a homologação imediata e reprodutível do ambiente local de desenvolvimento.
+        """
         self.stdout.write("Criando usuários de demonstração...")
 
         # 1. Admin Geral
