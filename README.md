@@ -123,6 +123,7 @@ python src/manage.py check
 
 ## 📚 Mapa da Documentação e Governança
 
+* [Quadro Kanban Interativo no GitHub Projects](https://github.com/users/minoruhaga/projects/1)
 * [Quadro Kanban e Sequenciamento de Entregas (Fase 2)](file:///home/minoru/projetos/sig-reembolso/docs/fase-2/kanban_fase_2.md)
 * [Catálogo de Issues para o GitHub](file:///home/minoru/projetos/sig-reembolso/docs/fase-2/backlog_issues_github.md)
 * [Guia de Configuração do Ambiente (WSL, Nix, GitHub CLI)](file:///home/minoru/projetos/sig-reembolso/docs/configuracao-ambiente.md)

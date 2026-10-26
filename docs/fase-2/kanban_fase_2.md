@@ -1,5 +1,9 @@
 # Quadro Kanban e Sequenciamento de Entregas - Fase 2
 
+> [!TIP]
+> **Acesse o Quadro Kanban Interativo no GitHub:**  
+> 🔗 **[GitHub Projects - SIG-Reembolso Fase 2](https://github.com/users/minoruhaga/projects/1)**
+
 Este documento estabelece o **Quadro Kanban** do SIG-Reembolso para a Fase 2 (Desenvolvimento), organizado por **Fatias Verticais** e **Ondas de Entrega** para garantir que os 4 integrantes trabalhem em paralelo sem conflitos de merge no Django e com foco nas datas do edital de LES da FATEC-SP.
 
 ---
