@@ -28,6 +28,8 @@ Estas instruções aplicam-se a todo o repositório **SIG-Reembolso**. Arquivos 
 - Via **Nix**: `nix develop` (ou `nix develop .#quality` para verificações estáticas).
 - Via **Python venv**: ambiente virtual ativo com `pip install -r src/requirements.txt`.
 
+[REQUIRED] Antes de executar comandos, consulte o passo a passo de instalação do WSL, Nix e Flakes em [docs/configuracao-ambiente.md](docs/configuracao-ambiente.md).
+
 [FORBIDDEN] Dependências de Python NÃO DEVEM ser instaladas globalmente no sistema operacional.
 
 ---

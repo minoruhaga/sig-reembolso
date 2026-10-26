@@ -28,6 +28,9 @@ O **SIG-Reembolso** é uma solução web focada em mobilidade (*Mobile-First*) e
 
 ## 🚀 Como Executar o Projeto Localmente
 
+> [!TIP]
+> Para o tutorial passo a passo de instalação do **WSL no Windows**, instalação do **Nix**, habilitação de Flakes e configuração do **GitHub CLI (`gh`)**, consulte o [Guia Completo de Configuração do Ambiente](file:///home/minoru/projetos/sig-reembolso/docs/configuracao-ambiente.md).
+
 O repositório suporta execução via **Nix Flakes** (Linux/WSL) ou via **Ambiente Virtual Python (venv + pip)** padrão (Windows, Linux, macOS).
 
 ### Opção A: Execução via Nix (Recomendado no Linux/WSL)
@@ -120,6 +123,7 @@ python src/manage.py check
 
 ## 📚 Mapa da Documentação e Governança
 
+* [Guia de Configuração do Ambiente (WSL, Nix, GitHub CLI)](file:///home/minoru/projetos/sig-reembolso/docs/configuracao-ambiente.md)
 * [Manual de Uso do Git e Branches](file:///home/minoru/projetos/sig-reembolso/docs/manual-git.md)
 * [Guia de Contribuição](file:///home/minoru/projetos/sig-reembolso/CONTRIBUTING.md)
 * [Regras Gerais de Agentes e IA (AGENTS.md)](file:///home/minoru/projetos/sig-reembolso/AGENTS.md)
