@@ -71,7 +71,7 @@ Este documento reúne a lista oficial das 18 Issues abertas e concluídas no Git
 * **[Issue #20](https://github.com/minoruhaga/sig-reembolso/issues/20): `[Docs] Itens 3.k e 3.l - Manual de Treinamento da Tesouraria e Homologação Formal`** *(Milestone: Onda 3 - 27/11/2026)*
   * Manual de operação da triagem financeira e minuta do Termo de Homologação formal com o cliente (Coordenação do AG VII - GE Caramuru).
 
-### 👤 Membro 2: Backend de Acesso, Autenticação & Relatórios (Django)
+### 👤 Membro 2: Marina (Backend de Acesso, Autenticação & Relatórios)
 * **[Issue #6](https://github.com/minoruhaga/sig-reembolso/issues/6): `[RBAC] Telas de Login, Logout e Controle por Papel (Usuario)`** *(Milestone: Onda 1 - 04/11/2026)*
   * Implementar telas de login/logout customizadas no Django utilizando o modelo `Usuario`.
   * Restringir visualizações: Coordenador só vê sua área; Tesoureiro e Admin visualizam todas as 15 coordenações.
@@ -79,7 +79,7 @@ Este documento reúne a lista oficial das 18 Issues abertas e concluídas no Git
   * Criação de rotinas para exportação de dados contábeis em CSV e relatórios sintéticos de prestação de contas.
   * Suporte no setup de ambiente (`settings.py`, `.env` e PostgreSQL) e apoio na documentação técnica (Item 3.h).
 
-### 👤 Membro 3: Frontend & UI/UX Completo (Mobile-First + Desktop da Tesouraria)
+### 👤 Membro 3: Ricardo Sakugawa (`@ricardosakugawa` — Frontend & UI/UX Completo)
 * **[Issue #8](https://github.com/minoruhaga/sig-reembolso/issues/8): `[UI/UX] Interface Mobile-First com Câmera Nativa (RNF01)`** *(Milestone: Onda 1 - 04/11/2026)*
   * Tela de submissão otimizada para smartphones (360px–430px) com botão direto `<input type="file" accept="image/*" capture="environment">`.
   * Termômetro visual de consumo da verba por coordenação em tempo real.
@@ -88,7 +88,7 @@ Este documento reúne a lista oficial das 18 Issues abertas e concluídas no Git
 * **[Issue #16](https://github.com/minoruhaga/sig-reembolso/issues/16): `[Docs] Item 3.g - Definição e justificativa das interfaces com base na usabilidade`** *(Milestone: Onda 3 - 27/11/2026)*
   * Redigir documento acadêmico justificando as decisões ergonômicas, acessibilidade, contraste para uso sob luz solar no campo e facilidade em conexões lentas (Starlink).
 
-### 👤 Membro 4: QA, Testes Automatizados & Confiabilidade (Fixtures + Testes Django)
+### 👤 Membro 4: Giovanni (`@xixinho` — QA, Testes Automatizados & Confiabilidade)
 * **[Issue #9](https://github.com/minoruhaga/sig-reembolso/issues/9): `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII`** *(Milestone: Onda 1 - 04/11/2026)*
   * Criar comando ou fixture para carregar os dados anonimizados de `docs/referencias/coordenadores_ag7.csv` e `gastos_historicos_ag6/alimentacao_gastos_ag6.csv`.
 * **[Issue #17](https://github.com/minoruhaga/sig-reembolso/issues/17): `[Testes] Item 3.i - Procedimentos descritivos de testes e expansão de casos no Django`** *(Milestone: Onda 3 - 27/11/2026)*

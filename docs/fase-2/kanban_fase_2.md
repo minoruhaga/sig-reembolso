@@ -35,10 +35,10 @@ Este documento estabelece o **Quadro Kanban** do SIG-Reembolso para a Fase 2 (De
 
 | ID GitHub | Issue / Card | Responsável | Branch Sugerida | Status |
 | :-: | :--- | :---: | :--- | :---: |
-| **[#6](https://github.com/minoruhaga/sig-reembolso/issues/6)** | `[RBAC] Telas de Login, Logout e Controle por Papel (Usuario)` | **Membro 2** | `feature/#6-login-rbac` | ⏳ A Fazer |
-| **[#7](https://github.com/minoruhaga/sig-reembolso/issues/7)** | `[Despesas] Formulário de Submissão com Pillow (RNF02 e RN01)` | `@minoruhaga` (Membro 1) | `feature/#7-formulario-despesa` | ⏳ A Fazer |
-| **[#8](https://github.com/minoruhaga/sig-reembolso/issues/8)** | `[UI/UX] Interface Mobile-First com Câmera Nativa (RNF01)` | **Membro 3** | `feature/#8-tela-mobile-camera` | ⏳ A Fazer |
-| **[#9](https://github.com/minoruhaga/sig-reembolso/issues/9)** | `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII` | **Membro 4** | `feature/#9-fixture-ag6-ag7` | ⏳ A Fazer |
+| **[#6](https://github.com/minoruhaga/sig-reembolso/issues/6)** | `[RBAC] Telas de Login, Logout e Controle por Papel (Usuario)` | **Marina** | `feature/#6-login-rbac` | ⏳ A Fazer |
+| **[#7](https://github.com/minoruhaga/sig-reembolso/issues/7)** | `[Despesas] Formulário de Submissão com Pillow (RNF02 e RN01)` | `@minoruhaga` (Minoru) | `feature/#7-formulario-despesa` | ⏳ A Fazer |
+| **[#8](https://github.com/minoruhaga/sig-reembolso/issues/8)** | `[UI/UX] Interface Mobile-First com Câmera Nativa (RNF01)` | `@ricardosakugawa` (Ricardo) | `feature/#8-tela-mobile-camera` | ⏳ A Fazer |
+| **[#9](https://github.com/minoruhaga/sig-reembolso/issues/9)** | `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII` | `@xixinho` (Giovanni) | `feature/#9-fixture-ag6-ag7` | ⏳ A Fazer |
 
 ---
 
@@ -47,11 +47,11 @@ Este documento estabelece o **Quadro Kanban** do SIG-Reembolso para a Fase 2 (De
 
 | ID GitHub | Issue / Card | Responsável | Branch Sugerida | Status |
 | :-: | :--- | :---: | :--- | :---: |
-| **[#10](https://github.com/minoruhaga/sig-reembolso/issues/10)** | `[Financeiro] API e View dinâmica de saldos e tetos das 15 coordenações (RF03)` | `@minoruhaga` (Membro 1) | `feature/#10-saldos-tetos` | 📋 Backlog |
-| **[#11](https://github.com/minoruhaga/sig-reembolso/issues/11)** | `[Workflow] Ações de Triagem da Tesouraria: Aprovar, Rejeitar com Justificativa e Liquidar` | `@minoruhaga` (Membro 1) | `feature/#11-acoes-triagem` | 📋 Backlog |
-| **[#12](https://github.com/minoruhaga/sig-reembolso/issues/12)** | `[Regras] Soft-block de estouro com alerta e Segregação de Funções (RN02 e RN03)` | `@minoruhaga` (Membro 1) | `feature/#12-regras-dominio` | 📋 Backlog |
-| **[#13](https://github.com/minoruhaga/sig-reembolso/issues/13)** | `[UI/UX] Painel Desktop da Tesouraria com Modal de Zoom para Notas Fiscais` | **Membro 3** | `feature/#13-painel-triagem` | 📋 Backlog |
-| **[#15](https://github.com/minoruhaga/sig-reembolso/issues/15)** | `[Relatórios] Módulo de Exportação de Prestação de Contas (CSV e Balancete)` | **Membro 2** | `feature/#15-relatorios-exportacao` | 📋 Backlog |
+| **[#10](https://github.com/minoruhaga/sig-reembolso/issues/10)** | `[Financeiro] API e View dinâmica de saldos e tetos das 15 coordenações (RF03)` | `@minoruhaga` (Minoru) | `feature/#10-saldos-tetos` | 📋 Backlog |
+| **[#11](https://github.com/minoruhaga/sig-reembolso/issues/11)** | `[Workflow] Ações de Triagem da Tesouraria: Aprovar, Rejeitar com Justificativa e Liquidar` | `@minoruhaga` (Minoru) | `feature/#11-acoes-triagem` | 📋 Backlog |
+| **[#12](https://github.com/minoruhaga/sig-reembolso/issues/12)** | `[Regras] Soft-block de estouro com alerta e Segregação de Funções (RN02 e RN03)` | `@minoruhaga` (Minoru) | `feature/#12-regras-dominio` | 📋 Backlog |
+| **[#13](https://github.com/minoruhaga/sig-reembolso/issues/13)** | `[UI/UX] Painel Desktop da Tesouraria com Modal de Zoom para Notas Fiscais` | `@ricardosakugawa` (Ricardo) | `feature/#13-painel-triagem` | 📋 Backlog |
+| **[#15](https://github.com/minoruhaga/sig-reembolso/issues/15)** | `[Relatórios] Módulo de Exportação de Prestação de Contas (CSV e Balancete)` | **Marina** | `feature/#15-relatorios-exportacao` | 📋 Backlog |
 
 ---
 
@@ -60,11 +60,11 @@ Este documento estabelece o **Quadro Kanban** do SIG-Reembolso para a Fase 2 (De
 
 | ID GitHub | Issue / Card | Responsável | Entregável Oficial | Status |
 | :-: | :--- | :---: | :---: | :---: |
-| **[#14](https://github.com/minoruhaga/sig-reembolso/issues/14)** | `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido` | `@minoruhaga` (Apoio: Membro 2) | **Item 3.h** | 📋 Backlog |
-| **[#16](https://github.com/minoruhaga/sig-reembolso/issues/16)** | `[Docs] Item 3.g - Definição e justificativa das interfaces com base na usabilidade` | **Membro 3** | **Item 3.g** | 📋 Backlog |
-| **[#17](https://github.com/minoruhaga/sig-reembolso/issues/17)** | `[Testes] Item 3.i - Procedimentos descritivos de testes e expansão de casos no Django` | **Membro 4** | **Item 3.i** | 📋 Backlog |
-| **[#19](https://github.com/minoruhaga/sig-reembolso/issues/19)** | `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)` | `@minoruhaga` (Membro 1 - PO) | **Item 3.j** | 📋 Backlog |
-| **[#20](https://github.com/minoruhaga/sig-reembolso/issues/20)** | `[Docs] Itens 3.k e 3.l - Manual de Treinamento da Tesouraria e Homologação Formal` | `@minoruhaga` (Membro 1 - PO) | **Itens 3.k e 3.l** | 📋 Backlog |
+| **[#14](https://github.com/minoruhaga/sig-reembolso/issues/14)** | `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido` | `@minoruhaga` (Apoio: Marina) | **Item 3.h** | 📋 Backlog |
+| **[#16](https://github.com/minoruhaga/sig-reembolso/issues/16)** | `[Docs] Item 3.g - Definição e justificativa das interfaces com base na usabilidade` | `@ricardosakugawa` (Ricardo) | **Item 3.g** | 📋 Backlog |
+| **[#17](https://github.com/minoruhaga/sig-reembolso/issues/17)** | `[Testes] Item 3.i - Procedimentos descritivos de testes e expansão de casos no Django` | `@xixinho` (Giovanni) | **Item 3.i** | 📋 Backlog |
+| **[#19](https://github.com/minoruhaga/sig-reembolso/issues/19)** | `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)` | `@minoruhaga` (Minoru - PO) | **Item 3.j** | 📋 Backlog |
+| **[#20](https://github.com/minoruhaga/sig-reembolso/issues/20)** | `[Docs] Itens 3.k e 3.l - Manual de Treinamento da Tesouraria e Homologação Formal` | `@minoruhaga` (Minoru - PO) | **Itens 3.k e 3.l** | 📋 Backlog |
 
 ---
 

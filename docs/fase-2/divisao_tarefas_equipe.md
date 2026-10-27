@@ -25,10 +25,10 @@ O momento ideal de divisão segue o fluxo:
             │
             ▼
 [Momento da Divisão de Tarefas (Ponto de Ramificação)]
-  ├── Branch `feature/despesas-financeiro-core` (Membro 1 - Tech Lead / PO)
-  ├── Branch `feature/rbac-relatorios` (Membro 2 - Backend Acesso & Relatórios)
-  ├── Branch `feature/frontend-ui-ux` (Membro 3 - Frontend Completo)
-  └── Branch `feature/qa-testes-fixtures` (Membro 4 - QA & Testes)
+  ├── Branch `feature/despesas-financeiro-core` (@minoruhaga - Minoru)
+  ├── Branch `feature/rbac-relatorios` (Marina)
+  ├── Branch `feature/frontend-ui-ux` (@ricardosakugawa - Ricardo)
+  └── Branch `feature/qa-testes-fixtures` (@xixinho - Giovanni)
             │
             ▼
 [Integração Contínua via Pull Requests e Homologação]
@@ -58,7 +58,7 @@ Para cobrir tanto o **código executando** quanto **todos os itens obrigatórios
   * **Item 3.l:** Homologação formal e minuta do Termo de Aceite assinado pelo cliente (Coordenação Executiva do AG VII).
   * Gestão do repositório no GitHub (Code Review e aprovação dos Pull Requests).
 
-### 👤 Membro 2: Backend de Acesso, Autenticação & Relatórios (Django)
+### 👤 Membro 2: Marina (Backend de Acesso, Autenticação & Relatórios)
 * **Frentes de Código:**
   * Módulo `apps/usuarios`: Custom User Model, login, logout e controle por papel (RBAC: Coordenador de Área, Tesoureiro, Administrador).
   * Proteção de rotas restritas via middleware e decoradores do Django.
@@ -67,7 +67,7 @@ Para cobrir tanto o **código executando** quanto **todos os itens obrigatórios
 * **Entregáveis da Disciplina (FATEC):**
   * Apoio no **Item 3.h:** Seção de segurança, autenticação, controle de permissões e exportação de dados.
 
-### 👤 Membro 3: Frontend & UI/UX Completo (Mobile-First + Desktop)
+### 👤 Membro 3: Ricardo Sakugawa (`@ricardosakugawa` — Frontend & UI/UX Completo)
 * **Frentes de Código:**
   * Identidade visual unificada e temas responsivos em Bootstrap 5.3 + Bootstrap Icons.
   * **Telas de Campo (Mobile-First):**
@@ -80,7 +80,7 @@ Para cobrir tanto o **código executando** quanto **todos os itens obrigatórios
 * **Entregáveis da Disciplina (FATEC):**
   * **Item 3.g:** Documento de definição das interfaces do sistema com base na usabilidade (justificativas ergonômicas, personas, contraste sob sol/chuva, navegação mobile-first e eficiência desktop).
 
-### 👤 Membro 4: QA, Testes Automatizados & Confiabilidade (Django Tests)
+### 👤 Membro 4: Giovanni (`@xixinho` — QA, Testes Automatizados & Confiabilidade)
 * **Frentes de Código:**
   * Criação de dados semente (*fixtures/seeds*) com os dados reais do Acampamento Geral VII (GE Caramuru) e despesas típicas do AG VI para simulações realistas.
   * Implementação da suíte de testes automatizados no Django (`tests/`):
