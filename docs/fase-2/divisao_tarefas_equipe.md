@@ -26,7 +26,7 @@ O momento ideal de divisão segue o fluxo:
             ▼
 [Momento da Divisão de Tarefas (Ponto de Ramificação)]
   ├── Branch `feature/despesas-financeiro-core` (@minoruhaga - Minoru)
-  ├── Branch `feature/rbac-relatorios` (Marina)
+  ├── Branch `feature/rbac-relatorios` (@Mah-Rod - Marina)
   ├── Branch `feature/frontend-ui-ux` (@ricardosakugawa - Ricardo)
   └── Branch `feature/qa-testes-fixtures` (@xixinho - Giovanni)
             │
@@ -58,7 +58,7 @@ Para cobrir tanto o **código executando** quanto **todos os itens obrigatórios
   * **Item 3.l:** Homologação formal e minuta do Termo de Aceite assinado pelo cliente (Coordenação Executiva do AG VII).
   * Gestão do repositório no GitHub (Code Review e aprovação dos Pull Requests).
 
-### 👤 Membro 2: Marina (Backend de Acesso, Autenticação & Relatórios)
+### 👤 Membro 2: Marina (`@Mah-Rod` — Backend de Acesso, Autenticação & Relatórios)
 * **Frentes de Código:**
   * Módulo `apps/usuarios`: Custom User Model, login, logout e controle por papel (RBAC: Coordenador de Área, Tesoureiro, Administrador).
   * Proteção de rotas restritas via middleware e decoradores do Django.

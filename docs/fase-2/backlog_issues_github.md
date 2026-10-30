@@ -71,7 +71,7 @@ Este documento reúne a lista oficial das 18 Issues abertas e concluídas no Git
 * **[Issue #20](https://github.com/minoruhaga/sig-reembolso/issues/20): `[Docs] Itens 3.k e 3.l - Manual de Treinamento da Tesouraria e Homologação Formal`** *(Milestone: Onda 3 - 27/11/2026)*
   * Manual de operação da triagem financeira e minuta do Termo de Homologação formal com o cliente (Coordenação do AG VII - GE Caramuru).
 
-### 👤 Membro 2: Marina (Backend de Acesso, Autenticação & Relatórios)
+### 👤 Membro 2: Marina (`@Mah-Rod` — Backend de Acesso, Autenticação & Relatórios)
 * **[Issue #6](https://github.com/minoruhaga/sig-reembolso/issues/6): `[RBAC] Telas de Login, Logout e Controle por Papel (Usuario)`** *(Milestone: Onda 1 - 04/11/2026)*
   * Implementar telas de login/logout customizadas no Django utilizando o modelo `Usuario`.
   * Restringir visualizações: Coordenador só vê sua área; Tesoureiro e Admin visualizam todas as 15 coordenações.
