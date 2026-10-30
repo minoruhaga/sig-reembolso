@@ -7,10 +7,10 @@ Este documento estabelece o **Quadro Kanban** do SIG-Reembolso para a Fase 2 (De
 ## 🧭 Estrutura do Quadro (Colunas de Fluxo)
 
 ```
-┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
-│   📋 BACKLOG    │──►│ ⏳ A FAZER      │──►│ ⚙️ EM PROGRESSO │──►│ 🔍 EM REVISÃO   │──►│  ✅ CONCLUÍDO   │
-│                 │   │    (To Do)      │   │                 │   │    (PR Aberto)  │   │     (Done)      │
-└─────────────────┘   └─────────────────┘   └─────────────────┘   └─────────────────┘   └─────────────────┘
+┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
+│   📋 Todo       │──►│ ⚙️ In Progress  │──►│  🔍 Review      │──►│  ✅ Done        │
+│   (A Fazer)     │   │ (Codificando)   │   │  (PR Aberto/QA) │   │  (Concluído)    │
+└─────────────────┘   └─────────────────┘   └─────────────────┘   └─────────────────┘
 ```
 
 ---
