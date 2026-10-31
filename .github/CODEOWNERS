@@ -1,4 +1,4 @@
 # Governança de Código - SIG-Reembolso
-# Toda alteração na branch principal deve ser revisada pelo Tech Lead
+# Toda alteração nas branches protegidas requer revisão e aprovação dupla
 
-*       @minoruhaga
+*       @minoruhaga @xixinho
