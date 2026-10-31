@@ -104,6 +104,13 @@ class Command(BaseCommand):
         cozinha = Coordenacao.objects.filter(sigla='ALIM').first()
         infra = Coordenacao.objects.filter(sigla='INFRA').first()
 
+        if cozinha and coord_cozinha.coordenacao_id != cozinha.id:
+            coord_cozinha.coordenacao = cozinha
+            coord_cozinha.save(update_fields=['coordenacao'])
+        if infra and coord_infra.coordenacao_id != infra.id:
+            coord_infra.coordenacao = infra
+            coord_infra.save(update_fields=['coordenacao'])
+
         if cozinha and not Despesa.objects.filter(titulo__contains='Verduras e Legumes').exists():
             d1 = Despesa.objects.create(
                 coordenacao=cozinha,
