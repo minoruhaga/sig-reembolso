@@ -14,15 +14,15 @@ class UsuarioAdmin(UserAdmin):
     - Qual finalidade atende: Permite que a Diretoria e a Coordenação Financeira cadastrem voluntários e chaves PIX com segurança.
     """
 
-    list_display = ('username', 'email', 'first_name', 'last_name', 'papel', 'chave_pix', 'is_active')
-    list_filter = ('papel', 'is_active', 'is_staff')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'papel', 'coordenacao', 'chave_pix', 'is_active')
+    list_filter = ('papel', 'coordenacao', 'is_active', 'is_staff')
     fieldsets = UserAdmin.fieldsets + (
         ('Atribuições no SIG-Reembolso', {
-            'fields': ('papel', 'chave_pix', 'telefone'),
+            'fields': ('papel', 'coordenacao', 'chave_pix', 'telefone'),
         }),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
         ('Atribuições no SIG-Reembolso', {
-            'fields': ('papel', 'chave_pix', 'telefone'),
+            'fields': ('papel', 'coordenacao', 'chave_pix', 'telefone'),
         }),
     )

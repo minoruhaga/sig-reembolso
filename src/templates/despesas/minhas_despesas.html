@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Minhas Despesas{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1">Minhas Despesas de Campo</h2>
+        <p class="text-muted mb-0">Acompanhe o andamento dos seus reembolsos, rascunhos salvos e pareceres da Tesouraria.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'despesas:nova' %}" class="btn btn-success fw-semibold shadow-sm">
+            <i class="bi bi-camera-fill me-1"></i> Nova Despesa (Campo)
+        </a>
+    </div>
+</div>
+
+<div class="card card-stat bg-white shadow-sm border-0 p-4">
+    {% if despesas %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 8%">ID</th>
+                    <th style="width: 25%">Título / Coordenação</th>
+                    <th style="width: 15%">Data da Compra</th>
+                    <th style="width: 15%">Valor (R$)</th>
+                    <th style="width: 12%">Comprovante</th>
+                    <th style="width: 15%">Status</th>
+                    <th style="width: 10%" class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in despesas %}
+                <tr>
+                    <td><span class="text-muted fw-bold">#{{ d.id }}</span></td>
+                    <td>
+                        <strong class="d-block">{{ d.titulo }}</strong>
+                        <span class="badge bg-light text-dark border">{{ d.coordenacao.sigla }} - {{ d.coordenacao.nome }}</span>
+                        {% if d.excede_teto %}
+                            <span class="badge bg-danger ms-1">Estouro (+R$ {{ d.valor_excedente }})</span>
+                        {% endif %}
+                        {% if d.status == 'REJEITADO' and d.motivo_rejeicao %}
+                            <div class="alert alert-danger py-1 px-2 my-1 small">
+                                <strong>Motivo da recusa:</strong> {{ d.motivo_rejeicao }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>{{ d.data_despesa|date:"d/m/Y" }}</td>
+                    <td class="fw-bold text-dark">R$ {{ d.valor|floatformat:2 }}</td>
+                    <td>
+                        {% if d.comprovante %}
+                            <a href="{{ d.comprovante.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-0 px-2" title="Visualizar anexo">
+                                <i class="bi bi-file-earmark-check me-1"></i> Ver Anexo
+                            </a>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">Sem anexo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if d.status == 'PAGO' %}
+                            <span class="badge bg-success-subtle text-success py-1 px-2"><i class="bi bi-check-circle me-1"></i>Pago</span>
+                        {% elif d.status == 'APROVADO' %}
+                            <span class="badge bg-info-subtle text-info py-1 px-2"><i class="bi bi-hand-thumbs-up me-1"></i>Aprovado</span>
+                        {% elif d.status == 'ENVIADO' %}
+                            <span class="badge bg-warning-subtle text-warning py-1 px-2"><i class="bi bi-clock me-1"></i>Em Triagem</span>
+                        {% elif d.status == 'REJEITADO' %}
+                            <span class="badge bg-danger-subtle text-danger py-1 px-2"><i class="bi bi-x-circle me-1"></i>Rejeitado</span>
+                        {% elif d.status == 'RASCUNHO' %}
+                            <span class="badge bg-secondary-subtle text-secondary py-1 px-2"><i class="bi bi-pencil me-1"></i>Rascunho</span>
+                        {% else %}
+                            <span class="badge bg-light text-dark">{{ d.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex justify-content-end gap-1">
+                            {% if d.status == 'RASCUNHO' %}
+                                <a href="{% url 'despesas:editar' d.id %}" class="btn btn-sm btn-outline-secondary" title="Editar rascunho">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                {% if d.comprovante %}
+                                    <form method="post" action="{% url 'despesas:submeter' d.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success" title="Submeter para triagem">
+                                            <i class="bi bi-send-fill"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% elif d.status == 'REJEITADO' %}
+                                <a href="{% url 'despesas:editar' d.id %}" class="btn btn-sm btn-outline-danger" title="Corrigir e reenviar">
+                                    <i class="bi bi-arrow-repeat me-1"></i> Corrigir
+                                </a>
+                            {% else %}
+                                <span class="text-muted small"><i class="bi bi-lock-fill" title="Imutável pós-decisão"></i></span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-receipt text-muted" style="font-size: 3rem;"></i>
+        <h5 class="fw-semibold mt-3 mb-1">Você ainda não possui despesas cadastradas</h5>
+        <p class="text-muted small mb-4">Registre notas fiscais e cupons de compras realizadas durante o evento.</p>
+        <a href="{% url 'despesas:nova' %}" class="btn btn-success fw-semibold">
+            <i class="bi bi-plus-circle me-1"></i> Lançar Primeira Despesa
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
