@@ -1,11 +1,22 @@
 from decimal import Decimal
+from io import BytesIO
 
+from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+from PIL import Image
 
 from apps.despesas.models import CategoriaDespesa, Despesa, FormaPagamentoOriginal, StatusDespesa, TipoDespesa
 from apps.financeiro.models import Coordenacao
 from apps.usuarios.models import PapelUsuario, Usuario
+
+
+def _gerar_comprovante_demo(nome: str) -> ContentFile:
+    """Gera um arquivo de imagem JPEG válido em memória para dados de demonstração."""
+    img = Image.new('RGB', (200, 200), color=(34, 139, 34))
+    buffer = BytesIO()
+    img.save(buffer, format='JPEG')
+    return ContentFile(buffer.getvalue(), name=nome)
 
 
 class Command(BaseCommand):
@@ -104,40 +115,59 @@ class Command(BaseCommand):
         cozinha = Coordenacao.objects.filter(sigla='ALIM').first()
         infra = Coordenacao.objects.filter(sigla='INFRA').first()
 
-        if cozinha and not Despesa.objects.filter(titulo__contains='Verduras e Legumes').exists():
-            d1 = Despesa.objects.create(
-                coordenacao=cozinha,
-                solicitante=coord_cozinha,
-                titulo='Verduras e Legumes Frescos (Sacolão Juquitiba)',
-                descricao='Compra emergencial de 20kg de tomate, alface e cenoura para o almoço do dia 2.',
-                categoria=CategoriaDespesa.ALIMENTACAO,
-                tipo=TipoDespesa.REEMBOLSO,
-                forma_pagamento_original=FormaPagamentoOriginal.PIX,
-                valor=Decimal('342.50'),
-                data_despesa=timezone.now().date(),
-                status=StatusDespesa.PAGO,
-                analisado_por=tesoureiro,
-                analisado_em=timezone.now(),
-                pago_por=tesoureiro,
-                pago_em=timezone.now(),
-            )
-            d1._registrar_transicao('RASCUNHO', 'ENVIADO', coord_cozinha, 'Submissão de compra')
-            d1._registrar_transicao('ENVIADO', 'APROVADO', tesoureiro, 'Nota fiscal conferida e aprovada')
-            d1._registrar_transicao('APROVADO', 'PAGO', tesoureiro, 'Transferência PIX realizada via Banco Cora')
+        if cozinha:
+            d1 = Despesa.objects.filter(titulo__contains='Verduras e Legumes').first()
+            if d1 and not d1.comprovante:
+                Despesa.objects.filter(pk=d1.pk).delete()
+                d1 = None
 
-        if infra and not Despesa.objects.filter(titulo__contains='Óleo Diesel').exists():
-            d2 = Despesa.objects.create(
-                coordenacao=infra,
-                solicitante=coord_infra,
-                titulo='Óleo Diesel S10 para Grupo Gerador 1',
-                descricao='Abastecimento emergencial de 60 litros de diesel para garantir refrigeração da cozinha.',
-                categoria=CategoriaDespesa.COMBUSTIVEL,
-                tipo=TipoDespesa.REEMBOLSO,
-                forma_pagamento_original=FormaPagamentoOriginal.CARTAO_DEBITO,
-                valor=Decimal('378.00'),
-                data_despesa=timezone.now().date(),
-                status=StatusDespesa.ENVIADO,
-            )
-            d2._registrar_transicao('RASCUNHO', 'ENVIADO', coord_infra, 'Submetido em campo')
+            if not d1:
+                d1 = Despesa(
+                    coordenacao=cozinha,
+                    solicitante=coord_cozinha,
+                    titulo='Verduras e Legumes Frescos (Sacolão Juquitiba)',
+                    descricao='Compra emergencial de 20kg de tomate, alface e cenoura para o almoço do dia 2.',
+                    categoria=CategoriaDespesa.ALIMENTACAO,
+                    tipo=TipoDespesa.REEMBOLSO,
+                    forma_pagamento_original=FormaPagamentoOriginal.PIX,
+                    valor=Decimal('342.50'),
+                    data_despesa=timezone.now().date(),
+                    comprovante=_gerar_comprovante_demo('cupom_sacolao_juquitiba.jpg'),
+                    comprovante_pagamento=_gerar_comprovante_demo('pix_cora_sacolao.jpg'),
+                    status=StatusDespesa.PAGO,
+                    analisado_por=tesoureiro,
+                    analisado_em=timezone.now(),
+                    pago_por=tesoureiro,
+                    pago_em=timezone.now(),
+                )
+                d1.full_clean()
+                d1.save()
+                d1._registrar_transicao('RASCUNHO', 'ENVIADO', coord_cozinha, 'Submissão de compra')
+                d1._registrar_transicao('ENVIADO', 'APROVADO', tesoureiro, 'Nota fiscal conferida e aprovada')
+                d1._registrar_transicao('APROVADO', 'PAGO', tesoureiro, 'Transferência PIX realizada via Banco Cora')
+
+        if infra:
+            d2 = Despesa.objects.filter(titulo__contains='Óleo Diesel').first()
+            if d2 and not d2.comprovante:
+                Despesa.objects.filter(pk=d2.pk).delete()
+                d2 = None
+
+            if not d2:
+                d2 = Despesa(
+                    coordenacao=infra,
+                    solicitante=coord_infra,
+                    titulo='Óleo Diesel S10 para Grupo Gerador 1',
+                    descricao='Abastecimento emergencial de 60 litros de diesel para garantir refrigeração da cozinha.',
+                    categoria=CategoriaDespesa.COMBUSTIVEL,
+                    tipo=TipoDespesa.REEMBOLSO,
+                    forma_pagamento_original=FormaPagamentoOriginal.CARTAO_DEBITO,
+                    valor=Decimal('378.00'),
+                    data_despesa=timezone.now().date(),
+                    comprovante=_gerar_comprovante_demo('cupom_posto_juquitiba.jpg'),
+                    status=StatusDespesa.ENVIADO,
+                )
+                d2.full_clean()
+                d2.save()
+                d2._registrar_transicao('RASCUNHO', 'ENVIADO', coord_infra, 'Submetido em campo')
 
         self.stdout.write(self.style.SUCCESS("Carga de dados de demonstração concluída com sucesso!"))
