@@ -2,9 +2,11 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
 from django.utils import timezone
 
+from apps.core.services import otimizar_comprovante_fiscal
 from apps.financeiro.models import Coordenacao
 
 
@@ -93,6 +95,7 @@ class Despesa(models.Model):
         'categoria',
         'tipo',
         'forma_pagamento_original',
+        'comprovante',
     )
 
     coordenacao = models.ForeignKey(
@@ -145,6 +148,7 @@ class Despesa(models.Model):
         upload_to='comprovantes/%Y/%m/',
         blank=True,
         null=True,
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'pdf'])],
         verbose_name='Comprovante / Nota Fiscal'
     )
     status = models.CharField(
@@ -198,6 +202,7 @@ class Despesa(models.Model):
         upload_to='pagamentos/%Y/%m/',
         null=True,
         blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'pdf'])],
         verbose_name='Comprovante de Transferência Cora PJ'
     )
     criado_em = models.DateTimeField(
@@ -229,7 +234,7 @@ class Despesa(models.Model):
         Verifica e bloqueia alterações em campos contábeis após aprovação ou pagamento (RN05).
 
         - O que faz: Impede que despesas já `APROVADO` ou `PAGO` no banco tenham seu valor, coordenação,
-          data, solicitante ou classificação adulterados, ou que uma despesa `PAGO` mude de status.
+          data, solicitante, comprovante ou classificação adulterados, ou que o status seja revertido indevidamente.
         - Como faz: Consulta o estado persistido no banco (`Despesa.objects.get(pk=self.pk)`) e compara os
           atributos protegidos em `CAMPOS_IMUTAVEIS_POS_DECISAO`, lançando `ValidationError` se houver divergência.
         - Qual finalidade atende: Garante a imutabilidade pós-decisão (RN05) e protege a integridade contábil
@@ -250,6 +255,11 @@ class Despesa(models.Model):
                         f"de uma despesa no estado '{original.get_status_display()}'."
                     )
 
+            if original.status == StatusDespesa.APROVADO and self.status not in (StatusDespesa.APROVADO, StatusDespesa.PAGO):
+                raise ValidationError(
+                    "RN05 (Imutabilidade Pós-Decisão): Uma despesa aprovada só pode transitar para o estado 'Pago' ou permanecer como 'Aprovado'."
+                )
+
             if original.status == StatusDespesa.PAGO and self.status != StatusDespesa.PAGO:
                 raise ValidationError(
                     "RN05 (Imutabilidade Pós-Decisão): Uma despesa já liquidada (PAGO) não pode ter seu status revertido."
@@ -259,7 +269,7 @@ class Despesa(models.Model):
         """
         Executa as validações de integridade de domínio da Despesa antes da persistência.
 
-        - O que faz: Valida a presença obrigatória de comprovante fiscal fora de rascunho (RN01),
+        - O que faz: Valida a presença obrigatória de comprovante fiscal fora de rascunho/cancelado (RN01),
           a justificativa obrigatória em reprovações (RN04) e a imutabilidade pós-decisão (RN05).
         - Como faz: Sobrescreve `Model.clean()`, invoca `_validar_imutabilidade_rn05()` e levanta `ValidationError`
           estruturado por campo quando alguma invariante é violada.
@@ -268,8 +278,8 @@ class Despesa(models.Model):
         super().clean()
         self._validar_imutabilidade_rn05()
 
-        # RN01: Obrigatoriedade do comprovante para envio
-        if self.status != StatusDespesa.RASCUNHO and not self.comprovante:
+        # RN01: Obrigatoriedade do comprovante para envio (exceto rascunho e cancelado)
+        if self.status not in (StatusDespesa.RASCUNHO, StatusDespesa.CANCELADO) and not self.comprovante:
             raise ValidationError({'comprovante': 'O comprovante fiscal é obrigatório para envio.'})
 
         # RN04: Justificativa obrigatória em rejeição
@@ -278,14 +288,40 @@ class Despesa(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Persiste a instância da Despesa garantindo a verificação prévia de imutabilidade (RN05).
+        Persiste a instância da Despesa garantindo a verificação prévia de imutabilidade (RN05)
+        e otimizando fotos fiscais com Pillow antes do commit em disco (RNF02).
 
-        - O que faz: Executa a validação de imutabilidade pós-decisão antes de delegar ao `super().save()`.
-        - Como faz: Chama `self._validar_imutabilidade_rn05()` em toda operação de gravação no banco.
-        - Qual finalidade atende: Garante que mesmo chamadas diretas a `.save()` via código Python respeitem a RN05.
+        - O que faz: Executa a validação de imutabilidade pós-decisão, otimiza imagens com Pillow e
+          anonimiza nomes de arquivos com UUID v4 antes de delegar ao `super().save()`.
+        - Como faz: Invoca `self._validar_imutabilidade_rn05()` e processa `self.comprovante` via `otimizar_comprovante_fiscal`.
+        - Qual finalidade atende: Garante o cumprimento estrito de RN05, RNF02 e RNF04.
         """
         self._validar_imutabilidade_rn05()
+
+        # RNF02: Otimização Pillow e UUID em uploads pendentes
+        if self.comprovante and hasattr(self.comprovante, 'file') and not getattr(self.comprovante, '_committed', True):
+            self.comprovante = otimizar_comprovante_fiscal(self.comprovante)
+
+        if self.comprovante_pagamento and hasattr(self.comprovante_pagamento, 'file') and not getattr(self.comprovante_pagamento, '_committed', True):
+            self.comprovante_pagamento = otimizar_comprovante_fiscal(self.comprovante_pagamento)
+
         return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """
+        Bloqueia a exclusão física de despesas que já tramitaram na Tesouraria (RN05 e RN06).
+
+        - O que faz: Impede que despesas em análise (`ENVIADO`), aprovadas (`APROVADO`) ou pagas (`PAGO`)
+          sejam excluídas do banco de dados, permitindo exclusão física apenas para rascunhos.
+        - Como faz: Verifica `self.status` antes de delegar a `super().delete()`, levantando `ValidationError` se tramitada.
+        - Qual finalidade atende: Resguarda a integridade dos livros contábeis e da trilha de auditoria (RN05 e RN06).
+        """
+        if self.status in (StatusDespesa.ENVIADO, StatusDespesa.APROVADO, StatusDespesa.PAGO):
+            raise ValidationError(
+                f"RN05/RN06: Não é permitido excluir uma despesa no estado '{self.get_status_display()}' "
+                "que já tramitou na Tesouraria."
+            )
+        return super().delete(*args, **kwargs)
 
     def _registrar_transicao(self, status_anterior, novo_status, usuario, observacao=''):
         """
@@ -326,7 +362,7 @@ class Despesa(models.Model):
         saldo_livre = self.coordenacao.saldo_disponivel
         if self.valor > saldo_livre:
             self.excede_teto = True
-            self.valor_excedente = self.valor - saldo_livre
+            self.valor_excedente = self.valor if saldo_livre <= Decimal('0.00') else (self.valor - saldo_livre)
         else:
             self.excede_teto = False
             self.valor_excedente = Decimal('0.00')
@@ -341,12 +377,15 @@ class Despesa(models.Model):
         Aprova a despesa na triagem financeira e a habilita para liquidação bancária.
 
         - O que faz: Transiciona a despesa de `ENVIADO` para `APROVADO`, aplicando a Segregação de Funções (RN03).
-        - Como faz: Verifica dentro de `@transaction.atomic` se `self.solicitante_id != tesoureiro.id` (exceto superuser),
+        - Como faz: Verifica dentro de `@transaction.atomic` se o usuário possui papel de Tesouraria e se `self.solicitante_id != tesoureiro.id` (exceto superuser),
           registra o autor e timestamp da análise e grava o log de auditoria (RN06).
         - Qual finalidade atende: Garante conformidade e governança financeira (RN03), impedindo auto-aprovação de reembolsos.
         """
         if self.status != StatusDespesa.ENVIADO:
             raise ValidationError("Apenas despesas no estado 'Enviado' podem ser aprovadas.")
+
+        if not getattr(tesoureiro, 'is_tesoureiro', False):
+            raise ValidationError("Apenas usuários com perfil de Tesouraria podem aprovar despesas.")
 
         # RN03: Segregação de Funções
         if self.solicitante_id == tesoureiro.id and not tesoureiro.is_superuser:
@@ -365,13 +404,16 @@ class Despesa(models.Model):
         Reprova uma despesa enviada na triagem mediante justificativa obrigatória (RN04).
 
         - O que faz: Transiciona a despesa de `ENVIADO` para `REJEITADO`, liberando o saldo comprometido da coordenação.
-        - Como faz: Exige `motivo` não vazio (RN04), valida segregação de funções (RN03), persiste a justificativa
+        - Como faz: Exige `motivo` não vazio (RN04), valida perfil e segregação de funções (RN03), persiste a justificativa
           e grava o histórico de transição (RN06) sob `@transaction.atomic`.
         - Qual finalidade atende: Permite que o coordenador de campo saiba exatamente por que sua nota foi recusada
           (ex: foto ilegível ou item não autorizado) e possa corrigi-la.
         """
         if self.status != StatusDespesa.ENVIADO:
             raise ValidationError("Apenas despesas no estado 'Enviado' podem ser rejeitadas.")
+
+        if not getattr(tesoureiro, 'is_tesoureiro', False):
+            raise ValidationError("Apenas usuários com perfil de Tesouraria podem rejeitar despesas.")
 
         if self.solicitante_id == tesoureiro.id and not tesoureiro.is_superuser:
             raise ValidationError("Segregação de Funções: O tesoureiro não pode reprovar sua própria solicitação.")
@@ -392,12 +434,19 @@ class Despesa(models.Model):
         """
         Liquida a despesa como PAGO após transferência PIX na conta do Banco Cora PJ.
 
-        - O que faz: Transiciona a despesa de `APROVADO` para `PAGO`, registrando o pagador, a data/hora e o comprovante bancário.
-        - Como faz: Valida que o status atual é `APROVADO`, atualiza os metadados de pagamento e grava auditoria (RN06).
-        - Qual finalidade atende: Encerra o ciclo financeiro da despesa com lastro documental para a prestação de contas final do evento.
+        - O que faz: Transiciona a despesa de `APROVADO` para `PAGO`, registrando o pagador, a data/hora e o comprovante bancário com segregação de funções (RN03).
+        - Como faz: Valida status `APROVADO`, perfil do tesoureiro, segregação em relação ao solicitante, atualiza metadados e grava auditoria (RN06).
+        - Qual finalidade atende: Encerra o ciclo financeiro da despesa com lastro documental e conformidade contábil estrita.
         """
         if self.status != StatusDespesa.APROVADO:
             raise ValidationError("Apenas despesas 'Aprovadas' podem ser liquidadas como Pagas.")
+
+        if not getattr(tesoureiro, 'is_tesoureiro', False):
+            raise ValidationError("Apenas usuários com perfil de Tesouraria podem liquidar despesas.")
+
+        # RN03: Segregação de Funções na liquidação
+        if self.solicitante_id == tesoureiro.id and not tesoureiro.is_superuser:
+            raise ValidationError("Segregação de Funções: O tesoureiro não pode liquidar sua própria solicitação.")
 
         status_anterior = self.status
         self.status = StatusDespesa.PAGO
@@ -407,6 +456,43 @@ class Despesa(models.Model):
             self.comprovante_pagamento = comprovante_pagamento
         self.save()
         self._registrar_transicao(status_anterior, StatusDespesa.PAGO, tesoureiro, "Liquidação efetuada via Banco Cora PJ")
+
+    @transaction.atomic
+    def cancelar(self, usuario, motivo=''):
+        """
+        Cancela uma despesa em aberto antes da aprovação ou liquidação formal.
+
+        - O que faz: Transiciona o status para `CANCELADO`, descomprometendo qualquer alerta de estouro e registrando auditoria.
+        - Como faz: Valida se a despesa está em `RASCUNHO`, `ENVIADO` ou `REJEITADO`, checa se o solicitante ou um tesoureiro/admin
+          é o autor da solicitação, reseta flags de estouro e insere entrada na tabela de histórico sob `@transaction.atomic`.
+        - Qual finalidade atende: Cumpre a máquina de estados finita da arquitetura (Item 5.2 do edital) permitindo descarte
+          seguro de lançamentos incorretos ou duplicados.
+        """
+        if self.status in (StatusDespesa.APROVADO, StatusDespesa.PAGO):
+            raise ValidationError(
+                f"RN05 (Imutabilidade Pós-Decisão): Despesas no estado '{self.get_status_display()}' não podem ser canceladas."
+            )
+
+        if self.status == StatusDespesa.CANCELADO:
+            raise ValidationError("Esta despesa já se encontra cancelada.")
+
+        # Permissão: solicitante ou membro da tesouraria/admin
+        is_owner = self.solicitante_id == usuario.id
+        is_tesouraria = getattr(usuario, 'is_tesoureiro', False) or getattr(usuario, 'is_admin_geral', False)
+        if not (is_owner or is_tesouraria):
+            raise ValidationError("Apenas o solicitante da despesa ou a Tesouraria podem efetuar o cancelamento.")
+
+        status_anterior = self.status
+        self.status = StatusDespesa.CANCELADO
+        self.excede_teto = False
+        self.valor_excedente = Decimal('0.00')
+        self.save()
+        self._registrar_transicao(
+            status_anterior,
+            StatusDespesa.CANCELADO,
+            usuario,
+            motivo or "Cancelamento solicitado pelo usuário"
+        )
 
 
 class HistoricoTransicaoStatus(models.Model):

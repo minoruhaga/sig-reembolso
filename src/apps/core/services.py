@@ -1,9 +1,12 @@
+import logging
 import os
 import uuid
 from io import BytesIO
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from PIL import Image
+from PIL import Image, ImageOps
+
+logger = logging.getLogger(__name__)
 
 
 def otimizar_comprovante_fiscal(uploaded_file, max_width=1920, quality=75):
@@ -21,7 +24,7 @@ def otimizar_comprovante_fiscal(uploaded_file, max_width=1920, quality=75):
     nome_original, extensao = os.path.splitext(uploaded_file.name)
     extensao_lower = extensao.lower()
 
-    # PDFs não sofrem compressão por Pillow
+    # PDFs não sofrem compressão por Pillow, apenas renomeação por UUID
     if extensao_lower == '.pdf':
         novo_nome = f"{uuid.uuid4().hex}.pdf"
         uploaded_file.name = novo_nome
@@ -32,10 +35,9 @@ def otimizar_comprovante_fiscal(uploaded_file, max_width=1920, quality=75):
 
         # Trata orientação EXIF se a foto tiver sido tirada no celular
         try:
-            from PIL import ImageOps
             imagem = ImageOps.exif_transpose(imagem)
-        except Exception:
-            pass
+        except (AttributeError, KeyError, IndexError):
+            logger.debug("Falha não-bloqueante ao transpor EXIF da imagem.")
 
         # Converte para RGB se necessário
         if imagem.mode in ('RGBA', 'P'):
@@ -60,7 +62,7 @@ def otimizar_comprovante_fiscal(uploaded_file, max_width=1920, quality=75):
             size=output.getbuffer().nbytes,
             charset=None
         )
-    except Exception:
-        # Em caso de falha na manipulação, retorna com nome UUID
+    except Exception as exc:
+        logger.warning("Falha ao otimizar imagem com Pillow, mantendo original com UUID: %s", exc)
         uploaded_file.name = f"{uuid.uuid4().hex}{extensao_lower}"
         return uploaded_file

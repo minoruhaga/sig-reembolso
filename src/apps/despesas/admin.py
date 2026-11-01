@@ -23,9 +23,11 @@ class DespesaAdmin(admin.ModelAdmin):
     """
     Configuração do painel administrativo para inspeção e auditoria de Despesas.
 
-    - O que faz: Disponibiliza listagem filtrável por status, coordenação, categoria e flag de estouro (`excede_teto`).
-    - Como faz: Registra `ModelAdmin` com campos calculados protegidos em `readonly_fields` e anexa `HistoricoTransicaoInline`.
-    - Qual finalidade atende: Permite auditoria administrativa rápida dos lançamentos financeiros do AG VII.
+    - O que faz: Disponibiliza listagem filtrável por status, coordenação, categoria e flag de estouro (`excede_teto`),
+      bloqueando a exclusão de despesas já submetidas ou homologadas.
+    - Como faz: Registra `ModelAdmin` com campos calculados protegidos em `readonly_fields`, anexa `HistoricoTransicaoInline`
+      e restringe `has_delete_permission`.
+    - Qual finalidade atende: Permite auditoria administrativa rápida dos lançamentos financeiros do AG VII resguardando a RN05 e RN06.
     """
 
     list_display = ('id', 'titulo', 'coordenacao', 'solicitante', 'valor', 'status', 'excede_teto', 'data_despesa')
@@ -34,18 +36,38 @@ class DespesaAdmin(admin.ModelAdmin):
     readonly_fields = ('criado_em', 'atualizado_em', 'excede_teto', 'valor_excedente', 'analisado_em', 'pago_em')
     inlines = [HistoricoTransicaoInline]
 
+    def has_delete_permission(self, request, obj=None):
+        """
+        Bloqueia a exclusão de despesas que já tramitaram para triagem, aprovação ou pagamento.
+
+        - O que faz: Retorna False caso o objeto esteja nos estados `ENVIADO`, `APROVADO` ou `PAGO`.
+        - Como faz: Avalia `obj.status` contra os estados imutáveis do modelo `Despesa`.
+        - Qual finalidade atende: Assegura a integridade contábil e documental (RN05).
+        """
+        if obj and obj.status in ('ENVIADO', 'APROVADO', 'PAGO'):
+            return False
+        return super().has_delete_permission(request, obj)
+
 
 @admin.register(HistoricoTransicaoStatus)
 class HistoricoTransicaoStatusAdmin(admin.ModelAdmin):
     """
     Visualização dedicada e estritamente imutável dos logs de auditoria no Django Admin.
 
-    - O que faz: Exibe todos os eventos de mudança de status registrados no sistema sem permitir edição ou exclusão.
-    - Como faz: Define todos os atributos como `readonly_fields` e desabilita a deleção (`can_delete = False`).
+    - O que faz: Exibe todos os eventos de mudança de status registrados no sistema sem permitir edição, inserção manual ou exclusão.
+    - Como faz: Define todos os atributos como `readonly_fields` e sobrescreve `has_delete_permission`, `has_add_permission` e `has_change_permission`.
     - Qual finalidade atende: Garante conformidade com a RN06 perante a Diretoria e o Conselho Fiscal.
     """
 
     list_display = ('despesa', 'status_anterior', 'novo_status', 'alterado_por', 'data_hora')
     list_filter = ('novo_status', 'status_anterior')
     readonly_fields = ('despesa', 'status_anterior', 'novo_status', 'alterado_por', 'data_hora', 'observacao')
-    can_delete = False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
