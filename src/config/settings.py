@@ -7,8 +7,14 @@ FATEC-SP - Laboratório de Engenharia de Software (LES)
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Carrega variáveis de ambiente do arquivo .env na raiz do projeto ou em src/
+load_dotenv(BASE_DIR.parent / '.env')
+load_dotenv(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'sig-reembolso-dev-key-change-in-prod-fatec-les-2026')
@@ -16,7 +22,11 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'sig-reembolso-dev-key-change-in-pro
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+allowed_hosts_env = os.getenv('DJANGO_ALLOWED_HOSTS')
+if allowed_hosts_env:
+    ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
+else:
+    ALLOWED_HOSTS = ['*']
 
 # Custom User Model (RBAC)
 AUTH_USER_MODEL = 'usuarios.Usuario'
@@ -111,6 +121,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Autenticação
-LOGIN_URL = 'login'
+LOGIN_URL = 'admin:login'
 LOGIN_REDIRECT_URL = 'dashboard'
-LOGOUT_REDIRECT_URL = 'login'
+LOGOUT_REDIRECT_URL = 'admin:login'
