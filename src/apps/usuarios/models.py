@@ -21,11 +21,13 @@ class Usuario(AbstractUser):
     """
     Modelo customizado de usuário do SIG-Reembolso com suporte a RBAC e dados de liquidação PIX.
 
-    - O que faz: Estende o usuário padrão do Django adicionando papel operacional, chave PIX e telefone.
+    - O que faz: Estende o usuário padrão do Django adicionando papel operacional, coordenação de atuação,
+      chave PIX e telefone.
     - Como faz: Herda de `AbstractUser` (configurado em `AUTH_USER_MODEL`) e expõe propriedades booleanas
       auxiliares para verificação rápida de permissões nas views e templates.
-    - Qual finalidade atende: Permite identificar o solicitante de cada reembolso em campo, viabilizar a
-      transferência bancária pelo Banco Cora PJ via chave PIX e aplicar a segregação de funções (RN03).
+    - Qual finalidade atende: Permite identificar o solicitante de cada reembolso em campo, vincular o
+      coordenador à sua pasta orçamentária (RF01), viabilizar a transferência bancária pelo Banco Cora PJ
+      via chave PIX e aplicar a segregação de funções (RN03).
     """
 
     papel = models.CharField(
@@ -43,6 +45,14 @@ class Usuario(AbstractUser):
         max_length=20,
         blank=True,
         verbose_name='Telefone de Contato'
+    )
+    coordenacao = models.ForeignKey(
+        'financeiro.Coordenacao',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='membros',
+        verbose_name='Coordenação de Atuação',
     )
 
     class Meta:
@@ -92,3 +102,15 @@ class Usuario(AbstractUser):
         - Qual finalidade atende: Garante governança administrativa sobre tetos orçamentários e cadastros mestres do AG VII.
         """
         return self.papel == PapelUsuario.ADMIN or self.is_superuser
+
+    @property
+    def pode_acessar_admin(self):
+        """
+        Indica se o usuário pode operar o Django Admin e demais rotas `/admin/`.
+
+        - O que faz: Retorna `True` apenas para Tesoureiro, Administrador Geral ou superusuário.
+        - Como faz: Reutiliza `is_tesoureiro` e `is_admin_geral`, que já incorporam `is_superuser`.
+        - Qual finalidade atende: Impede que coordenadores de campo acessem cadastros mestres e a triagem
+          administrativa (critério de aceite da Issue #6 / RF01).
+        """
+        return self.is_tesoureiro or self.is_admin_geral

@@ -135,6 +135,7 @@ python src/manage.py check
 * [Regras de Domínio e Backend Django (src/AGENTS.md)](src/AGENTS.md)
 * [Guia de Governança de IA e Uso das Skills](docs/guia-uso-ia-e-skills.md)
 * [Planejamento de Entregas da 2ª Fase (Itens 3.g a 3.l)](docs/fase-2/planejamento_fase_2.md)
+* [Guia da Issue #6 — Login, logout e RBAC (o que foi feito e como testar)](docs/fase-2/guia-login-rbac.md)
 * [Requisitos Funcionais (RF01 a RF08)](docs/requisitos/requisitos_funcionais.md)
 * [Regras de Negócio e Domínio (RN01 a RN06)](docs/requisitos/regras_de_negocio.md)
 * [Modelo de Dados Relacional (DER)](docs/arquitetura/modelo_dados.md)
