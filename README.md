@@ -19,10 +19,10 @@ O **SIG-Reembolso** é uma solução web focada em mobilidade (*Mobile-First*) e
 
 | Integrante | Papel no Projeto | Responsabilidades Principais |
 | :--- | :--- | :--- |
-| **Gustavo Minoru Haga** (`@minoruhaga`) | **Tech Lead / Core Backend & Governança** | Arquitetura Django, RBAC (`apps.usuarios`), gestão financeira de tetos (`apps.financeiro`), CI/CD e revisão de PRs. |
-| **Integrante 2** | **Backend de Despesas & Regras de Negócio** | CRUD de despesas, máquina de estados finita, compressão Pillow (`RNF02`), soft-block (`RN02`) e auditoria (`RN06`). |
-| **Integrante 3** | **Frontend, UX & Interfaces Mobile-First** | Telas Bootstrap 5, formulário de captura rápida por câmera, painel de triagem desktop da tesouraria e **Item 3.g (Usabilidade)**. |
-| **Integrante 4** | **QA, Testes, Manuais e Homologação** | Fixtures com dados do AG VI/VII, suíte de testes (`TestCase` - **Item 3.i**), manuais de operação/treinamento (**3.j / 3.k**) e homologação (**3.l**). |
+| **Gustavo Minoru Haga** (`@minoruhaga`) | **Tech Lead / Core Backend & Governança** | Arquitetura Django, gestão de tetos (`apps.financeiro`), CRUD e máquina de estados (`apps.despesas`), CI/CD e revisão de PRs. |
+| **Marina** (`@Mah-Rod`) | **Backend de Acesso, Autenticação & Relatórios** | Custom User Model, login, logout e controle por papel (RBAC em `apps.usuarios`), rotinas de exportação contábil (`apps.relatorios`). |
+| **Ricardo Sakugawa** (`@ricardosakugawa`) | **Frontend, UX & Interfaces Mobile-First** | Identidade visual Bootstrap 5, tela mobile com câmera nativa (`RNF01`), painel desktop da tesouraria e **Item 3.g (Usabilidade)**. |
+| **Giovanni** (`@xixinho`) | **QA, Testes, Fixtures e Confiabilidade** | Carga de dados reais do AG VI/VII, suíte de testes unitários (`TestCase` - **Item 3.i**), manuais de operação/treinamento e homologação. |
 
 ---
 
