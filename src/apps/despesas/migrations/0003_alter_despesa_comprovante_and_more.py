@@ -14,11 +14,23 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='despesa',
             name='comprovante',
-            field=models.FileField(blank=True, null=True, upload_to='comprovantes/%Y/%m/', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'pdf'])], verbose_name='Comprovante / Nota Fiscal'),
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to='comprovantes/%Y/%m/',
+                validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp', 'pdf'])],
+                verbose_name='Comprovante / Nota Fiscal',
+            ),
         ),
         migrations.AlterField(
             model_name='despesa',
             name='comprovante_pagamento',
-            field=models.FileField(blank=True, null=True, upload_to='pagamentos/%Y/%m/', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'pdf'])], verbose_name='Comprovante de Transferência Cora PJ'),
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to='pagamentos/%Y/%m/',
+                validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp', 'pdf'])],
+                verbose_name='Comprovante de Transferência Cora PJ',
+            ),
         ),
     ]

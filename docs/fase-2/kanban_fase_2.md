@@ -36,7 +36,7 @@ Este documento estabelece o **Quadro Kanban** do SIG-Reembolso para a Fase 2 (De
 | ID GitHub | Issue / Card | Responsável | Branch Sugerida | Status |
 | :-: | :--- | :---: | :--- | :---: |
 | **[#6](https://github.com/minoruhaga/sig-reembolso/issues/6)** | `[RBAC] Telas de Login, Logout e Controle por Papel (Usuario)` | `@Mah-Rod` (Marina) | `feature/#6-login-rbac` | ⏳ A Fazer |
-| **[#7](https://github.com/minoruhaga/sig-reembolso/issues/7)** | `[Despesas] Formulário de Submissão com Pillow (RNF02 e RN01)` | `@minoruhaga` (Minoru) | `feature/#7-formulario-despesa` | ⏳ A Fazer |
+| **[#7](https://github.com/minoruhaga/sig-reembolso/issues/7)** | `[Despesas] Formulário de Submissão com Pillow (RNF02 e RN01)` | `@minoruhaga` (Minoru) | `feature/#7-formulario-despesa` | 🔍 Em Revisão (PR #31) |
 | **[#8](https://github.com/minoruhaga/sig-reembolso/issues/8)** | `[UI/UX] Interface Mobile-First com Câmera Nativa (RNF01)` | `@ricardosakugawa` (Ricardo) | `feature/#8-tela-mobile-camera` | ⏳ A Fazer |
 | **[#9](https://github.com/minoruhaga/sig-reembolso/issues/9)** | `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII` | `@xixinho` (Giovanni) | `feature/#9-fixture-ag6-ag7` | ⏳ A Fazer |
 

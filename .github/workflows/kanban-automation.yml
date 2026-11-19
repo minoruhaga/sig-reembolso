@@ -1,0 +1,30 @@
+name: Sincronização Automática do Kanban
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, closed]
+  issues:
+    types: [opened, reopened, closed]
+
+permissions:
+  repository-projects: write
+  issues: write
+  pull-requests: read
+  contents: read
+
+jobs:
+  sync-kanban:
+    name: Atualizar Colunas do Kanban
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Sincronizar Cards com GitHub Projects
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 scripts/kanban_sync.py

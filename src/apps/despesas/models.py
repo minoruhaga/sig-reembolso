@@ -148,7 +148,7 @@ class Despesa(models.Model):
         upload_to='comprovantes/%Y/%m/',
         blank=True,
         null=True,
-        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'pdf'])],
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp', 'pdf'])],
         verbose_name='Comprovante / Nota Fiscal'
     )
     status = models.CharField(
@@ -202,7 +202,7 @@ class Despesa(models.Model):
         upload_to='pagamentos/%Y/%m/',
         null=True,
         blank=True,
-        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'pdf'])],
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp', 'pdf'])],
         verbose_name='Comprovante de Transferência Cora PJ'
     )
     criado_em = models.DateTimeField(
@@ -298,11 +298,23 @@ class Despesa(models.Model):
         """
         self._validar_imutabilidade_rn05()
 
-        # RNF02: Otimização Pillow e UUID em uploads pendentes
-        if self.comprovante and hasattr(self.comprovante, 'file') and not getattr(self.comprovante, '_committed', True):
+        # RNF02: Otimização Pillow e UUID em uploads pendentes (evita recompressão se já otimizado)
+        if (
+            self.comprovante
+            and hasattr(self.comprovante, 'file')
+            and not getattr(self.comprovante, '_committed', True)
+            and not getattr(self.comprovante, '_otimizado_pillow', False)
+            and not getattr(getattr(self.comprovante, 'file', None), '_otimizado_pillow', False)
+        ):
             self.comprovante = otimizar_comprovante_fiscal(self.comprovante)
 
-        if self.comprovante_pagamento and hasattr(self.comprovante_pagamento, 'file') and not getattr(self.comprovante_pagamento, '_committed', True):
+        if (
+            self.comprovante_pagamento
+            and hasattr(self.comprovante_pagamento, 'file')
+            and not getattr(self.comprovante_pagamento, '_committed', True)
+            and not getattr(self.comprovante_pagamento, '_otimizado_pillow', False)
+            and not getattr(getattr(self.comprovante_pagamento, 'file', None), '_otimizado_pillow', False)
+        ):
             self.comprovante_pagamento = otimizar_comprovante_fiscal(self.comprovante_pagamento)
 
         return super().save(*args, **kwargs)

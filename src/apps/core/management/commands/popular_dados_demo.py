@@ -12,7 +12,14 @@ from apps.usuarios.models import PapelUsuario, Usuario
 
 
 def _gerar_comprovante_demo(nome: str) -> ContentFile:
-    """Gera um arquivo de imagem JPEG válido em memória para dados de demonstração."""
+    """
+    Gera um arquivo de imagem JPEG válido em memória para dados de demonstração.
+
+    - O que faz: Cria uma imagem JPEG sintética de 200x200 pixels encapsulada em `ContentFile`.
+    - Como faz: Instancia uma imagem RGB via Pillow, serializa em buffer JPEG e retorna `ContentFile` nomeado.
+    - Qual finalidade atende: Garante que as despesas de exemplo criadas por `popular_dados_demo` tenham
+      anexos fiscais válidos que passem em `full_clean()` e na otimização Pillow (`RN01` e `RNF02`).
+    """
     img = Image.new('RGB', (200, 200), color=(34, 139, 34))
     buffer = BytesIO()
     img.save(buffer, format='JPEG')
@@ -23,11 +30,13 @@ class Command(BaseCommand):
     """
     Comando de gerenciamento Django para carga de usuários e despesas de demonstração do AG VII.
 
-    - O que faz: Cria de forma idempotente as contas padrão (`admin`, `tesoureiro`, `coord_cozinha`, `coord_infra`)
-      e insere despesas exemplares com histórico de auditoria nas coordenações de Alimentação e Infraestrutura.
-    - Como faz: Utiliza `get_or_create` nos modelos `Usuario` e `Despesa` para evitar duplicações em execuções repetidas.
-    - Qual finalidade atende: Permite que os 4 desenvolvedores da equipe e a banca avaliadora testem imediatamente
-      o dashboard e os fluxos de RBAC logo após clonar o repositório.
+    - O que faz: Cria de forma idempotente as contas padrão (`admin`, `tesoureiro`, `coord_cozinha`, `coord_infra`),
+      vincula os coordenadores às respectivas pastas (`ALIM` e `INFRA`) e insere despesas exemplares com
+      comprovantes válidos e histórico de auditoria.
+    - Como faz: Utiliza `get_or_create` nos modelos `Usuario` e `Despesa`, gera anexos sintéticos com
+      `_gerar_comprovante_demo` e executa `full_clean()` antes da persistência para evitar estados inválidos.
+    - Qual finalidade atende: Permite que os desenvolvedores da equipe e a banca avaliadora testem imediatamente
+      o dashboard, os fluxos de RBAC e a triagem financeira logo após clonar o repositório.
     """
 
     help = 'Popula usuários de demonstração e despesas de exemplo baseadas no AG VI / AG VII (Grupo Escoteiro Caramuru)'
@@ -36,8 +45,10 @@ class Command(BaseCommand):
         """
         Executa a rotina principal de população de dados de demonstração no banco local.
 
-        - O que faz: Persiste os 4 usuários de teste com senhas conhecidas e 2 despesas representativas do campo.
-        - Como faz: Invoca métodos do ORM do Django e gera registros correspondentes de transição de status.
+        - O que faz: Persiste os 4 usuários de teste com senhas conhecidas, vincula suas coordenações de atuação
+          e cria 2 despesas representativas do campo com lastro comprobatório.
+        - Como faz: Invoca métodos do ORM do Django, valida os lançamentos via `full_clean()` e gera registros
+          correspondentes de transição de status.
         - Qual finalidade atende: Viabiliza a homologação imediata e reprodutível do ambiente local de desenvolvimento.
         """
         self.stdout.write("Criando usuários de demonstração...")
@@ -110,10 +121,17 @@ class Command(BaseCommand):
             coord_infra.save()
             self.stdout.write(self.style.SUCCESS("✓ Coordenador Infra: coord_infra / infra123"))
 
-        # Despesas de Demonstração
+        # Vínculo de coordenações para isolamento RBAC e despesas de demonstração
         self.stdout.write("Criando despesas de teste com base na realidade de campo...")
         cozinha = Coordenacao.objects.filter(sigla='ALIM').first()
         infra = Coordenacao.objects.filter(sigla='INFRA').first()
+
+        if cozinha and coord_cozinha.coordenacao_id != cozinha.id:
+            coord_cozinha.coordenacao = cozinha
+            coord_cozinha.save(update_fields=['coordenacao'])
+        if infra and coord_infra.coordenacao_id != infra.id:
+            coord_infra.coordenacao = infra
+            coord_infra.save(update_fields=['coordenacao'])
 
         if cozinha:
             d1 = Despesa.objects.filter(titulo__contains='Verduras e Legumes').first()
