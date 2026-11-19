@@ -6,10 +6,54 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from PIL import Image
 
+from apps.core.exceptions import (
+    ComprovanteObrigatorioError,
+    ImutabilidadeDespesaError,
+    JustificativaRejeicaoObrigatoriaError,
+    PermissaoNegadaDominioError,
+    SegregacaoFuncoesError,
+    SigReembolsoDomainError,
+    TransicaoStatusInvalidaError,
+)
 from apps.core.services import (
     TAMANHO_MAXIMO_COMPRIMIDO_BYTES,
     otimizar_comprovante_fiscal,
 )
+
+
+class DomainExceptionsTestCase(TestCase):
+    """
+    Testes unitários para a hierarquia de exceções semânticas de domínio (`apps.core.exceptions`).
+
+    - O que faz: Verifica que todas as exceções de negócio do SIG-Reembolso herdam de
+      `SigReembolsoDomainError` e de `django.core.exceptions.ValidationError` e preservam mensagens.
+    - Como faz: Instancia cada classe de exceção e valida `issubclass` e a conversão textual da mensagem.
+    - Qual finalidade atende: Garante retrocompatibilidade total com modelos, formulários e testes que
+      capturam `ValidationError` enquanto oferece tipagem semântica clara às novas features.
+    """
+
+    def test_hierarquia_e_retrocompatibilidade_validation_error(self):
+        """
+        Verifica a herança dupla (`SigReembolsoDomainError` e `ValidationError`) das exceções de domínio.
+
+        - O que faz: Percorre todas as subclasses especializadas e valida herança e preservação de mensagem.
+        - Como faz: Itera sobre as classes de exceção, valida `issubclass` e testa `raise` capturando `ValidationError`.
+        - Qual finalidade atende: Impede que o uso futuro dessas exceções quebre handlers existentes.
+        """
+        excecoes = [
+            ComprovanteObrigatorioError,
+            TransicaoStatusInvalidaError,
+            SegregacaoFuncoesError,
+            JustificativaRejeicaoObrigatoriaError,
+            ImutabilidadeDespesaError,
+            PermissaoNegadaDominioError,
+        ]
+        for exc_cls in excecoes:
+            self.assertTrue(issubclass(exc_cls, SigReembolsoDomainError))
+            self.assertTrue(issubclass(exc_cls, ValidationError))
+            with self.assertRaises(ValidationError) as ctx:
+                raise exc_cls("Erro de domínio de teste")
+            self.assertIn("Erro de domínio de teste", str(ctx.exception))
 
 
 class OtimizarComprovanteFiscalTestCase(TestCase):
@@ -27,6 +71,10 @@ class OtimizarComprovanteFiscalTestCase(TestCase):
     def _gerar_imagem_memoria(self, formato='PNG', size=(2400, 1800), color=(120, 80, 40), mode='RGB'):
         """
         Método auxiliar para geração determinística de imagens em memória.
+
+        - O que faz: Cria uma imagem sintética em memória encapsulada em `SimpleUploadedFile`.
+        - Como faz: Desenha uma imagem Pillow nas dimensões e modo informados e grava em `BytesIO`.
+        - Qual finalidade atende: Evita dependência de arquivos estáticos externos nos testes de compressão.
         """
         buffer = BytesIO()
         img = Image.new(mode, size, color)

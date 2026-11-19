@@ -1,7 +1,7 @@
 """
 Configuração central de URLs do projeto SIG-Reembolso.
 
-Delega as rotas específicas para cada app de domínio (`usuarios`, `financeiro`, `despesas`)
+Delega as rotas específicas para cada app de domínio (`usuarios`, `financeiro`, `despesas`, `relatorios`)
 a fim de evitar conflitos de merge durante o desenvolvimento paralelo da equipe.
 """
 from django.conf import settings
@@ -21,6 +21,7 @@ urlpatterns = [
     path('usuarios/', include('apps.usuarios.urls', namespace='usuarios')),
     path('financeiro/', include('apps.financeiro.urls', namespace='financeiro')),
     path('despesas/', include('apps.despesas.urls', namespace='despesas')),
+    path('relatorios/', include('apps.relatorios.urls', namespace='relatorios')),
 ]
 
 if settings.DEBUG:
