@@ -19,10 +19,10 @@ O **SIG-Reembolso** é uma solução web focada em mobilidade (*Mobile-First*) e
 
 | Integrante | Papel no Projeto | Responsabilidades Principais |
 | :--- | :--- | :--- |
-| **Gustavo Minoru Haga** (`@minoruhaga`) | **Tech Lead, Product Owner & Backend Core** | Arquitetura Django, modelagem relacional, regras contábeis (RN01 a RN06), gestão de tetos (`apps.financeiro`), fluxo de submissão e compressão Pillow (`apps.despesas`), governança e CI/CD. Entregáveis: **3.h**, **3.j**, **3.k** e **3.l**. |
-| **Marina** (`@Mah-Rod`) | **Backend de Acesso, Autenticação & Relatórios** | Módulo de autenticação e usuários (`apps.usuarios`), controle de acesso por papel (RBAC), proteção de rotas restritas, rotinas de exportação contábil (`apps.relatorios`) e apoio no **Item 3.h** (Segurança e Autenticação). |
+| **Gustavo Minoru Haga** (`@minoruhaga`) | **Tech Lead, Product Owner, Backend Core & QA** | Arquitetura Django, modelagem relacional, regras contábeis (RN01 a RN06), gestão de tetos (`apps.financeiro`), fluxo de submissão/Pillow (`apps.despesas`), CI/CD e **frentes absorvidas *(era de `@xixinho`)*:** carga de dados AG VI/VII (Issue `#9`) e suíte de testes (**Item 3.i**). Entregáveis: **3.h**, **3.i**, **3.j**, **3.k** e **3.l**. |
+| **Marina** (`@Mah-Rod`) | **Backend de Acesso, Autenticação & Relatórios** | Módulo de autenticação e usuários (`apps.usuarios`), controle de acesso por papel (RBAC), proteção de rotas restritas, rotinas de exportação contábil (`apps.relatorios` - Issue `#34`) e apoio no **Item 3.h** (Segurança e Autenticação). |
 | **Ricardo Sakugawa** (`@ricardosakugawa`) | **Frontend & UI/UX Completo** | Identidade visual em Bootstrap 5.3 + Icons, telas de campo *Mobile-First* com câmera nativa, painel desktop da Tesouraria (triagem e modal de zoom) e entregável **Item 3.g (Usabilidade e Interfaces)**. |
-| **Giovanni** (`@xixinho`) | **QA, Testes Automatizados & Confiabilidade** | Carga de dados históricos do AG VI e coordenações do AG VII (`fixtures/seeds`), suíte de testes automatizados (`TestCase` no Django) e entregável **Item 3.i (Procedimentos Descritivos de Testes)**. |
+| **Giovanni** (`@xixinho`) | **QA & Testes *(Atribuição original redistribuída em 19/11)*** | Atribuições originais (carga de dados AG VI/VII e Item **3.i**) absorvidas por `@minoruhaga` para garantir o cumprimento do cronograma da Fase 2. |
 
 ---
 
