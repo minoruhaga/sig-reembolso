@@ -1,5 +1,6 @@
 """
-Django settings para o projeto SIG-Reembolso.
+Configurações base compartilhadas do projeto SIG-Reembolso.
+
 Acampamento Geral VII - Grupo Escoteiro Caramuru
 FATEC-SP - Laboratório de Engenharia de Software (LES)
 """
@@ -9,24 +10,12 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Aponta para a pasta src/ (subindo settings -> config -> src)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Carrega variáveis de ambiente do arquivo .env na raiz do projeto ou em src/
 load_dotenv(BASE_DIR.parent / '.env')
 load_dotenv(BASE_DIR / '.env')
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'sig-reembolso-dev-key-change-in-prod-fatec-les-2026')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
-
-allowed_hosts_env = os.getenv('DJANGO_ALLOWED_HOSTS')
-if allowed_hosts_env:
-    ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
-else:
-    ALLOWED_HOSTS = ['*']
 
 # Custom User Model (RBAC)
 AUTH_USER_MODEL = 'usuarios.Usuario'
@@ -45,6 +34,7 @@ INSTALLED_APPS = [
     'apps.usuarios',
     'apps.financeiro',
     'apps.despesas',
+    'apps.relatorios',
 ]
 
 MIDDLEWARE = [
@@ -76,15 +66,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

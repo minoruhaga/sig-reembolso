@@ -5,8 +5,15 @@ import sys
 
 
 def main():
-    """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    """
+    Executa utilitários administrativos e comandos de gerenciamento do Django.
+
+    - O que faz: Inicializa a variável `DJANGO_SETTINGS_MODULE` apontando para `config.settings.dev`
+      por padrão e delega a execução dos subcomandos CLI ao núcleo do Django.
+    - Como faz: Configura `os.environ.setdefault` antes de importar e chamar `execute_from_command_line`.
+    - Qual finalidade atende: Garante execução padronizada de migrações, testes e servidor local em `src/`.
+    """
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.dev')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

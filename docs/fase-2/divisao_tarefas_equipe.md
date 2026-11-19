@@ -40,20 +40,19 @@ O momento ideal de divisão segue o fluxo:
 
 Para cobrir tanto o **código executando** quanto **todos os itens obrigatórios da professora (3.g a 3.l)** sem sobrecarregar nenhum integrante e respeitando a governança do caso real (AG VII - GE Caramuru), a distribuição oficial para os 4 integrantes é:
 
-### 👤 Membro 1: Gustavo Minoru Haga (`@minoruhaga` — Tech Lead, Product Owner & Backend Core)
+### 👤 Membro 1: Gustavo Minoru Haga (`@minoruhaga` — Tech Lead, Product Owner, Backend Core & QA Absorvido)
 * **Frentes de Código:**
   * Modelagem do Banco de Dados Relacional (PostgreSQL / SQLite) e integridade referencial.
   * Módulo `apps/financeiro`: gestão das 15 coordenações, parametrização dos tetos e cálculo do saldo dinâmico livre.
   * Módulo `apps/despesas`: CRUD de despesas, formulários de submissão e máquina de estados finita.
   * Integração com Pillow para compactação automática de notas fiscais (`RNF02`).
-  * Implementação das regras de negócio estritas:
-    * `RN01`: Obrigatoriedade de comprovante fiscal legível.
-    * `RN02`: Lógica de *soft-block* (flag `excede_teto` e `valor_excedente`).
-    * `RN03`: Segregação de funções (membros do financeiro impedidos de aprovar própria despesa).
-    * `RN04`: Parecer obrigatório em rejeições.
-    * `RN06`: Gravação automática da trilha de auditoria (`HistoricoTransicaoStatus`).
+  * Implementação das regras de negócio estritas (`RN01` a `RN06`).
+  * **Frentes absorvidas *(era de `@xixinho`)*:**
+    * **Issue #9:** Carga de dados semente com dados reais do AG VII e despesas históricas do AG VI.
+    * **Issue #17:** Expansão da suíte de testes automatizados (`TestCase`) e redação do **Item 3.i**.
 * **Entregáveis da Disciplina (FATEC):**
   * **Item 3.h:** Documentação técnica do sistema desenvolvido (programas fontes, dependências e ambiente de execução).
+  * **Item 3.i** *(era de `@xixinho`)*: Procedimentos descritivos de testes do sistema e evidências de execução.
   * **Itens 3.j e 3.k:** Manuais de Campo (Manual de Operação do Voluntário e Treinamento da Tesouraria, alinhados à prática real).
   * **Item 3.l:** Homologação formal e minuta do Termo de Aceite assinado pelo cliente (Coordenação Executiva do AG VII).
   * Gestão do repositório no GitHub (Code Review e aprovação dos Pull Requests).
@@ -80,16 +79,8 @@ Para cobrir tanto o **código executando** quanto **todos os itens obrigatórios
 * **Entregáveis da Disciplina (FATEC):**
   * **Item 3.g:** Documento de definição das interfaces do sistema com base na usabilidade (justificativas ergonômicas, personas, contraste sob sol/chuva, navegação mobile-first e eficiência desktop).
 
-### 👤 Membro 4: Giovanni (`@xixinho` — QA, Testes Automatizados & Confiabilidade)
-* **Frentes de Código:**
-  * Criação de dados semente (*fixtures/seeds*) com os dados reais do Acampamento Geral VII (GE Caramuru) e despesas típicas do AG VI para simulações realistas.
-  * Implementação da suíte de testes automatizados no Django (`tests/`):
-    * Testes unitários do cálculo dinâmico de saldo e soft-block de teto (`RN02`).
-    * Testes de transição de status da máquina de estados (fluxos válidos e bloqueios inválidos).
-    * Testes da regra de segregação de funções (`RN03`) e obrigatoriedade de anexo (`RN01`).
-    * Testes de compressão de imagens via Pillow.
-* **Entregáveis da Disciplina (FATEC):**
-  * **Item 3.i:** Procedimentos descritivos de testes do sistema (matriz de rastreabilidade, casos de teste automatizados e evidências de execução com cobertura).
+### 👤 Membro 4: Giovanni (`@xixinho` — QA & Testes — *Escopo absorvido por `@minoruhaga` em 19/11*)
+* *Nota de Gestão:* Em razão de ausência e atraso na reta final, todas as atribuições originalmente alocadas ao Membro 4 (**Issue #9**, suíte de testes e **Item 3.i**) passaram a ser executadas por `@minoruhaga` (*era de `@xixinho`*).
 
 ---
 
