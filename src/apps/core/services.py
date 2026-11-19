@@ -1,3 +1,4 @@
+import logging
 import os
 import uuid
 from io import BytesIO
@@ -5,6 +6,8 @@ from io import BytesIO
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from PIL import Image, ImageOps, UnidentifiedImageError
+
+logger = logging.getLogger(__name__)
 
 EXTENSOES_PERMITIDAS = {'.jpg', '.jpeg', '.png', '.webp', '.pdf'}
 TAMANHO_MAXIMO_COMPRIMIDO_BYTES = 350 * 1024  # 350 KB (RNF02)
@@ -22,7 +25,8 @@ def otimizar_comprovante_fiscal(uploaded_file, max_width=1920, quality=75):
       apenas a renomeação com UUID v4; para imagens, utiliza a biblioteca Pillow para corrigir rotação
       EXIF de celulares, converte canais transparentes (RGBA/P) para RGB, redimensiona proporcionalmente
       para largura máxima de 1920px e comprime em JPEG progressivo com ajuste dinâmico de qualidade
-      até satisfazer o teto de 350 KB.
+      até satisfazer o teto de 350 KB. Marca o arquivo processado com `_otimizado_pillow = True` para
+      evitar recompressão redundante entre camada de serviço e modelo.
     - Qual finalidade atende: Garante a conformidade estrita com RN01 (anexo comprobatório íntegro),
       RNF02 (viabilizar uploads rápidos e de baixo consumo sob a rede satelital Starlink em Juquitiba)
       e RNF04 (segurança, anonimização e prevenção de colisões de arquivos no storage).
@@ -45,6 +49,7 @@ def otimizar_comprovante_fiscal(uploaded_file, max_width=1920, quality=75):
     # Documentos PDF não sofrem conversão raster pelo Pillow
     if extensao_lower == '.pdf':
         uploaded_file.name = f"{uuid.uuid4().hex}.pdf"
+        uploaded_file._otimizado_pillow = True
         return uploaded_file
 
     try:
@@ -54,8 +59,8 @@ def otimizar_comprovante_fiscal(uploaded_file, max_width=1920, quality=75):
         # Corrige orientação EXIF se a foto tiver sido capturada diretamente por celular
         try:
             imagem = ImageOps.exif_transpose(imagem)
-        except Exception:
-            pass
+        except (AttributeError, KeyError, IndexError):
+            logger.debug("Falha não-bloqueante ao transpor EXIF da imagem.")
 
         # Converte modos de cor com canal alfa ou paleta para RGB padrão
         if imagem.mode in ('RGBA', 'LA', 'P'):
@@ -98,7 +103,7 @@ def otimizar_comprovante_fiscal(uploaded_file, max_width=1920, quality=75):
                     break
 
         novo_nome = f"{uuid.uuid4().hex}.jpg"
-        return InMemoryUploadedFile(
+        resultado = InMemoryUploadedFile(
             file=output_buffer,
             field_name=uploaded_file.field_name if hasattr(uploaded_file, 'field_name') else 'comprovante',
             name=novo_nome,
@@ -106,6 +111,8 @@ def otimizar_comprovante_fiscal(uploaded_file, max_width=1920, quality=75):
             size=output_buffer.getbuffer().nbytes,
             charset=None
         )
+        resultado._otimizado_pillow = True
+        return resultado
 
     except (UnidentifiedImageError, OSError, SyntaxError) as e:
         raise ValidationError(
