@@ -15,11 +15,9 @@
         {% endif %}
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0">
-        {% if visao_gestor %}
-        <a href="/admin/despesas/despesa/add/" class="btn btn-success fw-semibold shadow-sm">
+        <a href="{% url 'despesas:nova' %}" class="btn btn-success fw-semibold shadow-sm">
             <i class="bi bi-camera-fill me-1"></i> Nova Despesa (Campo)
         </a>
-        {% endif %}
     </div>
 </div>
 

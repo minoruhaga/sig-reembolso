@@ -58,6 +58,14 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i> Painel Geral</a>
                     </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'despesas:nova' %}"><i class="bi bi-camera me-1"></i> Nova Despesa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'despesas:minhas' %}"><i class="bi bi-receipt me-1"></i> Minhas Despesas</a>
+                    </li>
+                    {% endif %}
                     {% if user.is_authenticated and user.pode_acessar_admin %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-1"></i> Administração</a>
