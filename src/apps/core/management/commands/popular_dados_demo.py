@@ -2,6 +2,7 @@ from decimal import Decimal
 from io import BytesIO
 
 from django.core.files.base import ContentFile
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from PIL import Image
@@ -188,4 +189,5 @@ class Command(BaseCommand):
                 d2.save()
                 d2._registrar_transicao('RASCUNHO', 'ENVIADO', coord_infra, 'Submetido em campo')
 
+        call_command('carregar_dados_ag6_ag7', stdout=self.stdout)
         self.stdout.write(self.style.SUCCESS("Carga de dados de demonstração concluída com sucesso!"))
