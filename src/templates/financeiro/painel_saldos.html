@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Saldos e Tetos Orçamentários{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1">Saldos e Tetos das Coordenações</h2>
+        <p class="text-muted mb-0">
+            Apuração dinâmica em tempo real com composição de valores pagos, aprovados e em fila de triagem.
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'financeiro:api_saldos' %}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success btn-sm fw-semibold">
+            <i class="bi bi-braces me-1"></i> API JSON
+        </a>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm ms-1">
+            <i class="bi bi-speedometer2 me-1"></i> Painel Geral
+        </a>
+    </div>
+</div>
+
+<!-- Totais Consolidados -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-primary h-100">
+            <span class="text-muted small text-uppercase fw-semibold">Orçado (Teto)</span>
+            <h4 class="fw-bold text-dark mt-1 mb-0">R$ {{ totais.total_orcado|floatformat:2 }}</h4>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-info h-100">
+            <span class="text-muted small text-uppercase fw-semibold">Pago / Aprovado</span>
+            <h4 class="fw-bold text-dark mt-1 mb-0">R$ {{ totais.total_pago|floatformat:2 }}</h4>
+            <span class="small text-muted">Aprovado: R$ {{ totais.total_aprovado|floatformat:2 }}</span>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-warning h-100">
+            <span class="text-muted small text-uppercase fw-semibold">Em Triagem</span>
+            <h4 class="fw-bold text-warning mt-1 mb-0">R$ {{ totais.total_enviado|floatformat:2 }}</h4>
+            <span class="small text-muted">Comprometido total: R$ {{ totais.total_comprometido|floatformat:2 }}</span>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-success h-100">
+            <span class="text-muted small text-uppercase fw-semibold">Saldo Livre</span>
+            <h4 class="fw-bold {% if totais.total_saldo_livre < 0 %}text-danger{% else %}text-success{% endif %} mt-1 mb-0">
+                R$ {{ totais.total_saldo_livre|floatformat:2 }}
+            </h4>
+        </div>
+    </div>
+</div>
+
+<!-- Tabela Detalhada por Coordenação -->
+<div class="card card-stat bg-white p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart-steps me-2 text-success"></i>Termômetros de Consumo</h5>
+        <span class="badge bg-success-subtle text-success">{{ coordenacoes|length }} pasta(s) exibida(s)</span>
+    </div>
+
+    {% if coordenacoes %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Sigla</th>
+                    <th>Coordenação</th>
+                    <th>Teto Orçado</th>
+                    <th>Pago</th>
+                    <th>Aprovado</th>
+                    <th>Em Triagem</th>
+                    <th>Saldo Livre</th>
+                    <th style="min-width: 170px;">Consumo</th>
+                    {% if pode_editar_tetos %}
+                    <th style="min-width: 210px;">Ajustar Teto (RF02)</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for coord in coordenacoes %}
+                <tr>
+                    <td><span class="badge bg-dark-subtle text-dark fw-bold">{{ coord.sigla }}</span></td>
+                    <td>
+                        <strong>{{ coord.nome }}</strong>
+                        {% if coord.em_estouro %}
+                            <span class="badge bg-danger ms-1">ESTOURO</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-semibold">R$ {{ coord.teto_orcamentario|floatformat:2 }}</td>
+                    <td>R$ {{ coord.total_pago|floatformat:2 }}</td>
+                    <td>R$ {{ coord.total_aprovado|floatformat:2 }}</td>
+                    <td class="text-warning fw-semibold">R$ {{ coord.total_enviado|floatformat:2 }}</td>
+                    <td>
+                        <strong class="{% if coord.em_estouro %}text-danger{% else %}text-success{% endif %}">
+                            R$ {{ coord.saldo_disponivel|floatformat:2 }}
+                        </strong>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1 termometro-barra" role="progressbar" aria-valuenow="{{ coord.percentual_consumido }}" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar bg-{{ coord.nivel_alerta }}" style="width: {{ coord.percentual_consumido }}%"></div>
+                            </div>
+                            <span class="small fw-semibold text-muted">{{ coord.percentual_real }}%</span>
+                        </div>
+                    </td>
+                    {% if pode_editar_tetos %}
+                    <td>
+                        <form method="post" action="{% url 'financeiro:atualizar_teto' coord.id %}" class="d-flex gap-1">
+                            {% csrf_token %}
+                            <input type="number" name="novo_teto" step="0.01" min="0.00" value="{{ coord.teto_orcamentario|stringformat:'.2f' }}" class="form-control form-control-sm" aria-label="Novo teto para {{ coord.sigla }}" required>
+                            <button type="submit" class="btn btn-sm btn-outline-success" title="Salvar teto">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted text-center py-4 mb-0">Nenhuma coordenação visível para o seu perfil.</p>
+    {% endif %}
+</div>
+{% endblock %}
