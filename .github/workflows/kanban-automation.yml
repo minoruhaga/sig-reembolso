@@ -22,7 +22,8 @@ jobs:
 
       - name: Sincronizar Cards com GitHub Projects
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN || secrets.GITHUB_TOKEN }}
+          HAS_PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN != '' }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_REPOSITORY: ${{ github.repository }}
