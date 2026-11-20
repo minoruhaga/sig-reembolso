@@ -36,13 +36,17 @@ def executar_graphql(query: str) -> dict:
     return json.loads(resultado.stdout)
 
 
-def obter_metadados_projeto(owner: str, repo: str) -> tuple[str, str, dict[str, str]]:
+def obter_metadados_projeto(owner: str, repo: str) -> tuple[str, str, dict[str, str]] | None:
     """
-    Localiza o GitHub Project v2 vinculado ao repositório e mapeia as opções do campo 'Status'.
+    Localiza o GitHub Project v2 vinculado ao repositório (ou à conta do proprietário) e mapeia 'Status'.
 
     - O que faz: Descobre o ID do projeto, o ID do campo 'Status' e o dicionário de opções (Todo, Review, etc.).
-    - Como faz: Executa query GraphQL em `repository.projectsV2` filtrando o campo do tipo `ProjectV2SingleSelectField`.
-    - Qual finalidade atende: Evita IDs fixos (hardcoded), tornando o script resiliente a alterações de configuração.
+      Caso o token padrão (`GITHUB_TOKEN`) não enxergue User-level Projects v2, retorna `None` de forma segura
+      em vez de derrubar o check do Pull Request.
+    - Como faz: Executa query GraphQL em `repository.projectsV2`; se vazia, tenta `user(login).projectsV2`;
+      se ainda vazia e não houver `PROJECT_TOKEN` configurado, emite `::warning::` no GitHub Actions e retorna `None`.
+    - Qual finalidade atende: Evita IDs fixos e impede falhas falsas (X vermelho) nos PRs quando o Kanban é
+      um User Project v2 sem PAT `PROJECT_TOKEN` configurado nos Secrets do repositório.
     """
     query = f"""
     query {{
@@ -70,8 +74,47 @@ def obter_metadados_projeto(owner: str, repo: str) -> tuple[str, str, dict[str, 
     """
     data = executar_graphql(query)
     projetos = data.get('data', {}).get('repository', {}).get('projectsV2', {}).get('nodes', [])
+
     if not projetos:
-        raise RuntimeError(f"Nenhum GitHub Project v2 vinculado ao repositório {owner}/{repo}.")
+        query_user = f"""
+        query {{
+          user(login: "{owner}") {{
+            projectsV2(first: 5) {{
+              nodes {{
+                id
+                title
+                fields(first: 20) {{
+                  nodes {{
+                    ... on ProjectV2SingleSelectField {{
+                      id
+                      name
+                      options {{
+                        id
+                        name
+                      }}
+                    }}
+                  }}
+                }}
+              }}
+            }}
+          }}
+        }}
+        """
+        try:
+            data_user = executar_graphql(query_user)
+            projetos = data_user.get('data', {}).get('user', {}).get('projectsV2', {}).get('nodes', [])
+        except RuntimeError:
+            projetos = []
+
+    if not projetos:
+        if os.environ.get('HAS_PROJECT_TOKEN', '').lower() != 'true':
+            print(
+                "::warning::GITHUB_TOKEN padrão não possui permissão para acessar User-level Projects v2 "
+                f"em {owner}/{repo}. Configure o secret PROJECT_TOKEN (PAT com escopo 'project') para "
+                "habilitar a movimentação automática dos cards."
+            )
+            return None
+        raise RuntimeError(f"Nenhum GitHub Project v2 localizado para {owner}/{repo}.")
 
     projeto = projetos[0]
     proj_id = projeto['id']
@@ -182,7 +225,10 @@ def sincronizar_kanban():
 
     if not event_path or not os.path.exists(event_path):
         print(f"Execução local ou sem GITHUB_EVENT_PATH. Conectando ao repositório {owner}/{repo}...")
-        proj_id, status_field_id, opcoes = obter_metadados_projeto(owner, repo)
+        metadados = obter_metadados_projeto(owner, repo)
+        if metadados is None:
+            return
+        proj_id, status_field_id, opcoes = metadados
         print(f"Projeto localizado: {proj_id}")
         print(f"Opções disponíveis: {list(opcoes.keys())}")
         return
@@ -193,7 +239,10 @@ def sincronizar_kanban():
     action = event.get('action')
     print(f"Processando evento '{event_name}' com ação '{action}'...")
 
-    proj_id, status_field_id, opcoes = obter_metadados_projeto(owner, repo)
+    metadados = obter_metadados_projeto(owner, repo)
+    if metadados is None:
+        return
+    proj_id, status_field_id, opcoes = metadados
 
     # Caso 1: Eventos de Pull Request
     if event_name == 'pull_request':
