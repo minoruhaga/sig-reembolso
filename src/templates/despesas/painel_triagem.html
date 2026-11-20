@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Triagem da Tesouraria{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1">Painel de Triagem da Tesouraria</h2>
+        <p class="text-muted mb-0">
+            Auditoria de cupons fiscais, verificação de estouro de teto (RN02) e liquidação via Banco Cora PJ (RF07).
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-speedometer2 me-1"></i> Painel Geral
+        </a>
+    </div>
+</div>
+
+<!-- Cards de Resumo da Fila -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-warning">
+            <span class="text-muted small text-uppercase fw-semibold">Aguardando Parecer (ENVIADO)</span>
+            <h3 class="fw-bold text-warning mt-1 mb-0">{{ qtd_enviadas }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-info">
+            <span class="text-muted small text-uppercase fw-semibold">Aguardando PIX Cora (APROVADO)</span>
+            <h3 class="fw-bold text-info mt-1 mb-0">{{ qtd_aprovadas }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-danger">
+            <span class="text-muted small text-uppercase fw-semibold">Alertas de Estouro (RN02)</span>
+            <h3 class="fw-bold text-danger mt-1 mb-0">{{ qtd_estouro }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card card-stat bg-white p-3 mb-4">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label for="filtroStatus" class="form-label small fw-semibold mb-1">Situação na Fila</label>
+            <select id="filtroStatus" name="status" class="form-select form-select-sm">
+                <option value="PENDENTES" {% if status_filtro == 'PENDENTES' %}selected{% endif %}>Pendentes (Enviado + Aprovado)</option>
+                <option value="ENVIADO" {% if status_filtro == 'ENVIADO' %}selected{% endif %}>Somente Enviado para Triagem</option>
+                <option value="APROVADO" {% if status_filtro == 'APROVADO' %}selected{% endif %}>Somente Aprovado (Pagar PIX)</option>
+                <option value="PAGO" {% if status_filtro == 'PAGO' %}selected{% endif %}>Liquidado (Pago)</option>
+                <option value="REJEITADO" {% if status_filtro == 'REJEITADO' %}selected{% endif %}>Rejeitado</option>
+                <option value="TODAS" {% if status_filtro == 'TODAS' %}selected{% endif %}>Todas as Despesas</option>
+            </select>
+        </div>
+        <div class="col-md-5">
+            <label for="filtroCoord" class="form-label small fw-semibold mb-1">Coordenação</label>
+            <select id="filtroCoord" name="coordenacao" class="form-select form-select-sm">
+                <option value="">Todas as Coordenações</option>
+                {% for c in coordenacoes %}
+                    <option value="{{ c.id }}" {% if coordenacao_filtro == c.id|stringformat:'s' %}selected{% endif %}>
+                        {{ c.sigla }} - {{ c.nome }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-success btn-sm flex-grow-1 fw-semibold">
+                <i class="bi bi-funnel me-1"></i> Filtrar
+            </button>
+            <a href="{% url 'despesas:triagem' %}" class="btn btn-outline-secondary btn-sm">Limpar</a>
+        </div>
+    </form>
+</div>
+
+<!-- Listagem da Triagem -->
+<div class="card card-stat bg-white p-4">
+    {% if despesas %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>ID / Área</th>
+                    <th>Despesa e Solicitante</th>
+                    <th>Data / Valor</th>
+                    <th>Comprovante</th>
+                    <th>Status</th>
+                    <th class="text-end">Ações da Tesouraria</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in despesas %}
+                <tr class="{% if d.excede_teto %}table-danger{% endif %}">
+                    <td>
+                        <strong class="d-block">#{{ d.id }}</strong>
+                        <span class="badge bg-dark-subtle text-dark">{{ d.coordenacao.sigla }}</span>
+                    </td>
+                    <td>
+                        <strong class="d-block">{{ d.titulo }}</strong>
+                        <div class="small text-muted">
+                            Solicitante: <strong>{{ d.solicitante.get_full_name|default:d.solicitante.username }}</strong>
+                            {% if d.solicitante.chave_pix %}
+                                • PIX: <code>{{ d.solicitante.chave_pix }}</code>
+                            {% endif %}
+                        </div>
+                        {% if d.excede_teto %}
+                            <span class="badge bg-danger mt-1">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                ESTOURO DE TETO (+R$ {{ d.valor_excedente|floatformat:2 }})
+                            </span>
+                        {% endif %}
+                        {% if d.status == 'REJEITADO' and d.motivo_rejeicao %}
+                            <div class="small text-danger mt-1"><strong>Parecer:</strong> {{ d.motivo_rejeicao }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="small text-muted">{{ d.data_despesa|date:"d/m/Y" }}</div>
+                        <strong class="fs-6">R$ {{ d.valor|floatformat:2 }}</strong>
+                    </td>
+                    <td>
+                        {% if d.comprovante %}
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary btn-ver-comprovante"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalComprovante"
+                                    data-url="{{ d.comprovante.url }}"
+                                    data-titulo="#{{ d.id }} - {{ d.titulo }} (R$ {{ d.valor|floatformat:2 }})">
+                                <i class="bi bi-zoom-in me-1"></i> Conferir Nota
+                            </button>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">Sem anexo</span>
+                        {% endif %}
+                        {% if d.comprovante_pagamento %}
+                            <a href="{{ d.comprovante_pagamento.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success mt-1 d-block">
+                                <i class="bi bi-bank me-1"></i> PIX Cora
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if d.status == 'PAGO' %}
+                            <span class="badge bg-success-subtle text-success py-1 px-2">Pago</span>
+                        {% elif d.status == 'APROVADO' %}
+                            <span class="badge bg-info-subtle text-info py-1 px-2">Aprovado</span>
+                        {% elif d.status == 'ENVIADO' %}
+                            <span class="badge bg-warning-subtle text-warning py-1 px-2">Em Triagem</span>
+                        {% elif d.status == 'REJEITADO' %}
+                            <span class="badge bg-danger-subtle text-danger py-1 px-2">Rejeitado</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">{{ d.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if d.solicitante_id == user.id and not user.is_superuser and d.status in 'ENVIADO,APROVADO' %}
+                            <span class="badge bg-secondary-subtle text-dark" title="Regra de Segregação de Funções">
+                                <i class="bi bi-shield-exclamation me-1"></i> RN03: Solicitação própria
+                            </span>
+                        {% elif pode_operar_triagem and d.status == 'ENVIADO' %}
+                            <div class="d-flex justify-content-end gap-1">
+                                <form method="post" action="{% url 'despesas:aprovar' d.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success fw-semibold">
+                                        <i class="bi bi-check-circle me-1"></i> Aprovar
+                                    </button>
+                                </form>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger btn-abrir-rejeicao"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalRejeicao"
+                                        data-action="{% url 'despesas:rejeitar' d.id %}"
+                                        data-titulo="#{{ d.id }} - {{ d.titulo }}">
+                                    <i class="bi bi-x-circle me-1"></i> Rejeitar
+                                </button>
+                            </div>
+                        {% elif pode_operar_triagem and d.status == 'APROVADO' %}
+                            <button type="button"
+                                    class="btn btn-sm btn-primary fw-semibold btn-abrir-liquidacao"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalLiquidacao"
+                                    data-action="{% url 'despesas:liquidar' d.id %}"
+                                    data-titulo="#{{ d.id }} - {{ d.titulo }} (R$ {{ d.valor|floatformat:2 }})"
+                                    data-pix="{{ d.solicitante.chave_pix|default:'Não informada' }}">
+                                <i class="bi bi-cash-coin me-1"></i> Liquidar Cora PJ
+                            </button>
+                        {% else %}
+                            <span class="text-muted small"><i class="bi bi-lock-fill"></i></span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+        Nenhuma despesa encontrada para os filtros selecionados.
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal Visualização de Comprovante -->
+<div class="modal fade" id="modalComprovante" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="tituloModalComprovante">Comprovante Fiscal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body text-center bg-light">
+                <img id="imgModalComprovante" src="" alt="Comprovante Fiscal" class="img-fluid rounded shadow-sm d-none">
+                <div id="pdfModalComprovante" class="d-none py-4">
+                    <p class="text-muted mb-3">O comprovante está no formato PDF.</p>
+                    <a id="linkPdfComprovante" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Abrir PDF em Nova Aba
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Rejeição Obrigatória (RN04) -->
+<div class="modal fade" id="modalRejeicao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="formModalRejeicao" method="post" action="">
+                {% csrf_token %}
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-x-octagon me-2"></i>Reprovar Despesa (RN04)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-2">Item: <strong id="tituloModalRejeicao"></strong></p>
+                    <label for="id_motivo_rejeicao" class="form-label fw-semibold">
+                        Justificativa Obrigatória <span class="text-danger">*</span>
+                    </label>
+                    {{ rejeicao_form.motivo_rejeicao }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger fw-semibold">Confirmar Reprovação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Liquidação Cora PJ (RF07) -->
+<div class="modal fade" id="modalLiquidacao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="formModalLiquidacao" method="post" enctype="multipart/form-data" action="">
+                {% csrf_token %}
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-bank me-2"></i>Liquidar Reembolso (Banco Cora PJ)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small mb-1">Despesa: <strong id="tituloModalLiquidacao"></strong></p>
+                    <p class="small mb-3">Chave PIX do voluntário: <code id="pixModalLiquidacao"></code></p>
+                    <label for="id_comprovante_pagamento" class="form-label fw-semibold">
+                        Anexar Comprovante Bancário Cora PJ <span class="text-danger">*</span>
+                    </label>
+                    {{ liquidacao_form.comprovante_pagamento }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary fw-semibold">Confirmar Pagamento (PAGO)</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-ver-comprovante').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const url = this.dataset.url;
+            const titulo = this.dataset.titulo;
+            document.getElementById('tituloModalComprovante').textContent = titulo;
+            const imgEl = document.getElementById('imgModalComprovante');
+            const pdfEl = document.getElementById('pdfModalComprovante');
+            if (url.toLowerCase().endsWith('.pdf')) {
+                imgEl.classList.add('d-none');
+                pdfEl.classList.remove('d-none');
+                document.getElementById('linkPdfComprovante').href = url;
+            } else {
+                pdfEl.classList.add('d-none');
+                imgEl.src = url;
+                imgEl.classList.remove('d-none');
+            }
+        });
+    });
+
+    document.querySelectorAll('.btn-abrir-rejeicao').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.getElementById('formModalRejeicao').action = this.dataset.action;
+            document.getElementById('tituloModalRejeicao').textContent = this.dataset.titulo;
+        });
+    });
+
+    document.querySelectorAll('.btn-abrir-liquidacao').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.getElementById('formModalLiquidacao').action = this.dataset.action;
+            document.getElementById('tituloModalLiquidacao').textContent = this.dataset.titulo;
+            document.getElementById('pixModalLiquidacao').textContent = this.dataset.pix;
+        });
+    });
+});
+</script>
+{% endblock %}
