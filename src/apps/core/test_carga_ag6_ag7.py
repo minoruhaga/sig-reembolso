@@ -57,13 +57,16 @@ class CargaDadosAG6AG7TestCase(TestCase):
             out = StringIO()
             call_command('carregar_dados_ag6_ag7', stdout=out)
 
-            # 15 coordenações da fixture oficial
+            # 15 coordenações da fixture oficial com tetos alinhados à planilha do AG VII
             self.assertEqual(Coordenacao.objects.count(), 15)
+            self.assertEqual(Coordenacao.objects.get(sigla='ALIM').teto_orcamentario, Decimal('75000.00'))
+            self.assertEqual(Coordenacao.objects.get(sigla='SAUDE').teto_orcamentario, Decimal('1500.00'))
+            self.assertEqual(Coordenacao.objects.get(sigla='SOM').teto_orcamentario, Decimal('0.00'))
 
             # Coordenadores e Tesoureiros do AG VII vinculados às áreas corretas
-            tesoureiro_minoru = Usuario.objects.get(username='ag7_minoru_tes')
+            tesoureiro_minoru = Usuario.objects.get(username='ag7_minoru_fin')
             self.assertEqual(tesoureiro_minoru.papel, PapelUsuario.TESOUREIRO)
-            self.assertEqual(tesoureiro_minoru.coordenacao.sigla, 'TES')
+            self.assertEqual(tesoureiro_minoru.coordenacao.sigla, 'FIN')
 
             coord_alim = Usuario.objects.get(username='ag7_gabiru_alim')
             self.assertEqual(coord_alim.papel, PapelUsuario.COORDENADOR)
@@ -72,6 +75,22 @@ class CargaDadosAG6AG7TestCase(TestCase):
             coord_saude = Usuario.objects.get(username='ag7_akemi_saude')
             self.assertEqual(coord_saude.papel, PapelUsuario.COORDENADOR)
             self.assertEqual(coord_saude.coordenacao.sigla, 'SAUDE')
+
+            vinculos_esperados = {
+                'ag7_fabinho_geral': 'GERAL',
+                'ag7_carol_l_capt': 'CAPT',
+                'ag7_lala_deco': 'DECO',
+                'ag7_andrezinho_ativ': 'ATIV',
+                'ag7_take_div': 'DIV',
+                'ag7_gabi_a_mus': 'MUS',
+                'ag7_karin_som': 'SOM',
+                'ag7_tungo_log': 'LOG',
+                'ag7_celina_sust': 'SUST',
+                'ag7_laura_insc': 'INSC',
+            }
+            for username, sigla_esperada in vinculos_esperados.items():
+                membro = Usuario.objects.get(username=username)
+                self.assertEqual(membro.coordenacao.sigla, sigla_esperada)
 
             # Compras históricas do Assaí, CEAGESP e Saúde com valores exatos em Decimal
             self.assertTrue(Despesa.objects.filter(titulo__icontains='Assaí Atacadista').exists())

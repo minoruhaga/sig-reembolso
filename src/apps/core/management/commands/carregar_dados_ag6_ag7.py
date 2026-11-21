@@ -25,21 +25,21 @@ from apps.financeiro.models import Coordenacao
 from apps.usuarios.models import PapelUsuario, Usuario
 
 MAPA_AREA_SIGLA = {
-    'Geral/Programação': 'PROG',
-    'Captação': 'CANT',
-    'Financeiro': 'TES',
+    'Geral/Programação': 'GERAL',
+    'Captação': 'CAPT',
+    'Financeiro': 'FIN',
     'Transporte': 'TRANS',
-    'Inscrição': 'SEC',
-    'Decoração': 'ALOJ',
-    'Atividades': 'PROG',
-    'Divulgação': 'COM',
-    'Música': 'MULT',
+    'Inscrição': 'INSC',
+    'Decoração': 'DECO',
+    'Atividades': 'ATIV',
+    'Divulgação': 'DIV',
+    'Música': 'MUS',
     'Alimentação': 'ALIM',
-    'Logist. Materiais': 'ALMOX',
+    'Logist. Materiais': 'LOG',
     'Infra': 'INFRA',
-    'Sustentabilidade': 'LIMP',
+    'Sustentabilidade': 'SUST',
     'Saúde e Bem Estar': 'SAUDE',
-    'Som': 'MULT',
+    'Som': 'SOM',
 }
 
 
@@ -176,7 +176,7 @@ class Command(BaseCommand):
         )
         senha_padrao = options['senha_padrao']
 
-        if Coordenacao.objects.count() < 15:
+        if Coordenacao.objects.count() < 15 or not Coordenacao.objects.filter(sigla='FIN').exists():
             fixture_path = Path(settings.BASE_DIR) / 'fixtures' / 'coordenacoes_iniciais.json'
             if fixture_path.exists():
                 call_command('loaddata', str(fixture_path), verbosity=0)
@@ -215,7 +215,7 @@ class Command(BaseCommand):
 
         - O que faz: Lê os três blocos de pilares (Administrativo, Produção e Técnico) e cria usuários RBAC.
         - Como faz: Mapeia cada coluna de área via `MAPA_AREA_SIGLA`, gera username determinístico
-          `ag7_<nome>_<sigla>` e define papel `TESOUREIRO` para a pasta Financeiro (`TES`).
+          `ag7_<nome>_<sigla>` e define papel `TESOUREIRO` para a pasta Financeiro (`FIN`).
         - Qual finalidade atende: Cadastra os voluntários reais do AG VII vinculados às respectivas áreas.
         """
         criados = 0
@@ -243,7 +243,7 @@ class Command(BaseCommand):
                         continue
 
                     username = f"ag7_{_normalizar_slug(nome)}_{sigla.lower()}"[:150]
-                    is_financeiro = sigla == 'TES'
+                    is_financeiro = sigla == 'FIN'
                     papel = PapelUsuario.TESOUREIRO if is_financeiro else PapelUsuario.COORDENADOR
 
                     usuario, created = Usuario.objects.get_or_create(
@@ -275,7 +275,7 @@ class Command(BaseCommand):
                     'first_name': 'Tesouraria',
                     'last_name': 'AG VII',
                     'papel': PapelUsuario.TESOUREIRO,
-                    'coordenacao': mapa_coords.get('TES'),
+                    'coordenacao': mapa_coords.get('FIN'),
                     'is_staff': True,
                 },
             )
