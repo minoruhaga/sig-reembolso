@@ -5,9 +5,17 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from apps.despesas.forms import DespesaForm
+from apps.core.exceptions import PermissaoNegadaDominioError
+from apps.despesas.forms import DespesaForm, LiquidacaoDespesaForm, RejeicaoDespesaForm
 from apps.despesas.models import Despesa, StatusDespesa
-from apps.despesas.services import criar_ou_atualizar_despesa
+from apps.despesas.services import (
+    aprovar_despesa_triagem,
+    criar_ou_atualizar_despesa,
+    liquidar_despesa_triagem,
+    listar_despesas_triagem,
+    rejeitar_despesa_triagem,
+)
+from apps.financeiro.models import Coordenacao
 
 
 @login_required
@@ -212,3 +220,161 @@ def minhas_despesas_view(request):
     return render(request, 'despesas/minhas_despesas.html', {
         'despesas': despesas,
     })
+
+
+def _extrair_mensagem_erro(exc: ValidationError) -> str:
+    """
+    Extrai mensagem legível de uma exceção `ValidationError` do Django.
+
+    - O que faz: Converte mensagens simples ou listas de erros em texto único para feedback na UI.
+    - Como faz: Verifica `exc.messages` ou `exc.message`, concatenando quando necessário.
+    - Qual finalidade atende: Padroniza a exibição de alertas de regras RN01–RN06 nas views da Tesouraria.
+    """
+    if hasattr(exc, 'messages') and exc.messages:
+        return ' '.join(str(m) for m in exc.messages)
+    if hasattr(exc, 'message'):
+        return str(exc.message)
+    return str(exc)
+
+
+@login_required
+def painel_triagem_view(request):
+    """
+    Exibe a fila consolidada de triagem e liquidação da Tesouraria (RF06 e RF07).
+
+    - O que faz: Lista despesas pendentes de aprovação (`ENVIADO`) e pagamento (`APROVADO`), permitindo
+      filtragem por status e coordenação, conferência de comprovantes e ações rápidas.
+    - Como faz: Restringe o acesso a usuários com perfil de Tesouraria ou Administração Geral; delega
+      a consulta a `listar_despesas_triagem`; prepara formulários de rejeição e liquidação para os modais.
+    - Qual finalidade atende: Centraliza o fluxo operacional da Tesouraria substituindo mensagens dispersas.
+    """
+    if not (getattr(request.user, 'is_tesoureiro', False) or getattr(request.user, 'is_admin_geral', False)):
+        raise PermissionDenied("Apenas a Tesouraria ou Administração Geral pode acessar o painel de triagem.")
+
+    status_filtro = request.GET.get('status', 'PENDENTES')
+    coordenacao_id = request.GET.get('coordenacao')
+    despesas = list(listar_despesas_triagem(status_filtro=status_filtro, coordenacao_id=coordenacao_id))
+
+    return render(request, 'despesas/painel_triagem.html', {
+        'despesas': despesas,
+        'coordenacoes': Coordenacao.objects.filter(ativo=True).order_by('nome'),
+        'status_filtro': status_filtro,
+        'coordenacao_filtro': str(coordenacao_id or ''),
+        'rejeicao_form': RejeicaoDespesaForm(),
+        'liquidacao_form': LiquidacaoDespesaForm(),
+        'pode_operar_triagem': getattr(request.user, 'is_tesoureiro', False),
+        'qtd_enviadas': sum(1 for d in despesas if d.status == StatusDespesa.ENVIADO),
+        'qtd_aprovadas': sum(1 for d in despesas if d.status == StatusDespesa.APROVADO),
+        'qtd_estouro': sum(1 for d in despesas if d.excede_teto),
+    })
+
+
+@login_required
+@require_POST
+def aprovar_despesa_view(request, pk):
+    """
+    Processa a aprovação de uma despesa submetida na fila de triagem da Tesouraria (RF06).
+
+    - O que faz: Promove uma despesa de `ENVIADO` para `APROVADO` sob transação atômica.
+    - Como faz: Valida perfil `is_tesoureiro`; invoca `aprovar_despesa_triagem`; trata violações de RN03
+      ou máquina de estados exibindo mensagens de feedback e redirecionando para `despesas:triagem`.
+    - Qual finalidade atende: Habilita a aprovação em um clique na triagem com segurança e auditoria (RN06).
+    """
+    if not getattr(request.user, 'is_tesoureiro', False):
+        raise PermissionDenied("Apenas membros da Tesouraria podem aprovar despesas.")
+
+    despesa = get_object_or_404(Despesa, pk=pk)
+    observacao = (request.POST.get('observacao') or '').strip()
+
+    try:
+        aprovar_despesa_triagem(despesa=despesa, tesoureiro=request.user, observacao=observacao)
+        messages.success(
+            request,
+            f"Despesa #{despesa.id} ({despesa.coordenacao.sigla}) aprovada e liberada para liquidação!"
+        )
+    except PermissaoNegadaDominioError as exc:
+        raise PermissionDenied(str(exc)) from exc
+    except ValidationError as exc:
+        messages.error(request, _extrair_mensagem_erro(exc))
+
+    return redirect('despesas:triagem')
+
+
+@login_required
+@require_POST
+def rejeitar_despesa_view(request, pk):
+    """
+    Processa a reprovação de uma despesa na triagem exigindo parecer textual obrigatório (RN04).
+
+    - O que faz: Valida o `RejeicaoDespesaForm` e transiciona a despesa para `REJEITADO`.
+    - Como faz: Verifica perfil `is_tesoureiro`; valida formulário; invoca `rejeitar_despesa_triagem`
+      registrando motivo e auditoria (RN06); redireciona com mensagem de erro ou confirmação.
+    - Qual finalidade atende: Garante que nenhuma despesa seja recusada sem justificativa clara ao campo.
+    """
+    if not getattr(request.user, 'is_tesoureiro', False):
+        raise PermissionDenied("Apenas membros da Tesouraria podem rejeitar despesas.")
+
+    despesa = get_object_or_404(Despesa, pk=pk)
+    form = RejeicaoDespesaForm(request.POST)
+
+    if not form.is_valid():
+        erro = form.errors.get('motivo_rejeicao', ['Justificativa obrigatória (RN04).'])[0]
+        messages.error(request, f"Erro ao rejeitar despesa #{despesa.id}: {erro}")
+        return redirect('despesas:triagem')
+
+    try:
+        rejeitar_despesa_triagem(
+            despesa=despesa,
+            tesoureiro=request.user,
+            motivo=form.cleaned_data['motivo_rejeicao'],
+        )
+        messages.warning(
+            request,
+            f"Despesa #{despesa.id} rejeitada e devolvida ao solicitante com justificativa."
+        )
+    except PermissaoNegadaDominioError as exc:
+        raise PermissionDenied(str(exc)) from exc
+    except ValidationError as exc:
+        messages.error(request, _extrair_mensagem_erro(exc))
+
+    return redirect('despesas:triagem')
+
+
+@login_required
+@require_POST
+def liquidar_despesa_view(request, pk):
+    """
+    Processa a liquidação bancária (Banco Cora PJ) de uma despesa aprovada (RF07).
+
+    - O que faz: Valida o anexo obrigatório de transferência bancária e transiciona para `PAGO`.
+    - Como faz: Verifica perfil `is_tesoureiro`; valida `LiquidacaoDespesaForm`; delega compressão Pillow
+      e liquidação transacional a `liquidar_despesa_triagem`; redireciona para `despesas:triagem`.
+    - Qual finalidade atende: Encerra o ciclo financeiro do reembolso com comprovante bancário auditável.
+    """
+    if not getattr(request.user, 'is_tesoureiro', False):
+        raise PermissionDenied("Apenas membros da Tesouraria podem liquidar despesas.")
+
+    despesa = get_object_or_404(Despesa, pk=pk)
+    form = LiquidacaoDespesaForm(request.POST, request.FILES)
+
+    if not form.is_valid():
+        erro = form.errors.get('comprovante_pagamento', ['Comprovante bancário Cora PJ obrigatório.'])[0]
+        messages.error(request, f"Erro ao liquidar despesa #{despesa.id}: {erro}")
+        return redirect('despesas:triagem')
+
+    try:
+        liquidar_despesa_triagem(
+            despesa=despesa,
+            tesoureiro=request.user,
+            comprovante_pagamento=form.cleaned_data['comprovante_pagamento'],
+        )
+        messages.success(
+            request,
+            f"Despesa #{despesa.id} liquidada como PAGO com comprovante do Banco Cora PJ anexado!"
+        )
+    except PermissaoNegadaDominioError as exc:
+        raise PermissionDenied(str(exc)) from exc
+    except ValidationError as exc:
+        messages.error(request, _extrair_mensagem_erro(exc))
+
+    return redirect('despesas:triagem')

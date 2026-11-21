@@ -93,3 +93,56 @@ class DespesaForm(forms.ModelForm):
         if valor is not None and valor <= Decimal('0.00'):
             raise ValidationError("O valor da despesa deve ser estritamente maior que zero (R$ 0,00).")
         return valor
+
+
+class RejeicaoDespesaForm(forms.Form):
+    """
+    Formulário para registro obrigatório de parecer na reprovação de despesas (RN04).
+
+    - O que faz: Valida o motivo textual exigido pela Tesouraria antes de retornar uma despesa como `REJEITADO`.
+    - Como faz: Define `motivo_rejeicao` como `CharField` obrigatório com widget textarea Bootstrap 5 e
+      remove espaços vazios em `clean_motivo_rejeicao`.
+    - Qual finalidade atende: Cumpre estritamente a RN04, fornecendo orientação clara ao solicitante em campo.
+    """
+
+    motivo_rejeicao = forms.CharField(
+        label='Justificativa da Reprovação',
+        required=True,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Ex: Cupom fiscal ilegível, CNPJ divergente ou item não autorizado.',
+        }),
+    )
+
+    def clean_motivo_rejeicao(self):
+        """
+        Impede o envio de justificativa composta apenas por espaços em branco.
+
+        - O que faz: Verifica que o motivo possui texto útil após remoção de espaços nas extremidades.
+        - Como faz: Executa `.strip()` e levanta `ValidationError` caso o texto resultante esteja vazio.
+        - Qual finalidade atende: Bloqueia reprovações sem parecer real na camada de entrada (RN04).
+        """
+        motivo = (self.cleaned_data.get('motivo_rejeicao') or '').strip()
+        if not motivo:
+            raise ValidationError("A justificativa de reprovação é estritamente obrigatória (RN04).")
+        return motivo
+
+
+class LiquidacaoDespesaForm(forms.Form):
+    """
+    Formulário para registro do comprovante de transferência bancária na liquidação (RF07).
+
+    - O que faz: Coleta o comprovante PIX/transferência emitido pelo internet banking do Banco Cora PJ.
+    - Como faz: Expõe `comprovante_pagamento` como `FileField` obrigatório com filtro MIME para imagens e PDF.
+    - Qual finalidade atende: Garante lastro documental bancário na transição `APROVADO -> PAGO` (Issue #11).
+    """
+
+    comprovante_pagamento = forms.FileField(
+        label='Comprovante de Transferência Banco Cora PJ',
+        required=True,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/jpeg,image/png,image/webp,application/pdf',
+        }),
+    )
