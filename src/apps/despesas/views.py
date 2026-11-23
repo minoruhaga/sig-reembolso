@@ -103,7 +103,7 @@ def nova_despesa_view(request):
         if submeter_agora and not comprovante_upload:
             form.add_error(
                 'comprovante',
-                'RN01: O comprovante fiscal é estritamente obrigatório para enviar a despesa à triagem.'
+                'Anexe a foto ou o PDF do cupom fiscal para enviar a despesa à tesouraria.'
             )
 
         if form.is_valid():
@@ -119,9 +119,9 @@ def nova_despesa_view(request):
                     if despesa.excede_teto:
                         messages.warning(
                             request,
-                            f"Despesa #{despesa.id} enviada com sucesso! ATENÇÃO: Esta compra excedeu o teto "
-                            f"da coordenação {despesa.coordenacao.sigla} em R$ {despesa.valor_excedente} "
-                            "(Soft-block RN02) e demandará deliberação especial da Tesouraria."
+                            f"Despesa #{despesa.id} enviada. Ela passa do teto da coordenação "
+                            f"{despesa.coordenacao.sigla} em R$ {despesa.valor_excedente}; a tesouraria vai "
+                            "decidir se libera a verba extra."
                         )
                     else:
                         messages.success(
@@ -176,8 +176,7 @@ def editar_despesa_view(request, pk):
     if despesa.status not in (StatusDespesa.RASCUNHO, StatusDespesa.REJEITADO):
         messages.error(
             request,
-            f"RN05 (Imutabilidade Pós-Decisão): Despesas no estado '{despesa.get_status_display()}' "
-            "não podem ser modificadas."
+            f"Despesas no estado '{despesa.get_status_display()}' não podem mais ser alteradas."
         )
         return redirect('despesas:minhas')
 
@@ -190,7 +189,7 @@ def editar_despesa_view(request, pk):
         if submeter_agora and not comprovante_upload and not despesa.comprovante:
             form.add_error(
                 'comprovante',
-                'RN01: O comprovante fiscal é obrigatório para submeter a despesa à triagem.'
+                'Anexe a foto ou o PDF do cupom fiscal para enviar a despesa à tesouraria.'
             )
 
         if form.is_valid():
@@ -385,7 +384,7 @@ def rejeitar_despesa_view(request, pk):
     form = RejeicaoDespesaForm(request.POST)
 
     if not form.is_valid():
-        erro = form.errors.get('motivo_rejeicao', ['Justificativa obrigatória (RN04).'])[0]
+        erro = form.errors.get('motivo_rejeicao', ['Informe a justificativa da reprovação.'])[0]
         messages.error(request, f"Erro ao rejeitar despesa #{despesa.id}: {erro}")
         return redirect('despesas:triagem')
 

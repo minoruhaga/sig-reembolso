@@ -7,7 +7,7 @@
     <div class="col-md-8">
         <h2 class="fw-bold mb-1">Painel de Triagem da Tesouraria</h2>
         <p class="text-muted mb-0">
-            Auditoria de cupons fiscais, verificação de estouro de teto (RN02) e liquidação via Banco Cora PJ (RF07).
+            Auditoria de cupons fiscais, verificação de estouro de teto e liquidação via Banco Cora PJ.
         </p>
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -33,7 +33,7 @@
     </div>
     <div class="col-md-4">
         <div class="card card-stat bg-white p-3 border-start border-4 border-danger">
-            <span class="text-muted small text-uppercase fw-semibold">Alertas de Estouro (RN02)</span>
+            <span class="text-muted small text-uppercase fw-semibold">Alertas de Estouro</span>
             <h3 class="fw-bold text-danger mt-1 mb-0">{{ qtd_estouro }}</h3>
         </div>
     </div>
@@ -152,7 +152,7 @@
                     <td class="text-end">
                         {% if d.solicitante_id == user.id and not user.is_superuser and d.status in 'ENVIADO,APROVADO' %}
                             <span class="badge bg-secondary-subtle text-dark" title="Regra de Segregação de Funções">
-                                <i class="bi bi-shield-exclamation me-1"></i> RN03: Solicitação própria
+                                <i class="bi bi-shield-exclamation me-1"></i> Solicitação própria
                             </span>
                         {% elif pode_operar_triagem and d.status == 'ENVIADO' %}
                             <div class="d-flex justify-content-end gap-1">
@@ -226,7 +226,7 @@
             <form id="formModalRejeicao" method="post" action="">
                 {% csrf_token %}
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-x-octagon me-2"></i>Reprovar Despesa (RN04)</h5>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-x-octagon me-2"></i>Reprovar Despesa</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body">

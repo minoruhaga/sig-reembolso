@@ -274,18 +274,18 @@ class Despesa(models.Model):
             for campo in self.CAMPOS_IMUTAVEIS_POS_DECISAO:
                 if getattr(self, campo) != getattr(original, campo):
                     raise ImutabilidadeDespesaError(
-                        f"RN05 (Imutabilidade Pós-Decisão): Não é permitido alterar o campo '{campo}' "
+                        f"Não é permitido alterar o campo '{campo}' "
                         f"de uma despesa no estado '{original.get_status_display()}'."
                     )
 
             if original.status == StatusDespesa.APROVADO and self.status not in (StatusDespesa.APROVADO, StatusDespesa.PAGO):
                 raise ImutabilidadeDespesaError(
-                    "RN05 (Imutabilidade Pós-Decisão): Uma despesa aprovada só pode transitar para o estado 'Pago' ou permanecer como 'Aprovado'."
+                    "Uma despesa aprovada só pode transitar para o estado 'Pago' ou permanecer como 'Aprovado'."
                 )
 
             if original.status == StatusDespesa.PAGO and self.status != StatusDespesa.PAGO:
                 raise ImutabilidadeDespesaError(
-                    "RN05 (Imutabilidade Pós-Decisão): Uma despesa já liquidada (PAGO) não pode ter seu status revertido."
+                    "Uma despesa já liquidada (PAGO) não pode ter seu status revertido."
                 )
 
     def clean(self):
@@ -353,7 +353,7 @@ class Despesa(models.Model):
         """
         if self.status in (StatusDespesa.ENVIADO, StatusDespesa.APROVADO, StatusDespesa.PAGO):
             raise ImutabilidadeDespesaError(
-                f"RN05/RN06: Não é permitido excluir uma despesa no estado '{self.get_status_display()}' "
+                f"Não é permitido excluir uma despesa no estado '{self.get_status_display()}' "
                 "que já tramitou na Tesouraria."
             )
         return super().delete(*args, **kwargs)
@@ -492,7 +492,7 @@ class Despesa(models.Model):
         """
         if self.status in (StatusDespesa.APROVADO, StatusDespesa.PAGO):
             raise ImutabilidadeDespesaError(
-                f"RN05 (Imutabilidade Pós-Decisão): Despesas no estado '{self.get_status_display()}' não podem ser canceladas."
+                f"Despesas no estado '{self.get_status_display()}' não podem ser canceladas."
             )
 
         if self.status == StatusDespesa.CANCELADO:

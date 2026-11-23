@@ -547,7 +547,7 @@ class DespesaSubmissaoViewFormTestCase(TestCase):
         self.assertFormError(
             response.context['form'],
             'comprovante',
-            'RN01: O comprovante fiscal é estritamente obrigatório para enviar a despesa à triagem.'
+            'Anexe a foto ou o PDF do cupom fiscal para enviar a despesa à tesouraria.'
         )
         self.assertEqual(Despesa.objects.count(), 0)
 

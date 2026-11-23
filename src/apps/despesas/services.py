@@ -110,7 +110,7 @@ def criar_ou_atualizar_despesa(
     if despesa_existente:
         if despesa_existente.status not in (StatusDespesa.RASCUNHO, StatusDespesa.REJEITADO):
             raise ValidationError(
-                f"RN05 (Imutabilidade Pós-Decisão): A despesa #{despesa_existente.id} está no estado "
+                f"A despesa #{despesa_existente.id} está no estado "
                 f"'{despesa_existente.get_status_display()}' e não pode ser editada."
             )
 

@@ -209,7 +209,7 @@ class RejeicaoDespesaForm(forms.Form):
         """
         motivo = (self.cleaned_data.get('motivo_rejeicao') or '').strip()
         if not motivo:
-            raise ValidationError("A justificativa de reprovação é estritamente obrigatória (RN04).")
+            raise ValidationError("Informe a justificativa da reprovação.")
         return motivo
 
 

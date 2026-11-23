@@ -89,5 +89,5 @@ def validar_segregacao_funcoes_rn03(*, despesa, operador, acao: str) -> None:
 
     if verificar_impedimento_rn03(despesa, operador):
         raise SegregacaoFuncoesError(
-            f"Segregação de Funções (RN03): O tesoureiro não pode {acao} sua própria solicitação."
+            f"O tesoureiro não pode {acao} a própria solicitação. Outro tesoureiro precisa fazer isso."
         )
