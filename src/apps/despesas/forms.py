@@ -1,10 +1,85 @@
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django import forms
 from django.core.exceptions import ValidationError
 
 from apps.despesas.models import Despesa
 from apps.financeiro.models import Coordenacao
+
+
+def converter_valor_reais(texto) -> Decimal | None:
+    """
+    Converte o valor digitado na tela (formato brasileiro) em `Decimal`.
+
+    - O que faz: Aceita "1.250,40", "1250,40", "R$ 10,00" ou o formato técnico "1250.40" e devolve
+      `Decimal('1250.40')`; devolve `None` para texto vazio ou que não seja número.
+    - Como faz: Remove "R$" e espaços; se houver vírgula, trata pontos como separador de milhar e a vírgula
+      como separador decimal; converte com `Decimal` (nunca `float`).
+    - Qual finalidade atende: A máscara de centavos da tela mobile envia o valor já formatado em reais;
+      formulário e prévia do termômetro precisam ler o mesmo formato sem perder centavos.
+    """
+    if isinstance(texto, Decimal):
+        return texto
+    bruto = str(texto or '').replace('R$', '').replace('\xa0', '').replace(' ', '').strip()
+    if not bruto:
+        return None
+    if ',' in bruto:
+        bruto = bruto.replace('.', '').replace(',', '.')
+    try:
+        valor = Decimal(bruto)
+    except InvalidOperation:
+        return None
+    return valor if valor.is_finite() else None
+
+
+def formatar_valor_reais(valor: Decimal) -> str:
+    """
+    Formata um `Decimal` em reais no padrão brasileiro, sem o símbolo (ex.: `1.250,40`).
+
+    - O que faz: Gera o texto exibido no campo de valor ao abrir uma despesa já salva.
+    - Como faz: Usa a formatação de milhar do Python com duas casas e troca os separadores para o padrão pt-BR.
+    - Qual finalidade atende: Faz o campo mascarado mostrar o valor salvo no mesmo formato em que é digitado.
+    """
+    return f"{valor:,.2f}".replace(',', '_').replace('.', ',').replace('_', '.')
+
+
+class CampoValorReais(forms.DecimalField):
+    """
+    Campo de valor monetário que entende o formato brasileiro digitado pela máscara de centavos.
+
+    - O que faz: Lê "1.250,40" como `Decimal('1250.40')` e exibe valores salvos como "1.250,40".
+    - Como faz: Sobrescreve `to_python` para usar `converter_valor_reais` antes da validação padrão de
+      `DecimalField` (casas decimais e dígitos máximos) e `prepare_value` para formatar `Decimal` em pt-BR.
+    - Qual finalidade atende: Permite que o voluntário digite só números ("1000" vira "10,00") sem quebrar
+      a validação do Django nem a precisão em `Decimal` exigida pelo projeto.
+    """
+
+    def to_python(self, value):
+        """
+        Converte o texto digitado em `Decimal`, rejeitando o que não for número.
+
+        - O que faz: Retorna `None` para vazio, `Decimal` para número válido e levanta erro "invalid" no resto.
+        - Como faz: Delega a leitura a `converter_valor_reais` e repassa o resultado à implementação padrão.
+        - Qual finalidade atende: Mantém a mensagem de erro padrão do Django para valores inválidos.
+        """
+        if value in self.empty_values:
+            return None
+        valor = converter_valor_reais(value)
+        if valor is None:
+            raise ValidationError(self.error_messages['invalid'], code='invalid')
+        return super().to_python(str(valor))
+
+    def prepare_value(self, value):
+        """
+        Exibe valores `Decimal` já salvos no formato brasileiro.
+
+        - O que faz: Converte `Decimal('185.50')` em "185,50"; textos digitados voltam sem alteração.
+        - Como faz: Usa `formatar_valor_reais` apenas quando o valor é `Decimal`.
+        - Qual finalidade atende: Evita que a máscara leia "185.50" como "18.550" ao abrir uma despesa salva.
+        """
+        if isinstance(value, Decimal):
+            return formatar_valor_reais(value)
+        return value
 
 
 class DespesaForm(forms.ModelForm):
@@ -15,11 +90,24 @@ class DespesaForm(forms.ModelForm):
       título, categoria contábil, modalidade, forma de pagamento, valor em R$, data do cupom e arquivo fiscal).
     - Como faz: Utiliza `forms.ModelForm` do Django mapeando os campos da entidade `Despesa`; restringe a seleção
       de coordenações apenas às ativas no evento; configura widgets responsivos Bootstrap 5 e atributos nativos
-      HTML5 para smartphones (`inputmode="decimal"`, `capture="environment"` e tipos MIME de imagem/PDF); valida
+      HTML5 para smartphones (teclado numérico no valor com máscara de centavos via `CampoValorReais`,
+      `capture="environment"` e tipos MIME de imagem/PDF); valida
       aritmeticamente com `Decimal` que o valor lançado seja estritamente positivo.
     - Qual finalidade atende: Atende aos requisitos RF04 (Lançamento de Despesa), RNF01 (Usabilidade Mobile-First)
       e viabiliza a jornada de campo dos voluntários do AG VII no formulário da Issue #7.
     """
+
+    valor = CampoValorReais(
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'inputmode': 'numeric',
+            'autocomplete': 'off',
+            'maxlength': '13',
+            'placeholder': '0,00',
+        }),
+    )
 
     class Meta:
         model = Despesa
@@ -43,17 +131,13 @@ class DespesaForm(forms.ModelForm):
             'categoria': forms.Select(attrs={'class': 'form-select'}),
             'tipo': forms.Select(attrs={'class': 'form-select'}),
             'forma_pagamento_original': forms.Select(attrs={'class': 'form-select'}),
-            'valor': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.01',
-                'min': '0.01',
-                'inputmode': 'decimal',
-                'placeholder': '0.00',
-            }),
-            'data_despesa': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date',
-            }),
+            'data_despesa': forms.DateInput(
+                format='%Y-%m-%d',  # <input type="date"> só aceita ISO; sem isso a data inicial some no celular
+                attrs={
+                    'class': 'form-control',
+                    'type': 'date',
+                },
+            ),
             'descricao': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
