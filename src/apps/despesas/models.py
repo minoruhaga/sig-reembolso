@@ -66,9 +66,9 @@ class TipoDespesa(models.TextChoices):
     - Qual finalidade atende: Orienta a Tesouraria sobre quem deve receber a transferência PIX no Banco Cora PJ.
     """
 
-    REEMBOLSO = 'REEMBOLSO', 'Reembolso (Desembolso do Voluntário)'
-    FUNDO_CAIXA = 'FUNDO_CAIXA', 'Prestação de Contas de Fundo de Caixa'
-    PAGAMENTO_DIRETO = 'PAGAMENTO_DIRETO', 'Pagamento Direto a Fornecedor'
+    REEMBOLSO = 'REEMBOLSO', 'Reembolso (paguei do meu bolso)'
+    FUNDO_CAIXA = 'FUNDO_CAIXA', 'Fundo de caixa (acerto de adiantamento)'
+    PAGAMENTO_DIRETO = 'PAGAMENTO_DIRETO', 'Pagamento direto ao fornecedor'
 
 
 class FormaPagamentoOriginal(models.TextChoices):
@@ -140,7 +140,7 @@ class Despesa(models.Model):
         max_length=20,
         choices=TipoDespesa.choices,
         default=TipoDespesa.REEMBOLSO,
-        verbose_name='Modalidade'
+        verbose_name='Tipo de Acerto'
     )
     forma_pagamento_original = models.CharField(
         max_length=20,
