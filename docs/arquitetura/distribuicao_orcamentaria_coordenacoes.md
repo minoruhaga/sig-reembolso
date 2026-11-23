@@ -10,8 +10,8 @@
 
 | ID | Sigla | Nome da Coordenação | Atribuição Operacional Primária | Teto Alocado (R$) | % Orçamento |
 | :-: | :---: | :--- | :--- | :---: | :---: |
-| 1 | `ALIM` | **Alimentação** | 4 refeições diárias para ~400 pessoas por 7 dias; perecíveis de emergência | R$ 75.000,00 | 38,8% |
-| 2 | `INFRA` | **Infraestrutura** | Toldos, bambus, gás e cordas | R$ 16.400,00 | 8,5% |
+| 1 | `ALIM` | **Alimentação e Cozinha Central** | 4 refeições diárias para ~400 pessoas por 7 dias; perecíveis de emergência | R$ 75.000,00 | 38,8% |
+| 2 | `INFRA` | **Infraestrutura e Manutenção** | Toldos, bambus, gás e cordas | R$ 16.400,00 | 8,5% |
 | 3 | `TRANS` | **Transporte** | Ônibus, caminhão e vans de apoio, combustível de campo, pedágios e fretes locais | R$ 48.700,00 | 25,2% |
 | 4 | `ATIV` | **Atividades** | Oficinas pedagógicas, gincanas, materiais dos 4 ramos escoteiros | R$ 20.600,00 | 10,7% |
 | 5 | `SOM` | **Som** | Equipamentos de som | R$ 0,00 | 0,0% |
