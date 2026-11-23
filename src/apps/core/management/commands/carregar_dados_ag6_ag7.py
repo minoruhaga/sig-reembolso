@@ -176,7 +176,11 @@ class Command(BaseCommand):
         )
         senha_padrao = options['senha_padrao']
 
-        if Coordenacao.objects.count() < 15 or not Coordenacao.objects.filter(sigla='FIN').exists():
+        if (
+            Coordenacao.objects.count() < 15
+            or not Coordenacao.objects.filter(sigla='FIN').exists()
+            or Coordenacao.objects.filter(sigla='ALIM', nome='Alimentação e Cozinha Central').exists()
+        ):
             fixture_path = Path(settings.BASE_DIR) / 'fixtures' / 'coordenacoes_iniciais.json'
             if fixture_path.exists():
                 call_command('loaddata', str(fixture_path), verbosity=0)
