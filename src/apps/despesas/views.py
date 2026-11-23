@@ -103,7 +103,7 @@ def nova_despesa_view(request):
         if submeter_agora and not comprovante_upload:
             form.add_error(
                 'comprovante',
-                'Anexe a foto ou o PDF do cupom fiscal para enviar a despesa à tesouraria.'
+                'Anexe a foto ou o PDF da NF ou recibo para enviar a despesa à tesouraria.'
             )
 
         if form.is_valid():
@@ -126,13 +126,13 @@ def nova_despesa_view(request):
                     else:
                         messages.success(
                             request,
-                            f"Despesa #{despesa.id} enviada com sucesso para a fila de triagem da Tesouraria!"
+                            f"Despesa #{despesa.id} enviada para a tesouraria."
                         )
                 else:
                     messages.info(
                         request,
-                        f"Rascunho da despesa #{despesa.id} salvo com sucesso. Você pode editá-la e anexar o "
-                        "comprovante antes do envio formal."
+                        f"Rascunho #{despesa.id} salvo. Você pode voltar depois para anexar a foto da NF ou "
+                        "recibo e enviar."
                     )
                 return redirect('despesas:minhas')
 
@@ -189,7 +189,7 @@ def editar_despesa_view(request, pk):
         if submeter_agora and not comprovante_upload and not despesa.comprovante:
             form.add_error(
                 'comprovante',
-                'Anexe a foto ou o PDF do cupom fiscal para enviar a despesa à tesouraria.'
+                'Anexe a foto ou o PDF da NF ou recibo para enviar a despesa à tesouraria.'
             )
 
         if form.is_valid():
@@ -206,17 +206,19 @@ def editar_despesa_view(request, pk):
                     if despesa.excede_teto:
                         messages.warning(
                             request,
-                            f"Despesa #{despesa.id} reenviada com alerta de estouro de teto (+R$ {despesa.valor_excedente})."
+                            f"Despesa #{despesa.id} reenviada. Ela passa do teto da coordenação "
+                            f"{despesa.coordenacao.sigla} em R$ {despesa.valor_excedente}; a tesouraria vai "
+                            "decidir se libera a verba extra."
                         )
                     else:
                         messages.success(
                             request,
-                            f"Despesa #{despesa.id} reenviada com sucesso para a triagem da Tesouraria!"
+                            f"Despesa #{despesa.id} reenviada para a tesouraria."
                         )
                 else:
                     messages.info(
                         request,
-                        f"Alterações na despesa #{despesa.id} salvas em rascunho com sucesso."
+                        f"Alterações salvas no rascunho #{despesa.id}."
                     )
                 return redirect('despesas:minhas')
 
@@ -257,12 +259,14 @@ def submeter_despesa_view(request, pk):
         if despesa.excede_teto:
             messages.warning(
                 request,
-                f"Despesa #{despesa.id} enviada com alerta de estouro (+R$ {despesa.valor_excedente})!"
+                f"Despesa #{despesa.id} enviada. Ela passa do teto da coordenação "
+                f"{despesa.coordenacao.sigla} em R$ {despesa.valor_excedente}; a tesouraria vai "
+                "decidir se libera a verba extra."
             )
         else:
-            messages.success(request, f"Despesa #{despesa.id} submetida para triagem com sucesso!")
+            messages.success(request, f"Despesa #{despesa.id} enviada para a tesouraria.")
     except ValidationError as e:
-        messages.error(request, f"Erro ao submeter: {e.message if hasattr(e, 'message') else str(e)}")
+        messages.error(request, f"Não foi possível enviar: {e.message if hasattr(e, 'message') else str(e)}")
 
     return redirect('despesas:minhas')
 

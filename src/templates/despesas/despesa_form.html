@@ -114,9 +114,21 @@
     .campo .form-control:focus, .campo .form-select:focus {
         border-color: var(--tinta); box-shadow: 0 0 0 4px var(--sinal);
     }
+    /* Uma única seta, desenhada aqui: sem depender da camada dupla do Bootstrap nem da seta nativa. */
+    .campo .form-select {
+        -webkit-appearance: none; -moz-appearance: none; appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right .875rem center;
+        background-size: 1rem .75rem;
+        padding-right: 2.5rem;
+    }
+    .campo .form-select::-ms-expand { display: none; }
     .campo textarea.form-control { min-height: 6rem; }
     .campo-dupla { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
     @media (max-width: 359.98px) { .campo-dupla { grid-template-columns: 1fr; } }
+    /* Categoria e Modalidade têm rótulos longos: um campo por linha no celular para não cortar o texto. */
+    @media (max-width: 767.98px) { .campo-dupla--empilhada { grid-template-columns: 1fr; gap: 0; } }
     .campo-erro { color: var(--perigo); font-weight: 700; margin-top: .375rem; }
     .campo-ajuda { color: var(--tinta-suave); font-size: 1rem; margin-top: .375rem; }
 
@@ -208,7 +220,7 @@
     </a>
     <h1 class="campo-titulo">{{ titulo_pagina }}</h1>
     <p class="campo-sub">
-        {% if modo_edicao %}Corrija o que for preciso e envie de novo.{% else %}Fotografe o cupom e informe o valor.{% endif %}
+        {% if modo_edicao %}Corrija o que for preciso e envie de novo.{% else %}Tire uma foto da NF ou recibo e informe o valor.{% endif %}
     </p>
 
     {% if despesa and despesa.status == 'REJEITADO' %}
@@ -236,7 +248,7 @@
             <label for="{{ form.comprovante.id_for_label }}" class="captura-botao">
                 <i class="bi bi-camera-fill" aria-hidden="true"></i>
                 <span>
-                    {% if despesa and despesa.comprovante %}Fotografar outro cupom{% else %}Fotografar cupom{% endif %}
+                    {% if despesa and despesa.comprovante %}Tirar outra foto da NF ou recibo{% else %}Tirar foto da NF ou recibo{% endif %}
                     <small id="captura-ajuda">A foto é reduzida antes do envio para gastar pouca internet.</small>
                 </span>
             </label>
@@ -246,13 +258,13 @@
 
             <div class="captura-previa" id="captura-previa" {% if not despesa.comprovante %}hidden{% endif %} aria-live="polite">
                 <i class="bi bi-file-earmark-check" aria-hidden="true" id="captura-previa-icone"></i>
-                <img alt="Prévia do cupom" id="captura-previa-img" hidden>
+                <img alt="Prévia da NF ou recibo" id="captura-previa-img" hidden>
                 <div>
                     <div class="captura-previa-nome" id="captura-previa-nome">
-                        {% if despesa.comprovante %}Comprovante já anexado{% endif %}
+                        {% if despesa.comprovante %}NF ou recibo já anexado{% endif %}
                     </div>
                     <div class="captura-previa-info" id="captura-previa-info">
-                        {% if despesa.comprovante %}<a href="{{ despesa.comprovante.url }}" target="_blank" rel="noopener noreferrer">Abrir comprovante atual</a>{% endif %}
+                        {% if despesa.comprovante %}<a href="{{ despesa.comprovante.url }}" target="_blank" rel="noopener noreferrer">Ver anexo atual</a>{% endif %}
                     </div>
                 </div>
             </div>
@@ -269,7 +281,7 @@
         </div>
 
         <div class="campo-grupo">
-            <label for="{{ form.valor.id_for_label }}">Valor do cupom</label>
+            <label for="{{ form.valor.id_for_label }}">Valor do gasto</label>
             <div class="valor-caixa">
                 <span aria-hidden="true">R$</span>
                 {{ form.valor }}
@@ -314,7 +326,7 @@
 
         <div class="campo-dupla">
             <div class="campo-grupo">
-                <label for="{{ form.data_despesa.id_for_label }}">Data do cupom</label>
+                <label for="{{ form.data_despesa.id_for_label }}">Data do gasto</label>
                 {{ form.data_despesa }}
                 {% if form.data_despesa.errors %}<div class="campo-erro">{{ form.data_despesa.errors.0 }}</div>{% endif %}
             </div>
@@ -325,7 +337,7 @@
             </div>
         </div>
 
-        <div class="campo-dupla">
+        <div class="campo-dupla campo-dupla--empilhada">
             <div class="campo-grupo">
                 <label for="{{ form.categoria.id_for_label }}">Categoria</label>
                 {{ form.categoria }}

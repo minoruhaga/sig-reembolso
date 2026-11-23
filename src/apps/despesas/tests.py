@@ -547,7 +547,7 @@ class DespesaSubmissaoViewFormTestCase(TestCase):
         self.assertFormError(
             response.context['form'],
             'comprovante',
-            'Anexe a foto ou o PDF do cupom fiscal para enviar a despesa à tesouraria.'
+            'Anexe a foto ou o PDF da NF ou recibo para enviar a despesa à tesouraria.'
         )
         self.assertEqual(Despesa.objects.count(), 0)
 

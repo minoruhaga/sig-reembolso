@@ -126,7 +126,7 @@ class DespesaForm(forms.ModelForm):
             'coordenacao': forms.Select(attrs={'class': 'form-select'}),
             'titulo': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ex: Compra de verduras e temperos (Sacolão)',
+                'placeholder': 'Ex: Verduras e temperos (Sacolão)',
             }),
             'categoria': forms.Select(attrs={'class': 'form-select'}),
             'tipo': forms.Select(attrs={'class': 'form-select'}),
@@ -141,7 +141,7 @@ class DespesaForm(forms.ModelForm):
             'descricao': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
-                'placeholder': 'Detalhes complementares da compra ou dados do fornecedor (opcional)',
+                'placeholder': 'Ex: nome da loja ou detalhes da compra',
             }),
             'comprovante': forms.FileInput(attrs={
                 'class': 'form-control',
@@ -175,7 +175,7 @@ class DespesaForm(forms.ModelForm):
         """
         valor = self.cleaned_data.get('valor')
         if valor is not None and valor <= Decimal('0.00'):
-            raise ValidationError("O valor da despesa deve ser estritamente maior que zero (R$ 0,00).")
+            raise ValidationError("Informe um valor maior que R$ 0,00.")
         return valor
 
 

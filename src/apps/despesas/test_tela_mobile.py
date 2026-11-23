@@ -50,7 +50,7 @@ class TelaMobileDespesaTestCase(TestCase):
 
         self.assertEqual(resposta.status_code, 200)
         self.assertContains(resposta, 'capture="environment"')
-        self.assertContains(resposta, 'Fotografar cupom')
+        self.assertContains(resposta, 'Tirar foto da NF ou recibo')
         self.assertEqual(resposta.context['form']['coordenacao'].value(), self.alim.id)
         self.assertRegex(
             resposta.content.decode(), r'name="data_despesa" value="\d{4}-\d{2}-\d{2}"'
@@ -246,5 +246,44 @@ class ValorEmReaisTestCase(TestCase):
             'acao': 'submeter',
         })
 
-        self.assertContains(resposta, 'Anexe a foto ou o PDF do cupom fiscal')
+        self.assertContains(resposta, 'Anexe a foto ou o PDF da NF ou recibo para enviar a despesa à tesouraria.')
         self.assertNotRegex(resposta.content.decode(), r'RN\d{2}')
+
+    def test_valor_zero_pede_valor_maior_que_zero(self):
+        """
+        Valor "0,00" não grava a despesa e a mensagem diz o que digitar, sem jargão.
+        """
+        resposta = self.client.post(reverse('despesas:nova'), {
+            'coordenacao': self.coordenacao.id,
+            'titulo': 'Compra',
+            'categoria': 'ALIMENTACAO',
+            'tipo': 'REEMBOLSO',
+            'forma_pagamento_original': 'PIX',
+            'valor': '0,00',
+            'data_despesa': '2026-11-20',
+            'acao': 'rascunho',
+        })
+
+        self.assertFormError(resposta.context['form'], 'valor', 'Informe um valor maior que R$ 0,00.')
+        self.assertEqual(Despesa.objects.count(), 0)
+
+    def test_rascunho_salvo_explica_proximo_passo(self):
+        """
+        Depois de salvar o rascunho, a mensagem diz que falta anexar a NF ou recibo e enviar.
+        """
+        resposta = self.client.post(reverse('despesas:nova'), {
+            'coordenacao': self.coordenacao.id,
+            'titulo': 'Compra',
+            'categoria': 'ALIMENTACAO',
+            'tipo': 'REEMBOLSO',
+            'forma_pagamento_original': 'PIX',
+            'valor': '10,00',
+            'data_despesa': '2026-11-20',
+            'acao': 'rascunho',
+        }, follow=True)
+
+        despesa = Despesa.objects.get()
+        self.assertContains(
+            resposta,
+            f'Rascunho #{despesa.id} salvo. Você pode voltar depois para anexar a foto da NF ou recibo e enviar.',
+        )
