@@ -3,7 +3,7 @@
     "model": "financeiro.coordenacao",
     "pk": 1,
     "fields": {
-      "nome": "Alimentação e Cozinha Central",
+      "nome": "Alimentação",
       "sigla": "ALIM",
       "descricao": "4 refeições diárias para ~400 pessoas por 7 dias; perecíveis de emergência",
       "teto_orcamentario": "75000.00",
@@ -15,7 +15,7 @@
     "model": "financeiro.coordenacao",
     "pk": 2,
     "fields": {
-      "nome": "Infraestrutura e Manutenção",
+      "nome": "Infraestrutura",
       "sigla": "INFRA",
       "descricao": "Toldos, bambus, gás e cordas",
       "teto_orcamentario": "16400.00",
