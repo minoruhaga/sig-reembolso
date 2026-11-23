@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Prestação de Contas{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1">Prestação de Contas</h2>
+        <p class="text-muted mb-0">
+            Balancete sintético por coordenação e categoria, no recorte do seu papel.
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'relatorios:exportar_csv' %}?{{ request.GET.urlencode }}" class="btn btn-success btn-sm fw-semibold">
+            <i class="bi bi-filetype-csv me-1"></i> Exportar CSV
+        </a>
+    </div>
+</div>
+
+<form method="get" class="card card-stat bg-white p-3 mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label for="coordenacao" class="form-label small fw-semibold">Coordenação</label>
+            <select id="coordenacao" name="coordenacao" class="form-select">
+                <option value="">Todas as pastas visíveis</option>
+                {% for pasta in coordenacoes %}
+                <option value="{{ pasta.sigla }}" {% if filtros.coordenacao == pasta.sigla %}selected{% endif %}>
+                    {{ pasta.sigla }} — {{ pasta.nome }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="categoria" class="form-label small fw-semibold">Categoria</label>
+            <select id="categoria" name="categoria" class="form-select">
+                <option value="">Todas</option>
+                {% for codigo, rotulo in categorias %}
+                <option value="{{ codigo }}" {% if filtros.categoria == codigo %}selected{% endif %}>{{ rotulo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="status" class="form-label small fw-semibold">Status</label>
+            <select id="status" name="status" class="form-select">
+                <option value="">Todos</option>
+                {% for codigo, rotulo in status_opcoes %}
+                <option value="{{ codigo }}" {% if filtros.status == codigo %}selected{% endif %}>{{ rotulo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-success w-100">Filtrar</button>
+        </div>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-success h-100">
+            <span class="text-muted small text-uppercase fw-semibold">Total consolidado</span>
+            <h4 class="fw-bold text-dark mt-1 mb-0">R$ {{ balancete.total_geral }}</h4>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card card-stat bg-white p-3 border-start border-4 border-primary h-100">
+            <span class="text-muted small text-uppercase fw-semibold">Lançamentos no recorte</span>
+            <h4 class="fw-bold text-dark mt-1 mb-0">{{ balancete.quantidade_total }}</h4>
+        </div>
+    </div>
+</div>
+
+<div class="card card-stat bg-white p-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-table me-2 text-success"></i>Balancete por coordenação e categoria</h5>
+    {% if balancete.linhas %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Sigla</th>
+                    <th>Coordenação</th>
+                    <th>Categoria</th>
+                    <th>Quantidade</th>
+                    <th>Total (R$)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for linha in balancete.linhas %}
+                <tr>
+                    <td class="fw-semibold">{{ linha.sigla }}</td>
+                    <td>{{ linha.coordenacao }}</td>
+                    <td>{{ linha.categoria_descricao }}</td>
+                    <td>{{ linha.quantidade }}</td>
+                    <td>{{ linha.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">Nenhuma despesa encontrada para os filtros e o papel atuais.</p>
+    {% endif %}
+</div>
+{% endblock %}
