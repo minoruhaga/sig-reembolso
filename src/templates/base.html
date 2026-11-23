@@ -65,6 +65,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'despesas:minhas' %}"><i class="bi bi-receipt me-1"></i> Minhas Despesas</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'relatorios:balancete' %}"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Prestação de Contas</a>
+                    </li>
                     {% endif %}
                     {% if user.is_authenticated and user.pode_acessar_admin %}
                     <li class="nav-item">
