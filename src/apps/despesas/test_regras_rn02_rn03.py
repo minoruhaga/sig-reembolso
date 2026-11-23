@@ -184,7 +184,7 @@ class RegrasSoftBlockSegregacaoTestCase(TestCase):
 
             with self.assertRaises(SegregacaoFuncoesError) as ctx_aprovar:
                 despesa.aprovar(self.tesoureiro1)
-            self.assertIn('Segregação de Funções', str(ctx_aprovar.exception))
+            self.assertIn('não pode aprovar a própria solicitação', str(ctx_aprovar.exception))
 
             with self.assertRaises(SegregacaoFuncoesError):
                 despesa.rejeitar(self.tesoureiro1, motivo='Tentativa própria')

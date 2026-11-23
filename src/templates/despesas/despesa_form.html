@@ -2,175 +2,494 @@
 
 {% block title %}{{ titulo_pagina }}{% endblock %}
 
+{% block extra_head %}
+{# Issue #8 (RNF01): tela de campo mobile-first, alto contraste para luz solar intensa. #}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    .campo {
+        --papel: #FFFFFF;
+        --tinta: #000000;
+        --tinta-suave: #3A3A3A;
+        --mata: #0B5D3B;
+        --sinal: #FFD400;
+        --perigo: #B3261E;
+        --perigo-fundo: #FDECEA;
+        --linha: 2px solid var(--tinta);
+        --toque: 3.5rem;
+
+        max-width: 34rem;
+        margin: 0 auto;
+        color: var(--tinta);
+        font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-size: 1.125rem;
+        line-height: 1.45;
+    }
+    body:has(.campo) { background: var(--papel, #fff); }
+
+    .campo :focus-visible {
+        outline: 3px solid var(--tinta);
+        outline-offset: 3px;
+        box-shadow: 0 0 0 6px var(--sinal);
+    }
+
+    /* Cabeçalho */
+    .campo-voltar {
+        display: inline-flex; align-items: center; gap: .35rem;
+        min-height: 2.75rem;
+        color: var(--tinta); font-weight: 700; text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+    .campo-titulo {
+        font-size: 2rem; font-weight: 700; line-height: 1.1;
+        margin: .25rem 0 .25rem; letter-spacing: -0.01em;
+    }
+    .campo-sub { color: var(--tinta-suave); margin: 0 0 1.25rem; }
+
+    /* Avisos (rejeição / erros gerais) */
+    .campo-aviso {
+        border: var(--linha); border-left-width: .5rem;
+        padding: .875rem 1rem; margin-bottom: 1.25rem;
+        background: var(--papel);
+    }
+    .campo-aviso--perigo { border-color: var(--perigo); background: var(--perigo-fundo); }
+    .campo-aviso strong { display: block; margin-bottom: .2rem; }
+
+    /* Captura do cupom: o elemento de destaque da tela */
+    .captura { margin-bottom: 1.5rem; }
+    .captura-input {
+        position: absolute; width: 1px; height: 1px; overflow: hidden;
+        clip: rect(0 0 0 0); white-space: nowrap;
+    }
+    .captura-botao {
+        display: flex; align-items: center; gap: 1rem;
+        width: 100%; min-height: 7.5rem; padding: 1.25rem;
+        background: var(--sinal); color: var(--tinta);
+        border: 3px solid var(--tinta); border-radius: 1rem;
+        box-shadow: 0 .375rem 0 var(--tinta);
+        font-size: 1.375rem; font-weight: 700; line-height: 1.2;
+        cursor: pointer; user-select: none;
+        transition: transform .08s ease, box-shadow .08s ease;
+    }
+    .captura-botao:active { transform: translateY(.375rem); box-shadow: 0 0 0 var(--tinta); }
+    .captura-input:focus-visible + .captura-botao {
+        outline: 3px solid var(--tinta); outline-offset: 4px;
+    }
+    .captura-botao i { font-size: 2.75rem; line-height: 1; }
+    .captura-botao small { display: block; font-size: 1rem; font-weight: 400; margin-top: .2rem; }
+    .captura--erro .captura-botao { border-color: var(--perigo); box-shadow: 0 .375rem 0 var(--perigo); }
+
+    .captura-alternativa {
+        display: inline-flex; align-items: center; gap: .4rem;
+        min-height: 2.75rem; margin-top: .75rem; padding: 0;
+        background: none; border: 0; color: var(--tinta);
+        font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px;
+    }
+
+    .captura-previa {
+        display: flex; align-items: center; gap: .875rem;
+        margin-top: .875rem; padding: .75rem;
+        border: var(--linha); border-radius: .75rem;
+    }
+    .captura-previa img {
+        width: 4.5rem; height: 4.5rem; object-fit: cover;
+        border-radius: .375rem; border: 1px solid var(--tinta);
+    }
+    .captura-previa .bi { font-size: 2.25rem; color: var(--mata); }
+    .captura-previa-nome { font-weight: 700; word-break: break-all; }
+    .captura-previa-info { color: var(--tinta-suave); font-size: 1rem; }
+
+    /* Campos */
+    .campo-grupo { margin-bottom: 1.25rem; }
+    .campo-grupo label, .campo-legenda {
+        display: block; font-weight: 700; margin-bottom: .375rem;
+    }
+    .campo-opcional { font-weight: 400; color: var(--tinta-suave); }
+    .campo .form-control, .campo .form-select {
+        min-height: var(--toque);
+        border: var(--linha); border-radius: .625rem;
+        font-size: 1.125rem; color: var(--tinta); background-color: var(--papel);
+    }
+    .campo .form-control:focus, .campo .form-select:focus {
+        border-color: var(--tinta); box-shadow: 0 0 0 4px var(--sinal);
+    }
+    /* Uma única seta, desenhada aqui: sem depender da camada dupla do Bootstrap nem da seta nativa. */
+    .campo .form-select {
+        -webkit-appearance: none; -moz-appearance: none; appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right .875rem center;
+        background-size: 1rem .75rem;
+        padding-right: 2.5rem;
+    }
+    .campo .form-select::-ms-expand { display: none; }
+    .campo textarea.form-control { min-height: 6rem; }
+    .campo-dupla { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    @media (max-width: 359.98px) { .campo-dupla { grid-template-columns: 1fr; } }
+    /* Categoria e Modalidade têm rótulos longos: um campo por linha no celular para não cortar o texto. */
+    @media (max-width: 767.98px) { .campo-dupla--empilhada { grid-template-columns: 1fr; gap: 0; } }
+    .campo-erro { color: var(--perigo); font-weight: 700; margin-top: .375rem; }
+    .campo-ajuda { color: var(--tinta-suave); font-size: 1rem; margin-top: .375rem; }
+
+    /* Valor em R$: grande, algarismos tabulares */
+    .valor-caixa {
+        display: flex; align-items: center;
+        border: var(--linha); border-radius: .625rem; background: var(--papel);
+    }
+    .valor-caixa:focus-within { box-shadow: 0 0 0 4px var(--sinal); }
+    .valor-caixa span { padding: 0 .25rem 0 1rem; font-size: 1.5rem; font-weight: 700; }
+    .campo .valor-caixa .form-control {
+        border: 0; box-shadow: none; min-height: 4.25rem;
+        font-size: 2.25rem; font-weight: 700; font-variant-numeric: tabular-nums;
+        padding-left: .25rem;
+    }
+    /* O foco é mostrado na caixa inteira (:focus-within), não no input interno. */
+    .campo .valor-caixa .form-control:focus,
+    .campo .valor-caixa .form-control:focus-visible { outline: none; box-shadow: none; }
+
+    /* Termômetro da verba */
+    .termometro {
+        margin: -.25rem 0 1.75rem; padding: 1rem;
+        border: var(--linha); border-radius: .75rem;
+    }
+    .termometro-cabeca { display: flex; justify-content: space-between; gap: .5rem; font-weight: 700; }
+    .termometro-barra {
+        display: flex; height: 1.25rem; margin: .625rem 0;
+        border: var(--linha); border-radius: .375rem; overflow: hidden; background: var(--papel);
+    }
+    .termometro-usado { background: var(--mata); }
+    .termometro-compra {
+        background: repeating-linear-gradient(135deg, var(--sinal) 0 6px, #E6BE00 6px 12px);
+        border-left: 2px solid var(--tinta);
+    }
+    .termometro-compra[style*="width: 0"] { border-left: 0; }
+    .termometro-legenda {
+        display: flex; flex-wrap: wrap; gap: .25rem 1rem;
+        font-size: .9375rem; color: var(--tinta-suave); margin-bottom: .5rem;
+    }
+    .termometro-legenda i { display: inline-block; width: .875rem; height: .875rem; border: 1px solid var(--tinta); vertical-align: -1px; margin-right: .25rem; }
+    .termometro-legenda .l-usado { background: var(--mata); }
+    .termometro-legenda .l-compra { background: var(--sinal); }
+    .termometro-resultado { font-weight: 700; margin: 0; font-variant-numeric: tabular-nums; }
+    .termometro--estouro { border-color: var(--perigo); background: var(--perigo-fundo); }
+    .termometro--estouro .termometro-barra { border-color: var(--perigo); }
+    .termometro--estouro .termometro-usado { background: var(--perigo); }
+    .termometro--estouro .termometro-resultado { color: var(--perigo); }
+    .termometro-nota { font-size: 1rem; margin: .375rem 0 0; }
+
+    /* Detalhes opcionais */
+    .campo details { border-top: var(--linha); padding-top: .75rem; margin-bottom: 1.5rem; }
+    .campo summary {
+        min-height: 2.75rem; display: flex; align-items: center; gap: .5rem;
+        font-weight: 700; cursor: pointer;
+    }
+    .campo summary::-webkit-details-marker { display: none; }
+    .campo summary::before { content: "+"; font-size: 1.5rem; width: 1.25rem; }
+    .campo details[open] summary::before { content: "−"; }
+
+    /* Barra de ações fixa no rodapé da tela */
+    .acoes {
+        position: sticky; bottom: 0; z-index: 10;
+        display: grid; grid-template-columns: 1fr 1.6fr; gap: .625rem;
+        margin: 0 calc(var(--bs-gutter-x, 1.5rem) * -.5); padding: .75rem calc(var(--bs-gutter-x, 1.5rem) * .5) calc(.75rem + env(safe-area-inset-bottom));
+        background: var(--papel); border-top: var(--linha);
+    }
+    .acoes button {
+        min-height: var(--toque); border-radius: .75rem;
+        font: inherit; font-weight: 700; line-height: 1.15;
+    }
+    .acao-rascunho { background: var(--papel); color: var(--tinta); border: var(--linha); }
+    .acao-enviar { background: var(--mata); color: #fff; border: 2px solid var(--mata); }
+    .acao-enviar:active, .acao-rascunho:active { transform: translateY(1px); }
+
+    @media (min-width: 768px) {
+        .acoes { position: static; margin: 0; padding: 1rem 0 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .captura-botao, .acoes button { transition: none; }
+        .captura-botao:active { transform: none; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10">
-        <!-- Navegação de Retorno -->
-        <div class="mb-3">
-            <a href="{% url 'despesas:minhas' %}" class="text-decoration-none text-muted small">
-                <i class="bi bi-arrow-left me-1"></i> Voltar para Minhas Despesas
-            </a>
-        </div>
+<div class="campo">
+    <a href="{% url 'despesas:minhas' %}" class="campo-voltar">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> Minhas despesas
+    </a>
+    <h1 class="campo-titulo">{{ titulo_pagina }}</h1>
+    <p class="campo-sub">
+        {% if modo_edicao %}Corrija o que for preciso e envie de novo.{% else %}Tire uma foto da NF ou recibo e informe o valor.{% endif %}
+    </p>
 
-        <div class="card card-stat bg-white shadow-sm border-0 p-4">
-            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
-                <div>
-                    <h3 class="fw-bold mb-1">{{ titulo_pagina }}</h3>
-                    <p class="text-muted small mb-0">Preencha os dados da compra e anexe a foto ou PDF do cupom fiscal.</p>
-                </div>
-                <span class="badge bg-success-subtle text-success fs-6 px-3 py-2 rounded-pill">
-                    <i class="bi bi-camera-fill me-1"></i> Campo
-                </span>
-            </div>
-
-            {% if despesa and despesa.status == 'REJEITADO' %}
-            <div class="alert alert-danger border-start border-4 border-danger p-3 mb-4" role="alert">
-                <div class="d-flex align-items-start gap-2">
-                    <i class="bi bi-exclamation-octagon-fill fs-4 text-danger"></i>
-                    <div>
-                        <strong class="d-block mb-1">Nota Fiscal Reprovada pela Tesouraria (RN04)</strong>
-                        <div class="small"><strong>Justificativa da Reprovação:</strong> {{ despesa.motivo_rejeicao }}</div>
-                        <div class="small text-muted mt-1">Por favor, atualize os dados ou substitua o comprovante fiscal abaixo e reenvie para triagem.</div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            {% if form.non_field_errors %}
-            <div class="alert alert-danger" role="alert">
-                {% for error in form.non_field_errors %}
-                    <div>{{ error }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <form method="post" enctype="multipart/form-data" novalidate>
-                {% csrf_token %}
-
-                <!-- Título e Coordenação -->
-                <div class="row g-3 mb-3">
-                    <div class="col-md-7">
-                        <label for="{{ form.titulo.id_for_label }}" class="form-label fw-semibold">
-                            Título da Despesa <span class="text-danger">*</span>
-                        </label>
-                        {{ form.titulo }}
-                        {% if form.titulo.errors %}
-                            <div class="text-danger small mt-1">{{ form.titulo.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-5">
-                        <label for="{{ form.coordenacao.id_for_label }}" class="form-label fw-semibold">
-                            Coordenação Onerada <span class="text-danger">*</span>
-                        </label>
-                        {{ form.coordenacao }}
-                        {% if form.coordenacao.errors %}
-                            <div class="text-danger small mt-1">{{ form.coordenacao.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Valor e Data -->
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label for="{{ form.valor.id_for_label }}" class="form-label fw-semibold">
-                            Valor Total (R$) <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text fw-bold">R$</span>
-                            {{ form.valor }}
-                        </div>
-                        <div class="form-text small">Use ponto para centavos (ex: 45.90).</div>
-                        {% if form.valor.errors %}
-                            <div class="text-danger small mt-1">{{ form.valor.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <label for="{{ form.data_despesa.id_for_label }}" class="form-label fw-semibold">
-                            Data do Cupom / Nota <span class="text-danger">*</span>
-                        </label>
-                        {{ form.data_despesa }}
-                        {% if form.data_despesa.errors %}
-                            <div class="text-danger small mt-1">{{ form.data_despesa.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Categoria, Modalidade e Forma de Pagamento -->
-                <div class="row g-3 mb-3">
-                    <div class="col-md-4">
-                        <label for="{{ form.categoria.id_for_label }}" class="form-label fw-semibold">
-                            Categoria Contábil
-                        </label>
-                        {{ form.categoria }}
-                        {% if form.categoria.errors %}
-                            <div class="text-danger small mt-1">{{ form.categoria.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-4">
-                        <label for="{{ form.tipo.id_for_label }}" class="form-label fw-semibold">
-                            Modalidade
-                        </label>
-                        {{ form.tipo }}
-                        {% if form.tipo.errors %}
-                            <div class="text-danger small mt-1">{{ form.tipo.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-4">
-                        <label for="{{ form.forma_pagamento_original.id_for_label }}" class="form-label fw-semibold">
-                            Forma de Pagamento
-                        </label>
-                        {{ form.forma_pagamento_original }}
-                        {% if form.forma_pagamento_original.errors %}
-                            <div class="text-danger small mt-1">{{ form.forma_pagamento_original.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Upload de Comprovante Fiscal (RN01 e RNF02) -->
-                <div class="mb-3 p-3 bg-light rounded-3 border">
-                    <label for="{{ form.comprovante.id_for_label }}" class="form-label fw-bold d-flex align-items-center gap-2">
-                        <i class="bi bi-receipt-cutoff text-success fs-5"></i>
-                        <span>Comprovante / Nota Fiscal <span class="text-danger">*</span></span>
-                    </label>
-                    <p class="text-muted small mb-2">
-                        Tire uma foto nítida do cupom SAT ou anexe o arquivo PDF da nota. Fotos serão otimizadas automaticamente para menos de 350KB (RNF02).
-                    </p>
-                    {{ form.comprovante }}
-                    {% if despesa and despesa.comprovante %}
-                    <div class="small text-muted mt-2">
-                        <i class="bi bi-file-earmark-check text-success me-1"></i> Comprovante atual:
-                        <a href="{{ despesa.comprovante.url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none fw-semibold">
-                            Visualizar anexo atual
-                        </a>
-                    </div>
-                    {% endif %}
-                    {% if form.comprovante.errors %}
-                        <div class="text-danger small mt-1 fw-semibold">{{ form.comprovante.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <!-- Detalhamento Operacional Opcional -->
-                <div class="mb-4">
-                    <label for="{{ form.descricao.id_for_label }}" class="form-label fw-semibold">
-                        Detalhamento Operacional (Opcional)
-                    </label>
-                    {{ form.descricao }}
-                    {% if form.descricao.errors %}
-                        <div class="text-danger small mt-1">{{ form.descricao.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <!-- Botões de Ação -->
-                <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end pt-2 border-top">
-                    <button type="submit" name="acao" value="rascunho" class="btn btn-outline-secondary fw-semibold py-2 px-3">
-                        <i class="bi bi-save me-1"></i> Salvar como Rascunho
-                    </button>
-                    <button type="submit" name="acao" value="submeter" class="btn btn-success fw-semibold py-2 px-4 shadow-sm">
-                        <i class="bi bi-send-fill me-1"></i> Submeter para Triagem
-                    </button>
-                </div>
-            </form>
-        </div>
+    {% if despesa and despesa.status == 'REJEITADO' %}
+    <div class="campo-aviso campo-aviso--perigo" role="alert">
+        <strong>A tesouraria devolveu esta despesa</strong>
+        {{ despesa.motivo_rejeicao }}
     </div>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    <div class="campo-aviso campo-aviso--perigo" role="alert">
+        {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" novalidate id="form-despesa"
+          data-url-previa="{% url 'despesas:previa_orcamento' %}">
+        {% csrf_token %}
+
+        {# Captura: 1 toque no botão abre a câmera traseira (capture="environment"). #}
+        <div class="captura{% if form.comprovante.errors %} captura--erro{% endif %}">
+            <input type="file" name="{{ form.comprovante.html_name }}" id="{{ form.comprovante.id_for_label }}"
+                   class="captura-input" accept="image/jpeg,image/png,image/webp,application/pdf" capture="environment"
+                   aria-describedby="captura-ajuda{% if form.comprovante.errors %} captura-erro{% endif %}">
+            <label for="{{ form.comprovante.id_for_label }}" class="captura-botao">
+                <i class="bi bi-camera-fill" aria-hidden="true"></i>
+                <span>
+                    {% if despesa and despesa.comprovante %}Tirar outra foto da NF ou recibo{% else %}Tirar foto da NF ou recibo{% endif %}
+                    <small id="captura-ajuda">A foto é reduzida antes do envio para gastar pouca internet.</small>
+                </span>
+            </label>
+            <button type="button" class="captura-alternativa" id="captura-arquivo" hidden>
+                <i class="bi bi-paperclip" aria-hidden="true"></i> Anexar PDF ou foto da galeria
+            </button>
+
+            <div class="captura-previa" id="captura-previa" {% if not despesa.comprovante %}hidden{% endif %} aria-live="polite">
+                <i class="bi bi-file-earmark-check" aria-hidden="true" id="captura-previa-icone"></i>
+                <img alt="Prévia da NF ou recibo" id="captura-previa-img" hidden>
+                <div>
+                    <div class="captura-previa-nome" id="captura-previa-nome">
+                        {% if despesa.comprovante %}NF ou recibo já anexado{% endif %}
+                    </div>
+                    <div class="captura-previa-info" id="captura-previa-info">
+                        {% if despesa.comprovante %}<a href="{{ despesa.comprovante.url }}" target="_blank" rel="noopener noreferrer">Ver anexo atual</a>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if form.comprovante.errors %}
+                <div class="campo-erro" id="captura-erro">{{ form.comprovante.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="campo-grupo">
+            <label for="{{ form.coordenacao.id_for_label }}">Coordenação</label>
+            {{ form.coordenacao }}
+            {% if form.coordenacao.errors %}<div class="campo-erro">{{ form.coordenacao.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="campo-grupo">
+            <label for="{{ form.valor.id_for_label }}">Valor do gasto</label>
+            <div class="valor-caixa">
+                <span aria-hidden="true">R$</span>
+                {{ form.valor }}
+            </div>
+            {% if form.valor.errors %}<div class="campo-erro">{{ form.valor.errors.0 }}</div>{% endif %}
+        </div>
+
+        {# Termômetro (RF03): números vindos de simular_impacto_orcamentario; o JS só atualiza o texto. #}
+        <section class="termometro{% if previa.excede_teto %} termometro--estouro{% endif %}" id="termometro"
+                 aria-live="polite" {% if not previa %}hidden{% endif %}>
+            <div class="termometro-cabeca">
+                <span>Verba da <span id="termo-sigla">{{ previa.sigla }}</span></span>
+                <span>teto R$ <span id="termo-teto">{{ previa.teto|floatformat:"2g" }}</span></span>
+            </div>
+            <div class="termometro-barra" aria-hidden="true">
+                <div class="termometro-usado" id="termo-barra-usado" style="width: {{ previa.pct_comprometido|stringformat:'s' }}%"></div>
+                <div class="termometro-compra" id="termo-barra-compra" style="width: {{ previa.pct_compra|stringformat:'s' }}%"></div>
+            </div>
+            <div class="termometro-legenda">
+                <span><i class="l-usado"></i>Já usado R$ <span id="termo-usado">{{ previa.comprometido|floatformat:"2g" }}</span></span>
+                <span><i class="l-compra"></i>Esta compra</span>
+            </div>
+            <p class="termometro-resultado" id="termo-resultado">
+                {% if previa.excede_teto %}
+                    Passa do teto em R$ {{ previa.valor_excedente|floatformat:"2g" }}.
+                {% elif previa.valor %}
+                    Depois desta compra sobram R$ {{ previa.saldo_apos|floatformat:"2g" }}.
+                {% else %}
+                    Saldo livre: R$ {{ previa.saldo_atual|floatformat:"2g" }}.
+                {% endif %}
+            </p>
+            <p class="termometro-nota" id="termo-nota" {% if not previa.excede_teto %}hidden{% endif %}>
+                Você ainda pode enviar. A tesouraria decide se libera a verba extra.
+            </p>
+        </section>
+
+        <div class="campo-grupo">
+            <label for="{{ form.titulo.id_for_label }}">O que foi comprado</label>
+            {{ form.titulo }}
+            {% if form.titulo.errors %}<div class="campo-erro">{{ form.titulo.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="campo-dupla">
+            <div class="campo-grupo">
+                <label for="{{ form.data_despesa.id_for_label }}">Data do gasto</label>
+                {{ form.data_despesa }}
+                {% if form.data_despesa.errors %}<div class="campo-erro">{{ form.data_despesa.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="campo-grupo">
+                <label for="{{ form.forma_pagamento_original.id_for_label }}">Pago com</label>
+                {{ form.forma_pagamento_original }}
+                {% if form.forma_pagamento_original.errors %}<div class="campo-erro">{{ form.forma_pagamento_original.errors.0 }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="campo-dupla campo-dupla--empilhada">
+            <div class="campo-grupo">
+                <label for="{{ form.categoria.id_for_label }}">Categoria</label>
+                {{ form.categoria }}
+                {% if form.categoria.errors %}<div class="campo-erro">{{ form.categoria.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="campo-grupo">
+                <label for="{{ form.tipo.id_for_label }}">Modalidade</label>
+                {{ form.tipo }}
+                {% if form.tipo.errors %}<div class="campo-erro">{{ form.tipo.errors.0 }}</div>{% endif %}
+            </div>
+        </div>
+
+        <details {% if form.descricao.value or form.descricao.errors %}open{% endif %}>
+            <summary>Observações <span class="campo-opcional">(opcional)</span></summary>
+            <div class="campo-grupo">
+                <label for="{{ form.descricao.id_for_label }}" class="visually-hidden">Observações</label>
+                {{ form.descricao }}
+                {% if form.descricao.errors %}<div class="campo-erro">{{ form.descricao.errors.0 }}</div>{% endif %}
+            </div>
+        </details>
+
+        <div class="acoes">
+            <button type="submit" name="acao" value="rascunho" class="acao-rascunho">Salvar rascunho</button>
+            <button type="submit" name="acao" value="submeter" class="acao-enviar">
+                <i class="bi bi-send-fill" aria-hidden="true"></i> Enviar para a tesouraria
+            </button>
+        </div>
+    </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    "use strict";
+    var form = document.getElementById("form-despesa");
+    if (!form) { return; }
+
+    /* --- Captura do cupom ------------------------------------------------ */
+    var input = document.getElementById("{{ form.comprovante.id_for_label }}");
+    var botaoArquivo = document.getElementById("captura-arquivo");
+    var previa = document.getElementById("captura-previa");
+    var previaImg = document.getElementById("captura-previa-img");
+    var previaIcone = document.getElementById("captura-previa-icone");
+    var previaNome = document.getElementById("captura-previa-nome");
+    var previaInfo = document.getElementById("captura-previa-info");
+    var urlObjeto = null;
+
+    // Sem JS o botão amarelo abre a câmera; com JS também oferecemos galeria/PDF.
+    botaoArquivo.hidden = false;
+    botaoArquivo.addEventListener("click", function () {
+        input.removeAttribute("capture");
+        input.click();
+        setTimeout(function () { input.setAttribute("capture", "environment"); }, 1000);
+    });
+
+    function tamanhoLegivel(bytes) {
+        if (bytes < 1024 * 1024) { return Math.max(1, Math.round(bytes / 1024)) + " KB"; }
+        return (bytes / (1024 * 1024)).toFixed(1).replace(".", ",") + " MB";
+    }
+
+    input.addEventListener("change", function () {
+        var arquivo = input.files && input.files[0];
+        if (!arquivo) { return; }
+        if (urlObjeto) { URL.revokeObjectURL(urlObjeto); urlObjeto = null; }
+        var ehImagem = arquivo.type.indexOf("image/") === 0;
+        if (ehImagem) {
+            urlObjeto = URL.createObjectURL(arquivo);
+            previaImg.src = urlObjeto;
+        }
+        previaImg.hidden = !ehImagem;
+        previaIcone.hidden = ehImagem;
+        previaNome.textContent = ehImagem ? "Foto pronta para enviar" : arquivo.name;
+        previaInfo.textContent = tamanhoLegivel(arquivo.size) + " · toque no botão amarelo para trocar";
+        previa.hidden = false;
+        var erro = document.getElementById("captura-erro");
+        if (erro) { erro.hidden = true; }
+    });
+
+    /* --- Termômetro: pede a prévia ao servidor e só exibe -------------- */
+    var termo = document.getElementById("termometro");
+    var selectCoord = document.getElementById("{{ form.coordenacao.id_for_label }}");
+    var inputValor = document.getElementById("{{ form.valor.id_for_label }}");
+    var urlPrevia = form.getAttribute("data-url-previa");
+    var moeda = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    var temporizador = null;
+    var controle = null;
+
+    function reais(texto) { return moeda.format(Number(texto)); }
+
+    function pintar(d) {
+        document.getElementById("termo-sigla").textContent = d.sigla;
+        document.getElementById("termo-teto").textContent = reais(d.teto);
+        document.getElementById("termo-usado").textContent = reais(d.comprometido);
+        document.getElementById("termo-barra-usado").style.width = d.pct_comprometido + "%";
+        document.getElementById("termo-barra-compra").style.width = d.pct_compra + "%";
+        var resultado = document.getElementById("termo-resultado");
+        if (d.excede_teto) {
+            resultado.textContent = "Passa do teto em R$ " + reais(d.valor_excedente) + ".";
+        } else if (Number(d.valor) > 0) {
+            resultado.textContent = "Depois desta compra sobram R$ " + reais(d.saldo_apos) + ".";
+        } else {
+            resultado.textContent = "Saldo livre: R$ " + reais(d.saldo_atual) + ".";
+        }
+        document.getElementById("termo-nota").hidden = !d.excede_teto;
+        termo.classList.toggle("termometro--estouro", d.excede_teto);
+        termo.hidden = false;
+    }
+
+    function atualizar() {
+        if (!selectCoord.value) { termo.hidden = true; return; }
+        if (controle) { controle.abort(); }
+        controle = "AbortController" in window ? new AbortController() : null;
+        var url = urlPrevia + "?coordenacao=" + encodeURIComponent(selectCoord.value) +
+                  "&valor=" + encodeURIComponent(inputValor.value || "0");
+        fetch(url, { headers: { "Accept": "application/json" }, signal: controle && controle.signal })
+            .then(function (r) {
+                if (r.status === 404) { termo.hidden = true; return null; }
+                return r.ok ? r.json() : null;
+            })
+            .then(function (d) { if (d) { pintar(d); } })
+            .catch(function () { /* sem sinal: mantém a última leitura */ });
+    }
+
+    function agendar() {
+        clearTimeout(temporizador);
+        temporizador = setTimeout(atualizar, 450);
+    }
+
+    /* --- Máscara de centavos: digitar 1000 mostra 10,00 ----------------- */
+    function mascararCentavos(texto) {
+        var digitos = texto.replace(/\D/g, "").replace(/^0+/, "").slice(0, 10);
+        if (!digitos) { return ""; }
+        while (digitos.length < 3) { digitos = "0" + digitos; }
+        var inteiros = digitos.slice(0, -2).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        return inteiros + "," + digitos.slice(-2);
+    }
+
+    // Valor vindo do servidor sem vírgula (ex.: "10" enviado sem JS) é lido como reais, não centavos.
+    if (inputValor.value && inputValor.value.indexOf(",") === -1 && !isNaN(Number(inputValor.value))) {
+        inputValor.value = mascararCentavos(Number(inputValor.value).toFixed(2));
+    } else {
+        inputValor.value = mascararCentavos(inputValor.value);
+    }
+
+    inputValor.addEventListener("input", function () {
+        inputValor.value = mascararCentavos(inputValor.value);
+        var fim = inputValor.value.length;
+        inputValor.setSelectionRange(fim, fim);
+        agendar();
+    });
+    selectCoord.addEventListener("change", atualizar);
+})();
+</script>
 {% endblock %}

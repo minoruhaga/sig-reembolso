@@ -66,9 +66,9 @@ class TipoDespesa(models.TextChoices):
     - Qual finalidade atende: Orienta a Tesouraria sobre quem deve receber a transferência PIX no Banco Cora PJ.
     """
 
-    REEMBOLSO = 'REEMBOLSO', 'Reembolso (paguei do meu bolso)'
-    FUNDO_CAIXA = 'FUNDO_CAIXA', 'Fundo de caixa (acerto de adiantamento)'
-    PAGAMENTO_DIRETO = 'PAGAMENTO_DIRETO', 'Pagamento direto ao fornecedor'
+    REEMBOLSO = 'REEMBOLSO', 'Reembolso (Desembolso do Voluntário)'
+    FUNDO_CAIXA = 'FUNDO_CAIXA', 'Prestação de Contas de Fundo de Caixa'
+    PAGAMENTO_DIRETO = 'PAGAMENTO_DIRETO', 'Pagamento Direto a Fornecedor'
 
 
 class FormaPagamentoOriginal(models.TextChoices):
@@ -140,7 +140,7 @@ class Despesa(models.Model):
         max_length=20,
         choices=TipoDespesa.choices,
         default=TipoDespesa.REEMBOLSO,
-        verbose_name='Tipo de Acerto'
+        verbose_name='Modalidade'
     )
     forma_pagamento_original = models.CharField(
         max_length=20,
@@ -274,18 +274,18 @@ class Despesa(models.Model):
             for campo in self.CAMPOS_IMUTAVEIS_POS_DECISAO:
                 if getattr(self, campo) != getattr(original, campo):
                     raise ImutabilidadeDespesaError(
-                        f"RN05 (Imutabilidade Pós-Decisão): Não é permitido alterar o campo '{campo}' "
+                        f"Não é permitido alterar o campo '{campo}' "
                         f"de uma despesa no estado '{original.get_status_display()}'."
                     )
 
             if original.status == StatusDespesa.APROVADO and self.status not in (StatusDespesa.APROVADO, StatusDespesa.PAGO):
                 raise ImutabilidadeDespesaError(
-                    "RN05 (Imutabilidade Pós-Decisão): Uma despesa aprovada só pode transitar para o estado 'Pago' ou permanecer como 'Aprovado'."
+                    "Uma despesa aprovada só pode transitar para o estado 'Pago' ou permanecer como 'Aprovado'."
                 )
 
             if original.status == StatusDespesa.PAGO and self.status != StatusDespesa.PAGO:
                 raise ImutabilidadeDespesaError(
-                    "RN05 (Imutabilidade Pós-Decisão): Uma despesa já liquidada (PAGO) não pode ter seu status revertido."
+                    "Uma despesa já liquidada (PAGO) não pode ter seu status revertido."
                 )
 
     def clean(self):
@@ -353,7 +353,7 @@ class Despesa(models.Model):
         """
         if self.status in (StatusDespesa.ENVIADO, StatusDespesa.APROVADO, StatusDespesa.PAGO):
             raise ImutabilidadeDespesaError(
-                f"RN05/RN06: Não é permitido excluir uma despesa no estado '{self.get_status_display()}' "
+                f"Não é permitido excluir uma despesa no estado '{self.get_status_display()}' "
                 "que já tramitou na Tesouraria."
             )
         return super().delete(*args, **kwargs)
@@ -492,7 +492,7 @@ class Despesa(models.Model):
         """
         if self.status in (StatusDespesa.APROVADO, StatusDespesa.PAGO):
             raise ImutabilidadeDespesaError(
-                f"RN05 (Imutabilidade Pós-Decisão): Despesas no estado '{self.get_status_display()}' não podem ser canceladas."
+                f"Despesas no estado '{self.get_status_display()}' não podem ser canceladas."
             )
 
         if self.status == StatusDespesa.CANCELADO:

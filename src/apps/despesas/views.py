@@ -1,12 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from apps.core.exceptions import PermissaoNegadaDominioError
-from apps.despesas.forms import DespesaForm, LiquidacaoDespesaForm, RejeicaoDespesaForm
+from apps.despesas.forms import (
+    DespesaForm,
+    LiquidacaoDespesaForm,
+    RejeicaoDespesaForm,
+    converter_valor_reais,
+)
 from apps.despesas.models import Despesa, StatusDespesa
 from apps.despesas.services import (
     aprovar_despesa_triagem,
@@ -14,8 +20,64 @@ from apps.despesas.services import (
     liquidar_despesa_triagem,
     listar_despesas_triagem,
     rejeitar_despesa_triagem,
+    simular_impacto_orcamentario,
 )
 from apps.financeiro.models import Coordenacao
+
+
+def _previa_inicial(request, form):
+    """
+    Calcula a prévia do termômetro exibida no primeiro carregamento do formulário de despesa.
+
+    - O que faz: Descobre a coordenação e o valor já presentes no formulário (dados enviados, instância
+      ou valores iniciais) e pede ao serviço de domínio a projeção do saldo.
+    - Como faz: Lê `form['coordenacao'].value()` e `form['valor'].value()`, converte o valor em reais com
+      `converter_valor_reais` (formato "1.250,40"), ignorando entradas inválidas, e delega todo o cálculo a `simular_impacto_orcamentario`.
+    - Qual finalidade atende: Faz o termômetro funcionar mesmo sem JavaScript ou em conexão lenta (RNF01),
+      mantendo a view apenas como orquestradora.
+    """
+    coordenacao_id = form['coordenacao'].value()
+    if not coordenacao_id:
+        return None
+    valor = converter_valor_reais(form['valor'].value())
+    return simular_impacto_orcamentario(
+        usuario=request.user, coordenacao_id=coordenacao_id, valor=valor
+    )
+
+
+@login_required
+@require_GET
+def previa_orcamento_view(request):
+    """
+    Devolve em JSON a projeção do saldo da coordenação para uma compra ainda não enviada.
+
+    - O que faz: Responde ao termômetro da tela mobile com saldo atual, saldo após a compra e sinal de
+      estouro (RN02), sem gravar nada.
+    - Como faz: Lê `coordenacao` e `valor` (formato "1.250,40" da máscara) da query string, converte com
+      `converter_valor_reais`, chama
+      `simular_impacto_orcamentario` (que aplica o recorte RBAC) e serializa os montantes como strings
+      com duas casas; responde 404 para coordenação inexistente ou fora do escopo do usuário.
+    - Qual finalidade atende: Permite ao voluntário ver, enquanto digita o valor em campo, se a compra cabe
+      na verba da pasta (RF03 / RNF01), com payload pequeno para a rede Starlink.
+    """
+    texto_valor = request.GET.get('valor') or '0'
+    valor = converter_valor_reais(texto_valor)
+    if valor is None:
+        return JsonResponse({'erro': 'Valor inválido.'}, status=400)
+
+    previa = simular_impacto_orcamentario(
+        usuario=request.user,
+        coordenacao_id=request.GET.get('coordenacao'),
+        valor=valor,
+    )
+    if previa is None:
+        return JsonResponse({'erro': 'Coordenação não encontrada.'}, status=404)
+
+    dados = dict(previa)
+    for campo in ('teto', 'comprometido', 'saldo_atual', 'valor', 'saldo_apos', 'valor_excedente'):
+        dados[campo] = f"{previa[campo]:.2f}"
+    return JsonResponse(dados)
+
 
 
 @login_required
@@ -41,7 +103,7 @@ def nova_despesa_view(request):
         if submeter_agora and not comprovante_upload:
             form.add_error(
                 'comprovante',
-                'RN01: O comprovante fiscal é estritamente obrigatório para enviar a despesa à triagem.'
+                'Anexe a foto ou o PDF da NF ou recibo para enviar a despesa à tesouraria.'
             )
 
         if form.is_valid():
@@ -57,20 +119,20 @@ def nova_despesa_view(request):
                     if despesa.excede_teto:
                         messages.warning(
                             request,
-                            f"Despesa #{despesa.id} enviada com sucesso! ATENÇÃO: Esta compra excedeu o teto "
-                            f"da coordenação {despesa.coordenacao.sigla} em R$ {despesa.valor_excedente} "
-                            "(Soft-block RN02) e demandará deliberação especial da Tesouraria."
+                            f"Despesa #{despesa.id} enviada. Ela passa do teto da coordenação "
+                            f"{despesa.coordenacao.sigla} em R$ {despesa.valor_excedente}; a tesouraria vai "
+                            "decidir se libera a verba extra."
                         )
                     else:
                         messages.success(
                             request,
-                            f"Despesa #{despesa.id} enviada com sucesso para a fila de triagem da Tesouraria!"
+                            f"Despesa #{despesa.id} enviada para a tesouraria."
                         )
                 else:
                     messages.info(
                         request,
-                        f"Rascunho da despesa #{despesa.id} salvo com sucesso. Você pode editá-la e anexar o "
-                        "comprovante antes do envio formal."
+                        f"Rascunho #{despesa.id} salvo. Você pode voltar depois para anexar a foto da NF ou "
+                        "recibo e enviar."
                     )
                 return redirect('despesas:minhas')
 
@@ -78,12 +140,16 @@ def nova_despesa_view(request):
                 msg_erro = e.message if hasattr(e, 'message') else str(e)
                 form.add_error(None, msg_erro)
     else:
-        form = DespesaForm(initial={'data_despesa': timezone.now().date()})
+        form = DespesaForm(initial={
+            'data_despesa': timezone.now().date(),
+            'coordenacao': request.user.coordenacao_id,
+        })
 
     return render(request, 'despesas/despesa_form.html', {
         'form': form,
-        'titulo_pagina': 'Nova Despesa (Campo)',
+        'titulo_pagina': 'Nova despesa',
         'modo_edicao': False,
+        'previa': _previa_inicial(request, form),
     })
 
 
@@ -110,8 +176,7 @@ def editar_despesa_view(request, pk):
     if despesa.status not in (StatusDespesa.RASCUNHO, StatusDespesa.REJEITADO):
         messages.error(
             request,
-            f"RN05 (Imutabilidade Pós-Decisão): Despesas no estado '{despesa.get_status_display()}' "
-            "não podem ser modificadas."
+            f"Despesas no estado '{despesa.get_status_display()}' não podem mais ser alteradas."
         )
         return redirect('despesas:minhas')
 
@@ -124,7 +189,7 @@ def editar_despesa_view(request, pk):
         if submeter_agora and not comprovante_upload and not despesa.comprovante:
             form.add_error(
                 'comprovante',
-                'RN01: O comprovante fiscal é obrigatório para submeter a despesa à triagem.'
+                'Anexe a foto ou o PDF da NF ou recibo para enviar a despesa à tesouraria.'
             )
 
         if form.is_valid():
@@ -141,17 +206,19 @@ def editar_despesa_view(request, pk):
                     if despesa.excede_teto:
                         messages.warning(
                             request,
-                            f"Despesa #{despesa.id} reenviada com alerta de estouro de teto (+R$ {despesa.valor_excedente})."
+                            f"Despesa #{despesa.id} reenviada. Ela passa do teto da coordenação "
+                            f"{despesa.coordenacao.sigla} em R$ {despesa.valor_excedente}; a tesouraria vai "
+                            "decidir se libera a verba extra."
                         )
                     else:
                         messages.success(
                             request,
-                            f"Despesa #{despesa.id} reenviada com sucesso para a triagem da Tesouraria!"
+                            f"Despesa #{despesa.id} reenviada para a tesouraria."
                         )
                 else:
                     messages.info(
                         request,
-                        f"Alterações na despesa #{despesa.id} salvas em rascunho com sucesso."
+                        f"Alterações salvas no rascunho #{despesa.id}."
                     )
                 return redirect('despesas:minhas')
 
@@ -164,8 +231,9 @@ def editar_despesa_view(request, pk):
     return render(request, 'despesas/despesa_form.html', {
         'form': form,
         'despesa': despesa,
-        'titulo_pagina': f'Editar Despesa #{despesa.id}',
+        'titulo_pagina': f'Despesa #{despesa.id}',
         'modo_edicao': True,
+        'previa': _previa_inicial(request, form),
     })
 
 
@@ -191,12 +259,14 @@ def submeter_despesa_view(request, pk):
         if despesa.excede_teto:
             messages.warning(
                 request,
-                f"Despesa #{despesa.id} enviada com alerta de estouro (+R$ {despesa.valor_excedente})!"
+                f"Despesa #{despesa.id} enviada. Ela passa do teto da coordenação "
+                f"{despesa.coordenacao.sigla} em R$ {despesa.valor_excedente}; a tesouraria vai "
+                "decidir se libera a verba extra."
             )
         else:
-            messages.success(request, f"Despesa #{despesa.id} submetida para triagem com sucesso!")
+            messages.success(request, f"Despesa #{despesa.id} enviada para a tesouraria.")
     except ValidationError as e:
-        messages.error(request, f"Erro ao submeter: {e.message if hasattr(e, 'message') else str(e)}")
+        messages.error(request, f"Não foi possível enviar: {e.message if hasattr(e, 'message') else str(e)}")
 
     return redirect('despesas:minhas')
 
@@ -318,7 +388,7 @@ def rejeitar_despesa_view(request, pk):
     form = RejeicaoDespesaForm(request.POST)
 
     if not form.is_valid():
-        erro = form.errors.get('motivo_rejeicao', ['Justificativa obrigatória (RN04).'])[0]
+        erro = form.errors.get('motivo_rejeicao', ['Informe a justificativa da reprovação.'])[0]
         messages.error(request, f"Erro ao rejeitar despesa #{despesa.id}: {erro}")
         return redirect('despesas:triagem')
 

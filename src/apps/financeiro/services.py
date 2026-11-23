@@ -174,7 +174,7 @@ def atualizar_teto_orcamentario(*, usuario, coordenacao: Coordenacao, novo_teto:
     """
     if not (getattr(usuario, 'is_tesoureiro', False) or getattr(usuario, 'is_admin_geral', False)):
         raise PermissaoNegadaDominioError(
-            "Apenas membros da Tesouraria ou Administração Geral podem alterar tetos orçamentários (RF02)."
+            "Apenas membros da Tesouraria ou Administração Geral podem alterar tetos orçamentários."
         )
 
     if not isinstance(novo_teto, Decimal):

@@ -1,9 +1,85 @@
+from decimal import ROUND_HALF_UP, Decimal
+
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.core.exceptions import ComprovanteObrigatorioError, PermissaoNegadaDominioError
 from apps.core.services import otimizar_comprovante_fiscal
 from apps.despesas.models import Despesa, StatusDespesa
+from apps.despesas.regras import calcular_soft_block_rn02
+
+ZERO = Decimal('0.00')
+CEM = Decimal('100')
+
+
+def _percentual_da_barra(parte: Decimal, total: Decimal) -> float:
+    """
+    Converte uma fração monetária do teto em largura percentual de barra visual.
+
+    - O que faz: Retorna quanto `parte` representa de `total`, limitado ao intervalo 0–100.
+    - Como faz: Divide em `Decimal`, quantiza com uma casa decimal e só converte para `float` no fim,
+      pois o resultado serve apenas como largura CSS (nunca é usado em contas em R$).
+    - Qual finalidade atende: Alimenta o termômetro da tela mobile (RF03) sem expor aritmética ao template.
+    """
+    if total <= ZERO or parte <= ZERO:
+        return 0.0
+    pct = ((parte / total) * CEM).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
+    return float(min(pct, CEM))
+
+
+def simular_impacto_orcamentario(*, usuario, coordenacao_id, valor: Decimal | None) -> dict | None:
+    """
+    Projeta o efeito de uma compra ainda não enviada sobre o saldo da coordenação.
+
+    - O que faz: Para uma coordenação visível ao usuário, devolve teto, comprometido, saldo atual, saldo após
+      a compra, sinalização de estouro (RN02) e as larguras da barra do termômetro (comprometido e compra).
+    - Como faz: Restringe a busca a `coordenacoes_visiveis(usuario)` (RBAC); lê o termômetro oficial via
+      `calcular_termometro_coordenacao`; aplica a mesma regra de soft-block usada na submissão
+      (`calcular_soft_block_rn02`), tudo em `Decimal`. Nada é gravado: é uma leitura.
+    - Qual finalidade atende: Mostra ao voluntário em campo, antes de enviar, se a compra cabe na verba da
+      pasta (RF03/RNF01) sem bloquear o envio (RN02 é soft-block), mantendo o cálculo fora de views e templates.
+      Retorna `None` quando a coordenação não existe ou não é visível ao usuário.
+    """
+    from apps.financeiro.services import calcular_termometro_coordenacao
+    from apps.usuarios.services import coordenacoes_visiveis
+
+    try:
+        coordenacao_pk = int(coordenacao_id)
+    except (TypeError, ValueError):
+        return None
+
+    coordenacao = coordenacoes_visiveis(usuario).filter(pk=coordenacao_pk).first()
+    if coordenacao is None:
+        return None
+
+    termometro = calcular_termometro_coordenacao(coordenacao)
+    teto = termometro['teto_orcamentario']
+    comprometido = termometro['total_comprometido']
+    saldo_atual = termometro['saldo_disponivel']
+    valor_dec = (valor if valor is not None and valor > ZERO else ZERO).quantize(
+        Decimal('0.01'), rounding=ROUND_HALF_UP
+    )
+
+    if valor_dec > ZERO:
+        excede_teto, valor_excedente = calcular_soft_block_rn02(valor_dec, saldo_atual)
+    else:
+        excede_teto, valor_excedente = False, ZERO
+    espaco_livre = max(teto - comprometido, ZERO)
+
+    return {
+        'coordenacao_id': coordenacao.id,
+        'sigla': coordenacao.sigla,
+        'nome': coordenacao.nome,
+        'teto': teto,
+        'comprometido': comprometido,
+        'saldo_atual': saldo_atual,
+        'valor': valor_dec,
+        'saldo_apos': saldo_atual - valor_dec,
+        'excede_teto': excede_teto,
+        'valor_excedente': valor_excedente,
+        'pct_comprometido': _percentual_da_barra(comprometido, teto),
+        'pct_compra': _percentual_da_barra(min(valor_dec, espaco_livre), teto),
+    }
 
 
 @transaction.atomic
@@ -34,7 +110,7 @@ def criar_ou_atualizar_despesa(
     if despesa_existente:
         if despesa_existente.status not in (StatusDespesa.RASCUNHO, StatusDespesa.REJEITADO):
             raise ValidationError(
-                f"RN05 (Imutabilidade Pós-Decisão): A despesa #{despesa_existente.id} está no estado "
+                f"A despesa #{despesa_existente.id} está no estado "
                 f"'{despesa_existente.get_status_display()}' e não pode ser editada."
             )
 
