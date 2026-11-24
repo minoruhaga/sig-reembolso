@@ -47,12 +47,10 @@ Para cobrir tanto o **código executando** quanto **todos os itens obrigatórios
   * Módulo `apps/despesas`: CRUD de despesas, formulários de submissão e máquina de estados finita.
   * Integração com Pillow para compactação automática de notas fiscais (`RNF02`).
   * Implementação das regras de negócio estritas (`RN01` a `RN06`).
-  * **Frentes absorvidas *(era de `@xixinho`)*:**
-    * **Issue #9:** Carga de dados semente com dados reais do AG VII e despesas históricas do AG VI.
-    * **Issue #17:** Expansão da suíte de testes automatizados (`TestCase`) e redação do **Item 3.i**.
+  * **Frente absorvida *(era de `@xixinho`)*:**
+    * **Issue #9 (Concluída — PR #37):** Carga de dados semente com dados reais do AG VII e despesas históricas do AG VI (`carregar_dados_ag6_ag7`).
 * **Entregáveis da Disciplina (FATEC):**
   * **Item 3.h:** Documentação técnica do sistema desenvolvido (programas fontes, dependências e ambiente de execução).
-  * **Item 3.i** *(era de `@xixinho`)*: Procedimentos descritivos de testes do sistema e evidências de execução.
   * **Itens 3.j e 3.k:** Manuais de Campo (Manual de Operação do Voluntário e Treinamento da Tesouraria, alinhados à prática real).
   * **Item 3.l:** Homologação formal e minuta do Termo de Aceite assinado pelo cliente (Coordenação Executiva do AG VII).
   * Gestão do repositório no GitHub (Code Review e aprovação dos Pull Requests).
@@ -79,8 +77,14 @@ Para cobrir tanto o **código executando** quanto **todos os itens obrigatórios
 * **Entregáveis da Disciplina (FATEC):**
   * **Item 3.g:** Documento de definição das interfaces do sistema com base na usabilidade (justificativas ergonômicas, personas, contraste sob sol/chuva, navegação mobile-first e eficiência desktop).
 
-### 👤 Membro 4: Giovanni (`@xixinho` — QA & Testes — *Escopo absorvido por `@minoruhaga` em 19/11*)
-* *Nota de Gestão:* Em razão de ausência e atraso na reta final, todas as atribuições originalmente alocadas ao Membro 4 (**Issue #9**, suíte de testes e **Item 3.i**) passaram a ser executadas por `@minoruhaga` (*era de `@xixinho`*).
+### 👤 Membro 4: Giovanni (`@xixinho` — QA, Validação Ponta a Ponta & Item 3.i)
+* *Nota de Alinhamento (23/11/2026):* Após alinhamento com a equipe, o repositório paralelo foi descartado e `@xixinho` passa a atuar diretamente sobre a base oficial em `minoruhaga/sig-reembolso` (branch `dev`), com foco exclusivo em QA e na entrega do **Item 3.i** até **27/11/2026**, sem alterar `models`, `migrations` ou arquitetura de `src/`.
+* **O que deve ser feito (passo a passo):**
+  1. **Setup e Execução Local:** Clonar a branch `dev`, configurar o ambiente (`nix develop` ou `.venv`), carregar os dados reais (`python manage.py carregar_dados_ag6_ag7`) e executar toda a suíte existente (`python manage.py test`) registrando os logs de aprovação dos 72 testes atuais.
+  2. **Entregável Obrigatório — Item 3.i (`docs/fase-2/3i_procedimentos_testes.md`):** Redigir o documento formal de procedimentos descritivos de testes exigido pelo edital, contendo:
+     * Inventário e resultados da execução da suíte automatizada (`src/apps/*/tests.py` e `test_*.py`).
+     * Roteiro de testes funcionais descritivos (ID do caso, pré-condição, passos de execução, resultado esperado, resultado obtido e evidências/prints das telas) cobrindo: login/RBAC, submissão mobile com câmera e compressão Pillow (`RNF02`), regras **RN01 a RN06**, triagem da Tesouraria, liquidação Cora PJ e exportação CSV/Balancete.
+  3. **Testes Extras de QA (Opcional, sem alterar produção):** Caso adicione novos testes em Python (ex.: fluxo ponta a ponta via `Client()` ou acesso cruzado entre coordenações), criar branch própria a partir de `dev` (`test/#17-procedimentos-testes-e2e`) tocando apenas arquivos `test_*.py` e abrir PR para `dev`.
 
 ---
 

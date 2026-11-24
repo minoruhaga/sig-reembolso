@@ -58,16 +58,14 @@ Este documento reúne a lista oficial das Issues abertas e concluídas no GitHub
   * Formulário web e endpoint para lançamento de despesa em campo com anexo obrigatório de cupom fiscal (**RN01**) e compressão Pillow (`RNF02`).
 * **[Issue #32](https://github.com/minoruhaga/sig-reembolso/issues/32): `[Fix] Correções de Integridade Contábil (RN01-RN06), Segurança, Demonstração e Configurações`** — ✅ **Concluída (`PR #33`)**
   * Blindagem de `RN01`–`RN06`, método `cancelar()`, proteção contra exclusão física, carregamento de `.env` e expansão da suíte de testes.
-* **[Issue #9](https://github.com/minoruhaga/sig-reembolso/issues/9): `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII`** *(Milestone: Onda 1)* — **Assumida por `@minoruhaga` *(era de `@xixinho`)***
-  * Criar comando ou fixture para carregar os dados anonimizados de `docs/referencias/coordenadores_ag7.csv` e `gastos_historicos_ag6/alimentacao_gastos_ag6.csv`.
+* **[Issue #9](https://github.com/minoruhaga/sig-reembolso/issues/9): `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII`** — ✅ **Concluída (`PR #37`)** *(assumida e finalizada por `@minoruhaga`)*
+  * Comando idempotente `carregar_dados_ag6_ag7` para carregar os dados anonimizados de `docs/referencias/coordenadores_ag7.csv` e `gastos_historicos_ag6/alimentacao_gastos_ag6.csv`.
 * **[Issue #10](https://github.com/minoruhaga/sig-reembolso/issues/10): `[Financeiro] API e View dinâmica de saldos e tetos das 15 coordenações (RF03)`** *(Milestone: Onda 2)*
   * Modelagem e cálculo do saldo dinâmico livre em tempo real com `Sum()` e precisão `Decimal`.
 * **[Issue #11](https://github.com/minoruhaga/sig-reembolso/issues/11): `[Workflow] Ações de Triagem da Tesouraria: Aprovar, Rejeitar com Justificativa e Liquidar`** *(Milestone: Onda 2)*
   * Máquina de estados atômica (`@transaction.atomic`) para Aprovar, Rejeitar com Justificativa (**RN04**) e Liquidar Reembolso com anexo do comprovante Cora PJ.
 * **[Issue #12](https://github.com/minoruhaga/sig-reembolso/issues/12): `[Regras] Soft-block de estouro com alerta e Segregação de Funções (RN02 e RN03)`** *(Milestone: Onda 2)*
   * Lógica de validação contábil: flag automática `excede_teto = True` e cálculo de `valor_excedente`, além de impedir auto-aprovação (**RN03**).
-* **[Issue #17](https://github.com/minoruhaga/sig-reembolso/issues/17): `[Testes] Item 3.i - Procedimentos descritivos de testes e expansão de casos no Django`** *(Milestone: Onda 3 - 27/11/2026)* — **Assumida por `@minoruhaga` *(era de `@xixinho`)***
-  * Documentar os procedimentos descritivos de testes (Item 3.i) e expandir a suíte automatizada (`TestCase`) cobrindo fluxos integrados e RN01 a RN06.
 * **[Issue #14](https://github.com/minoruhaga/sig-reembolso/issues/14): `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido`** *(Milestone: Onda 3 - 27/11/2026)*
   * Elaborar o documento formal exigido pela professora descrevendo os programas fontes, dependências e ambiente de execução.
 * **[Issue #19](https://github.com/minoruhaga/sig-reembolso/issues/19): `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)`** *(Milestone: Onda 3 - 27/11/2026)*
@@ -90,5 +88,9 @@ Este documento reúne a lista oficial das Issues abertas e concluídas no GitHub
 * **[Issue #16](https://github.com/minoruhaga/sig-reembolso/issues/16): `[Docs] Item 3.g - Definição e justificativa das interfaces com base na usabilidade`** *(Milestone: Onda 3 - 27/11/2026)*
   * Redigir documento acadêmico justificando as decisões ergonômicas, acessibilidade, contraste para uso sob luz solar no campo e facilidade em conexões lentas (Starlink).
 
-### 👤 Escopo Original de `@xixinho` (Giovanni) — *Redistribuído em 19/11/2026*
-* As entregas atribuídas originalmente a `@xixinho` (**Issue #9** e **Issue #17 / Item 3.i**) foram absorvidas por `@minoruhaga` por ausência de entregas/respostas na reta final, mantendo o prazo oficial de **27/11/2026**.
+### 👤 Giovanni (`@xixinho` — QA, Validação Ponta a Ponta & Item 3.i) — *Reatribuído em 23/11/2026*
+* **[Issue #17](https://github.com/minoruhaga/sig-reembolso/issues/17): `[Testes] Item 3.i - Procedimentos descritivos de testes e evidências de execução`** *(Milestone: Onda 3 - 27/11/2026)*
+  * **Entrega obrigatória:** Criar `docs/fase-2/3i_procedimentos_testes.md` contendo:
+    1. Evidências de execução da suíte automatizada atual (`python manage.py test`, com os 72 casos passando) após carga via `python manage.py carregar_dados_ag6_ag7`.
+    2. Casos de teste descritivos passo a passo (ID, objetivo, pré-condição, passos, resultado esperado, resultado obtido e prints das telas) cobrindo: Login/RBAC, Submissão Mobile com câmera e compressão Pillow (`RNF02`), regras `RN01` a `RN06`, Triagem da Tesouraria, Liquidação Cora PJ e Exportação CSV/Balancete.
+  * **Restrição de segurança (reta final):** Trabalhar em branch própria a partir de `dev` (ex.: `test/#17-procedimentos-testes`) sem alterar `models`, `migrations` ou regras de negócio já consolidadas em `src/`. Caso adicione novos testes automatizados em Python, restringir as alterações a arquivos `test_*.py`.

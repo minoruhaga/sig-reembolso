@@ -39,7 +39,7 @@ Este documento estabelece o **Quadro Kanban** do SIG-Reembolso para a Fase 2 (De
 | **[#7](https://github.com/minoruhaga/sig-reembolso/issues/7)** | `[Despesas] Formulário de Submissão com Pillow (RNF02 e RN01)` | `@minoruhaga` (Minoru) | `feature/#7-formulario-despesa` | ✅ Concluído (PR #31) |
 | **[#32](https://github.com/minoruhaga/sig-reembolso/issues/32)** | `[Fix] Correções de Integridade Contábil (RN01-RN06), Segurança, Demonstração e Configurações` | `@minoruhaga` (Minoru) | `fix/#32-correcoes-integridade-dominio-e-infra` | ✅ Concluído (PR #33) |
 | **[#8](https://github.com/minoruhaga/sig-reembolso/issues/8)** | `[UI/UX] Interface Mobile-First com Câmera Nativa (RNF01)` | `@ricardosakugawa` (Ricardo) | `feature/#8-tela-mobile-camera` | ⏳ A Fazer |
-| **[#9](https://github.com/minoruhaga/sig-reembolso/issues/9)** | `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII` | `@minoruhaga` *(era de `@xixinho`)* | `feature/#9-fixture-ag6-ag7` | ⏳ A Fazer |
+| **[#9](https://github.com/minoruhaga/sig-reembolso/issues/9)** | `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII` | `@minoruhaga` *(era de `@xixinho`)* | `feature/#9-fixture-ag6-ag7` | ✅ Concluído (PR #37) |
 
 ---
 
@@ -63,7 +63,7 @@ Este documento estabelece o **Quadro Kanban** do SIG-Reembolso para a Fase 2 (De
 | :-: | :--- | :---: | :---: | :---: |
 | **[#14](https://github.com/minoruhaga/sig-reembolso/issues/14)** | `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido` | `@minoruhaga` (Apoio: `@Mah-Rod`) | **Item 3.h** | 📋 Backlog |
 | **[#16](https://github.com/minoruhaga/sig-reembolso/issues/16)** | `[Docs] Item 3.g - Definição e justificativa das interfaces com base na usabilidade` | `@ricardosakugawa` (Ricardo) | **Item 3.g** | 📋 Backlog |
-| **[#17](https://github.com/minoruhaga/sig-reembolso/issues/17)** | `[Testes] Item 3.i - Procedimentos descritivos de testes e expansão de casos no Django` | `@minoruhaga` *(era de `@xixinho`)* | **Item 3.i** | 📋 Backlog |
+| **[#17](https://github.com/minoruhaga/sig-reembolso/issues/17)** | `[Testes] Item 3.i - Procedimentos descritivos de testes e evidências de execução` | `@xixinho` (Giovanni) | **Item 3.i** | ⏳ A Fazer |
 | **[#19](https://github.com/minoruhaga/sig-reembolso/issues/19)** | `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)` | `@minoruhaga` (Minoru - PO) | **Item 3.j** | 📋 Backlog |
 | **[#20](https://github.com/minoruhaga/sig-reembolso/issues/20)** | `[Docs] Itens 3.k e 3.l - Manual de Treinamento da Tesouraria e Homologação Formal` | `@minoruhaga` (Minoru - PO) | **Itens 3.k e 3.l** | 📋 Backlog |
 
