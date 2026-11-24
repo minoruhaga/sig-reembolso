@@ -105,8 +105,20 @@ def criar_ou_atualizar_despesa(
       do soft-block e registro da trilha imutável de auditoria.
     - Qual finalidade atende: Cumpre as regras de integridade arquitetural do SIG-Reembolso (src/AGENTS.md),
       centralizando as operações de domínio e manipulação de mídia em camada de serviço testável, impedindo
-      vazamento de regras contábeis para views ou templates.
+      vazamento de regras contábeis para views ou templates e bloqueando lançamentos fora do escopo RBAC.
     """
+    from apps.usuarios.services import coordenacoes_visiveis
+
+    coordenacao_alvo = dados_validados.get('coordenacao')
+    if coordenacao_alvo is None and despesa_existente is not None:
+        coordenacao_alvo = despesa_existente.coordenacao
+    if coordenacao_alvo is not None:
+        coordenacao_id = getattr(coordenacao_alvo, 'pk', coordenacao_alvo)
+        if not coordenacoes_visiveis(usuario).filter(pk=coordenacao_id).exists():
+            raise PermissaoNegadaDominioError(
+                "Você não tem permissão para lançar ou editar despesas nesta coordenação."
+            )
+
     if despesa_existente:
         if despesa_existente.status not in (StatusDespesa.RASCUNHO, StatusDespesa.REJEITADO):
             raise ValidationError(

@@ -8,6 +8,7 @@ FATEC-SP - Laboratório de Engenharia de Software (LES)
 import os
 from pathlib import Path
 
+from django.contrib.messages import constants as message_constants
 from dotenv import load_dotenv
 
 # Aponta para a pasta src/ (subindo settings -> config -> src)
@@ -106,3 +107,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'usuarios:login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'usuarios:login'
+
+# Mapeamento de níveis de mensagens do Django para classes do Bootstrap 5
+MESSAGE_TAGS = {
+    message_constants.DEBUG: 'secondary',
+    message_constants.ERROR: 'danger',
+}
