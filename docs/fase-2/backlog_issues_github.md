@@ -66,19 +66,20 @@ Este documento reúne a lista oficial das Issues abertas e concluídas no GitHub
   * Máquina de estados atômica (`@transaction.atomic`) para Aprovar, Rejeitar com Justificativa (**RN04**) e Liquidar Reembolso com anexo do comprovante Cora PJ.
 * **[Issue #12](https://github.com/minoruhaga/sig-reembolso/issues/12): `[Regras] Soft-block de estouro com alerta e Segregação de Funções (RN02 e RN03)`** *(Milestone: Onda 2)*
   * Lógica de validação contábil: flag automática `excede_teto = True` e cálculo de `valor_excedente`, além de impedir auto-aprovação (**RN03**).
-* **[Issue #14](https://github.com/minoruhaga/sig-reembolso/issues/14): `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido`** *(Milestone: Onda 3 - 27/11/2026)*
-  * Elaborar o documento formal exigido pela professora descrevendo os programas fontes, dependências e ambiente de execução.
-* **[Issue #19](https://github.com/minoruhaga/sig-reembolso/issues/19): `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)`** *(Milestone: Onda 3 - 27/11/2026)*
+* **[Issue #14](https://github.com/minoruhaga/sig-reembolso/issues/14): `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido`** *(Milestone: Onda 3 — Prazo: 26/11 às 23:59)*
+  * Elaborar o documento formal exigido pela professora descrevendo os programas fontes, dependências, arquitetura e instruções completas para execução do sistema.
+* **[Issue #19](https://github.com/minoruhaga/sig-reembolso/issues/19): `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)`** *(Milestone: Onda 3 — Prazo: 27/11 às 18:00)*
   * Guia ilustrado passo a passo ensinando os coordenadores a tirar fotos legíveis e enviar despesas.
-* **[Issue #20](https://github.com/minoruhaga/sig-reembolso/issues/20): `[Docs] Itens 3.k e 3.l - Manual de Treinamento da Tesouraria e Homologação Formal`** *(Milestone: Onda 3 - 27/11/2026)*
-  * Manual de operação da triagem financeira e minuta do Termo de Homologação formal com o cliente (Coordenação do AG VII - GE Caramuru).
+* **[Issue #20](https://github.com/minoruhaga/sig-reembolso/issues/20): `[Docs] Item 3.l - Procedimentos de Homologação e Aprovação do Sistema`** *(Milestone: Onda 3 — Prazo: 27/11 às 18:00)*
+  * Roteiro formal de testes de aceitação e minuta do Termo de Homologação com a Diretoria do Grupo Escoteiro Caramuru / Coordenação Executiva do AG VII.
 
-### 👤 Marina (`@Mah-Rod` — Backend de Acesso, Autenticação & Relatórios)
+### 👤 Marina (`@Mah-Rod` — Backend de Acesso, Autenticação, Relatórios & Manual 3.k)
 * **[Issue #6](https://github.com/minoruhaga/sig-reembolso/issues/6): `[RBAC] Telas de Login, Logout e Controle por Papel (Usuario)`** — ✅ **Concluída (`PR #29`)**
   * Telas de login/logout customizadas no Django utilizando o modelo `Usuario` e isolamento por coordenação/papel.
-* **[Issue #34](https://github.com/minoruhaga/sig-reembolso/issues/34): `[Relatórios] Módulo de Exportação de Prestação de Contas (CSV e Balancete)`** *(Milestone: Onda 2)*
+* **[Issue #34](https://github.com/minoruhaga/sig-reembolso/issues/34): `[Relatórios] Módulo de Exportação de Prestação de Contas (CSV e Balancete)`** — ✅ **Concluída (`PR #43` e `PR #46`)**
   * Criação de rotinas em `src/apps/relatorios/` para exportação de dados contábeis em CSV e balancete sintético de prestação de contas (RF08).
-  * Apoio na seção de segurança, autenticação e exportação do **Item 3.h**.
+* **[Issue #48](https://github.com/minoruhaga/sig-reembolso/issues/48): `[Docs] Item 3.k - Manual de Treinamento da Tesouraria`** *(Milestone: Onda 3 — Prazo: 27/11 às 18:00)*
+  * Manual de operação financeira e treinamento para a Tesouraria (`docs/fase-2/3k_manual_treinamento.md`), cobrindo o painel de triagem, modal de conferência de notas, aprovação, reprovação (RN04), liquidação Cora PJ (RF07) e exportação do balancete/CSV (RF08).
 
 ### 👤 Ricardo Sakugawa (`@ricardosakugawa` — Frontend & UI/UX Completo)
 * **[Issue #8](https://github.com/minoruhaga/sig-reembolso/issues/8): `[UI/UX] Interface Mobile-First com Câmera Nativa (RNF01)`** *(Milestone: Onda 1)*

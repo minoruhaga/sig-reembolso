@@ -50,19 +50,18 @@ Para cobrir tanto o **código executando** quanto **todos os itens obrigatórios
   * **Frente absorvida *(era de `@xixinho`)*:**
     * **Issue #9 (Concluída — PR #37):** Carga de dados semente com dados reais do AG VII e despesas históricas do AG VI (`carregar_dados_ag6_ag7`).
 * **Entregáveis da Disciplina (FATEC):**
-  * **Item 3.h:** Documentação técnica do sistema desenvolvido (programas fontes, dependências e ambiente de execução).
-  * **Itens 3.j e 3.k:** Manuais de Campo (Manual de Operação do Voluntário e Treinamento da Tesouraria, alinhados à prática real).
+  * **Item 3.h:** Documentação técnica do sistema desenvolvido (programas fontes, dependências, arquitetura e ambiente de execução).
+  * **Item 3.j:** Manual de Operação do Sistema (Guia dos Voluntários e Coordenadores de Campo).
   * **Item 3.l:** Homologação formal e minuta do Termo de Aceite assinado pelo cliente (Coordenação Executiva do AG VII).
   * Gestão do repositório no GitHub (Code Review e aprovação dos Pull Requests).
 
-### 👤 Membro 2: Marina (`@Mah-Rod` — Backend de Acesso, Autenticação & Relatórios)
+### 👤 Membro 2: Marina (`@Mah-Rod` — Backend de Acesso, Autenticação, Relatórios & Manual 3.k)
 * **Frentes de Código:**
-  * Módulo `apps/usuarios`: Custom User Model, login, logout e controle por papel (RBAC: Coordenador de Área, Tesoureiro, Administrador).
-  * Proteção de rotas restritas via middleware e decoradores do Django.
-  * Módulo `apps/relatorios`: rotinas de exportação de dados para prestação de contas (geração de planilhas CSV e relatórios contábeis para o GE Caramuru).
-  * Apoio na infraestrutura de ambiente (`settings.py`, variáveis `.env` e PostgreSQL).
+  * Módulo `apps/usuarios`: Custom User Model, login, logout e controle por papel (RBAC: Coordenador de Área, Tesoureiro, Administrador) — ✅ Concluído (PR #29).
+  * Módulo `apps/relatorios`: rotinas de exportação de dados para prestação de contas (geração de planilhas CSV e relatórios contábeis para o GE Caramuru) — ✅ Concluído (PR #43 e PR #46).
 * **Entregáveis da Disciplina (FATEC):**
-  * Apoio no **Item 3.h:** Seção de segurança, autenticação, controle de permissões e exportação de dados.
+  * **Item 3.k ([Issue #48](https://github.com/minoruhaga/sig-reembolso/issues/48)):** Manual de Treinamento da Tesouraria (`docs/fase-2/3k_manual_treinamento.md`), cobrindo a operação do painel de triagem, modal de conferência de notas, aprovação, reprovação justificada (RN04), liquidação Cora PJ (RF07) e exportação do balancete/CSV (RF08).
+  * Apoio no **Item 3.h:** Seção de segurança, autenticação e controle de permissões.
 
 ### 👤 Membro 3: Ricardo Sakugawa (`@ricardosakugawa` — Frontend & UI/UX Completo)
 * **Frentes de Código:**

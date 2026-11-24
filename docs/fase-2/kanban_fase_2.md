@@ -52,20 +52,21 @@ Este documento estabelece o **Quadro Kanban** do SIG-Reembolso para a Fase 2 (De
 | **[#11](https://github.com/minoruhaga/sig-reembolso/issues/11)** | `[Workflow] Ações de Triagem da Tesouraria: Aprovar, Rejeitar com Justificativa e Liquidar` | `@minoruhaga` (Minoru) | `feature/#11-acoes-triagem` | 📋 Backlog |
 | **[#12](https://github.com/minoruhaga/sig-reembolso/issues/12)** | `[Regras] Soft-block de estouro com alerta e Segregação de Funções (RN02 e RN03)` | `@minoruhaga` (Minoru) | `feature/#12-regras-dominio` | 📋 Backlog |
 | **[#13](https://github.com/minoruhaga/sig-reembolso/issues/13)** | `[UI/UX] Painel Desktop da Tesouraria com Modal de Zoom para Notas Fiscais` | `@ricardosakugawa` (Ricardo) | `feature/#13-painel-triagem` | 📋 Backlog |
-| **[#34](https://github.com/minoruhaga/sig-reembolso/issues/34)** | `[Relatórios] Módulo de Exportação de Prestação de Contas (CSV e Balancete)` | `@Mah-Rod` (Marina) | `feature/#34-relatorios-exportacao` | ⏳ A Fazer |
+| **[#34](https://github.com/minoruhaga/sig-reembolso/issues/34)** | `[Relatórios] Módulo de Exportação de Prestação de Contas (CSV e Balancete)` | `@Mah-Rod` (Marina) | `feature/#34-relatorios-exportacao` | ✅ Concluído (PR #43/PR #46) |
 
 ---
 
-### 🔴 Onda 3: Qualidade e Entrega Final Teams (Milestone 3 — Prazo: 27/11/2026)
-*Objetivo: Fechar os relatórios de exportação e produzir os artefatos formais exigidos pela professora (Itens 3.g a 3.l).*
+### 🔴 Onda 3: Qualidade e Entrega Final Teams (Milestone 3 — Prazo: 27/11 a 28/11/2026 às 23:59)
+*Objetivo: Produzir os artefatos formais exigidos pela professora (Itens 3.g a 3.l), consolidar testes e homologação final.*
 
-| ID GitHub | Issue / Card | Responsável | Entregável Oficial | Status |
-| :-: | :--- | :---: | :---: | :---: |
-| **[#14](https://github.com/minoruhaga/sig-reembolso/issues/14)** | `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido` | `@minoruhaga` (Apoio: `@Mah-Rod`) | **Item 3.h** | 📋 Backlog |
-| **[#16](https://github.com/minoruhaga/sig-reembolso/issues/16)** | `[Docs] Item 3.g - Definição e justificativa das interfaces com base na usabilidade` | `@ricardosakugawa` (Ricardo) | **Item 3.g** | 📋 Backlog |
-| **[#17](https://github.com/minoruhaga/sig-reembolso/issues/17)** | `[Testes] Item 3.i - Procedimentos descritivos de testes e evidências de execução` | `@xixinho` (Giovanni) | **Item 3.i** | ⏳ A Fazer |
-| **[#19](https://github.com/minoruhaga/sig-reembolso/issues/19)** | `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)` | `@minoruhaga` (Minoru - PO) | **Item 3.j** | 📋 Backlog |
-| **[#20](https://github.com/minoruhaga/sig-reembolso/issues/20)** | `[Docs] Itens 3.k e 3.l - Manual de Treinamento da Tesouraria e Homologação Formal` | `@minoruhaga` (Minoru - PO) | **Itens 3.k e 3.l** | 📋 Backlog |
+| ID GitHub | Issue / Card | Responsável | Entregável Oficial | Prazo Limite | Status |
+| :-: | :--- | :---: | :---: | :---: | :---: |
+| **[#14](https://github.com/minoruhaga/sig-reembolso/issues/14)** | `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido` | `@minoruhaga` (Minoru) | **Item 3.h** (`3h_documentacao_sistema.md`) | **26/11 às 23:59** | ⏳ A Fazer |
+| **[#16](https://github.com/minoruhaga/sig-reembolso/issues/16)** | `[Docs] Item 3.g - Definição e justificativa das interfaces com base na usabilidade` | `@ricardosakugawa` (Ricardo) | **Item 3.g** (`3g_interfaces_usabilidade.md`) | **26/11 às 23:59** | ⏳ A Fazer |
+| **[#17](https://github.com/minoruhaga/sig-reembolso/issues/17)** | `[Testes] Item 3.i - Procedimentos descritivos de testes e evidências de execução` | `@xixinho` (Giovanni) | **Item 3.i** (`3i_procedimentos_testes.md`) | **26/11 às 23:59** | ⏳ A Fazer |
+| **[#48](https://github.com/minoruhaga/sig-reembolso/issues/48)** | `[Docs] Item 3.k - Manual de Treinamento da Tesouraria` | `@Mah-Rod` (Marina) | **Item 3.k** (`3k_manual_treinamento.md`) | **27/11 às 18:00** | ⏳ A Fazer |
+| **[#19](https://github.com/minoruhaga/sig-reembolso/issues/19)** | `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)` | `@minoruhaga` (Minoru - PO) | **Item 3.j** (`3j_manual_operacao.md`) | **27/11 às 18:00** | ⏳ A Fazer |
+| **[#20](https://github.com/minoruhaga/sig-reembolso/issues/20)** | `[Docs] Item 3.l - Procedimentos de Homologação e Aprovação do Sistema` | `@minoruhaga` (Minoru - PO) | **Item 3.l** (`3l_homologacao_sistema.md`) | **27/11 às 18:00** | ⏳ A Fazer |
 
 ---
 
