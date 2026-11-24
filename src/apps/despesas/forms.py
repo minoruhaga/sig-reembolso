@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 
 from apps.despesas.models import Despesa
 from apps.financeiro.models import Coordenacao
+from apps.usuarios.services import coordenacoes_visiveis
 
 
 def converter_valor_reais(texto) -> Decimal | None:
@@ -150,19 +151,23 @@ class DespesaForm(forms.ModelForm):
             }),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, usuario=None, **kwargs):
         """
-        Inicializa o formulário personalizando querysets e obrigatoriedade de campos.
+        Inicializa o formulário personalizando querysets (com recorte RBAC) e obrigatoriedade de campos.
 
-        - O que faz: Filtra as coordenações operacionais ativas e flexibiliza o comprovante como opcional
-          no nível de formulário para permitir salvamento preliminar como rascunho (RF05 / RN01).
-        - Como faz: Sobrescreve `__init__`, atribui `Coordenacao.objects.filter(ativo=True)` e define
+        - O que faz: Filtra as coordenações operacionais ativas visíveis ao usuário autenticado e flexibiliza
+          o comprovante como opcional no nível de formulário para permitir salvamento preliminar como rascunho (RF05 / RN01).
+        - Como faz: Sobrescreve `__init__` recebendo `usuario=None`; quando informado, aplica `coordenacoes_visiveis(usuario)`
+          ao campo `coordenacao`; caso contrário, lista coordenações ativas ordenadas por nome; define
           `self.fields['comprovante'].required = False`.
-        - Qual finalidade atende: Dá suporte à criação de rascunhos sem foto prévia e evita exibição de
-          coordenações inativas ou descontinuadas.
+        - Qual finalidade atende: Impede que coordenadores visualizem ou selecionem pastas de terceiros (RF01),
+          dá suporte à criação de rascunhos sem foto prévia e evita exibição de coordenações inativas.
         """
         super().__init__(*args, **kwargs)
-        self.fields['coordenacao'].queryset = Coordenacao.objects.filter(ativo=True).order_by('nome')
+        if usuario is not None:
+            self.fields['coordenacao'].queryset = coordenacoes_visiveis(usuario)
+        else:
+            self.fields['coordenacao'].queryset = Coordenacao.objects.filter(ativo=True).order_by('nome')
         self.fields['comprovante'].required = False
 
     def clean_valor(self):

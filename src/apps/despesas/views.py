@@ -95,7 +95,7 @@ def nova_despesa_view(request):
       e RNF01/RNF02 (submissão mobile ágil com fotos compactadas).
     """
     if request.method == 'POST':
-        form = DespesaForm(request.POST, request.FILES)
+        form = DespesaForm(request.POST, request.FILES, usuario=request.user)
         acao = request.POST.get('acao', 'submeter')
         submeter_agora = (acao == 'submeter')
         comprovante_upload = request.FILES.get('comprovante')
@@ -136,14 +136,19 @@ def nova_despesa_view(request):
                     )
                 return redirect('despesas:minhas')
 
+            except PermissaoNegadaDominioError as exc:
+                raise PermissionDenied(str(exc)) from exc
             except ValidationError as e:
                 msg_erro = e.message if hasattr(e, 'message') else str(e)
                 form.add_error(None, msg_erro)
     else:
-        form = DespesaForm(initial={
-            'data_despesa': timezone.now().date(),
-            'coordenacao': request.user.coordenacao_id,
-        })
+        form = DespesaForm(
+            initial={
+                'data_despesa': timezone.now().date(),
+                'coordenacao': request.user.coordenacao_id,
+            },
+            usuario=request.user,
+        )
 
     return render(request, 'despesas/despesa_form.html', {
         'form': form,
@@ -181,7 +186,7 @@ def editar_despesa_view(request, pk):
         return redirect('despesas:minhas')
 
     if request.method == 'POST':
-        form = DespesaForm(request.POST, request.FILES, instance=despesa)
+        form = DespesaForm(request.POST, request.FILES, instance=despesa, usuario=request.user)
         acao = request.POST.get('acao', 'submeter')
         submeter_agora = (acao == 'submeter')
         comprovante_upload = request.FILES.get('comprovante')
@@ -222,11 +227,13 @@ def editar_despesa_view(request, pk):
                     )
                 return redirect('despesas:minhas')
 
+            except PermissaoNegadaDominioError as exc:
+                raise PermissionDenied(str(exc)) from exc
             except ValidationError as e:
                 msg_erro = e.message if hasattr(e, 'message') else str(e)
                 form.add_error(None, msg_erro)
     else:
-        form = DespesaForm(instance=despesa)
+        form = DespesaForm(instance=despesa, usuario=request.user)
 
     return render(request, 'despesas/despesa_form.html', {
         'form': form,

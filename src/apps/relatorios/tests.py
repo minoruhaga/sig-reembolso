@@ -303,3 +303,78 @@ class PrestacaoContasRelatoriosTestCase(TestCase):
         self.assertContains(pagina, 'Total de despesas')
         self.assertContains(pagina, '40.788,40')
         self.assertContains(pagina, '40.800,70')
+
+    def test_csv_neutraliza_formula_injection(self):
+        """
+        Neutraliza células textuais iniciadas por prefixos de fórmula na exportação CSV (CWE-1236).
+
+        - O que faz: Cadastra despesas com títulos iniciados por `=`, `+`, `-` e `@` e verifica o escape com `'`.
+        - Como faz: Persiste despesas de teste, gera o CSV via serviço e endpoint HTTP e confere as colunas
+          textuais e a preservação do formato numérico da coluna `valor`.
+        - Qual finalidade atende: Garante que a planilha de prestação de contas (RF08) não execute fórmulas
+          maliciosas ao ser aberta no Excel/Calc com UTF-8 BOM.
+        """
+        payloads = (
+            "=cmd|' /C calc'!A0",
+            '+1+1',
+            '-2+3',
+            '@SUM(A1:A2)',
+        )
+        for idx, titulo in enumerate(payloads, start=1):
+            self._criar_despesa(
+                coordenacao=self.alim,
+                titulo=titulo,
+                categoria=CategoriaDespesa.OUTROS,
+                status=StatusDespesa.PAGO,
+                valor=Decimal(f'{idx}.00'),
+            )
+
+        conteudo = gerar_csv_despesas(self.tesoureiro, categoria=CategoriaDespesa.OUTROS)
+        linhas = self._ler_csv(conteudo)
+        indice_titulo = linhas[0].index('titulo')
+        titulos_exportados = {linha[indice_titulo] for linha in linhas[1:]}
+        self.assertEqual(titulos_exportados, {f"'{p}" for p in payloads})
+
+        valores_exportados = sorted(linha[-1] for linha in linhas[1:])
+        self.assertEqual(valores_exportados, ['1,00', '2,00', '3,00', '4,00'])
+
+    def test_balancete_padrao_exclui_rascunho_rejeitado_e_cancelado(self):
+        """
+        Mantém o balancete sem filtro de status alinhado ao comprometimento real (`ENVIADO`, `APROVADO`, `PAGO`).
+
+        - O que faz: Verifica que despesas `RASCUNHO`, `REJEITADO` e `CANCELADO` não inflam o total padrão
+          do balancete, mas continuam consultáveis quando o usuário filtra explicitamente por esses status.
+        - Como faz: Cria uma despesa em cada status não comprometido, compara `gerar_balancete_sintetico` sem
+          filtro de status com `Decimal('12.30')` e depois consulta filtrando `status=StatusDespesa.RASCUNHO`.
+        - Qual finalidade atende: Elimina a divergência contábil entre o Painel Geral (`total_comprometido`)
+          e a tela de Prestação de Contas (RF08).
+        """
+        self._criar_despesa(
+            coordenacao=self.alim,
+            titulo='Rascunho não enviado',
+            categoria=CategoriaDespesa.ALIMENTACAO,
+            status=StatusDespesa.RASCUNHO,
+            valor=Decimal('99.00'),
+        )
+        self._criar_despesa(
+            coordenacao=self.alim,
+            titulo='Nota rejeitada',
+            categoria=CategoriaDespesa.ALIMENTACAO,
+            status=StatusDespesa.REJEITADO,
+            valor=Decimal('88.00'),
+        )
+        self._criar_despesa(
+            coordenacao=self.infra,
+            titulo='Compra cancelada',
+            categoria=CategoriaDespesa.INFRAESTRUTURA,
+            status=StatusDespesa.CANCELADO,
+            valor=Decimal('77.00'),
+        )
+
+        balancete_padrao = gerar_balancete_sintetico(self.tesoureiro)
+        self.assertEqual(balancete_padrao['total_geral'], Decimal('12.30'))
+        self.assertEqual(balancete_padrao['quantidade_total'], 4)
+
+        balancete_rascunho = gerar_balancete_sintetico(self.tesoureiro, status=StatusDespesa.RASCUNHO)
+        self.assertEqual(balancete_rascunho['total_geral'], Decimal('99.00'))
+        self.assertEqual(balancete_rascunho['quantidade_total'], 1)

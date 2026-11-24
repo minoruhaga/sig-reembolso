@@ -459,6 +459,7 @@ class DespesaSubmissaoViewFormTestCase(TestCase):
             username='coordenador_infra',
             password='senha_segura_123',
             papel=PapelUsuario.COORDENADOR,
+            coordenacao=self.coordenacao,
             first_name='Carlos',
             last_name='Coordenador'
         )

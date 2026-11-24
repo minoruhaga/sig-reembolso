@@ -22,6 +22,12 @@ from apps.usuarios.services import despesas_visiveis
 ZERO = Decimal('0.00')
 CENTAVO = Decimal('0.01')
 CAMPO_DECIMAL = DecimalField(max_digits=12, decimal_places=2)
+PREFIXOS_FORMULA_CSV = ('=', '+', '-', '@', '\t', '\r')
+STATUS_COMPROMETIDOS_BALANCETE = (
+    StatusDespesa.ENVIADO,
+    StatusDespesa.APROVADO,
+    StatusDespesa.PAGO,
+)
 
 CABECALHO_CSV = (
     'id',
@@ -143,14 +149,33 @@ def filtrar_despesas_relatorio(usuario, *, coordenacao=None, categoria=None, sta
     return queryset.order_by('coordenacao__nome', 'categoria', 'data_despesa', 'id')
 
 
+def _sanitizar_celula_csv(valor) -> str:
+    """
+    Neutraliza prefixos interpretados como fórmulas por softwares de planilha (CWE-1236).
+
+    - O que faz: Antepõe apóstrofo (`'`) em textos iniciados por `=`, `+`, `-`, `@`, `\\t` ou `\\r`.
+    - Como faz: Converte o valor para string e verifica o primeiro caractere (e o primeiro após espaços
+      iniciais) contra `PREFIXOS_FORMULA_CSV`.
+    - Qual finalidade atende: Evita execução indevida de fórmulas (CSV Formula Injection) ao abrir a
+      prestação de contas exportada com UTF-8 BOM no Excel ou LibreOffice Calc.
+    """
+    texto = '' if valor is None else str(valor)
+    if not texto:
+        return texto
+    if texto[0] in PREFIXOS_FORMULA_CSV or texto.lstrip(' ')[0:1] in PREFIXOS_FORMULA_CSV:
+        return f"'{texto}"
+    return texto
+
+
 def gerar_csv_despesas(usuario, *, coordenacao=None, categoria=None, status=None) -> str:
     """
     Gera a planilha analítica de despesas em CSV.
 
     - O que faz: Exporta uma linha por despesa do recorte autorizado, com cabeçalho estável, solicitante e valor em centavos.
-    - Como faz: Percorre `filtrar_despesas_relatorio` e escreve com `csv.writer` usando separador `;`.
+    - Como faz: Percorre `filtrar_despesas_relatorio`, sanitiza células textuais via `_sanitizar_celula_csv`
+      contra CSV Formula Injection e escreve com `csv.writer` usando separador `;`.
       O valor sai de `Decimal` quantizado, nunca de `float`.
-    - Qual finalidade atende: Entrega a planilha estruturada da prestação de contas do AG VII (RF08 / Issue #34).
+    - Qual finalidade atende: Entrega a planilha estruturada e segura da prestação de contas do AG VII (RF08 / Issue #34).
     """
     buffer = StringIO()
     escritor = csv.writer(buffer, delimiter=';', lineterminator='\r\n')
@@ -165,16 +190,16 @@ def gerar_csv_despesas(usuario, *, coordenacao=None, categoria=None, status=None
         escritor.writerow([
             despesa.id,
             despesa.data_despesa.isoformat(),
-            despesa.coordenacao.sigla,
-            despesa.coordenacao.nome,
+            _sanitizar_celula_csv(despesa.coordenacao.sigla),
+            _sanitizar_celula_csv(despesa.coordenacao.nome),
             despesa.categoria,
             _rotulo_escolha(CategoriaDespesa, despesa.categoria),
             despesa.status,
             _rotulo_escolha(StatusDespesa, despesa.status),
-            despesa.titulo,
-            _nome_solicitante(despesa.solicitante),
-            despesa.tipo,
-            despesa.forma_pagamento_original,
+            _sanitizar_celula_csv(despesa.titulo),
+            _sanitizar_celula_csv(_nome_solicitante(despesa.solicitante)),
+            _sanitizar_celula_csv(despesa.tipo),
+            _sanitizar_celula_csv(despesa.forma_pagamento_original),
             _formatar_valor_csv(despesa.valor),
         ])
     return buffer.getvalue()
@@ -185,9 +210,13 @@ def gerar_balancete_sintetico(usuario, *, coordenacao=None, categoria=None, stat
     Consolida o balancete sintético por coordenação e categoria contábil.
 
     - O que faz: Soma quantidade e valor das despesas do recorte RBAC, agrupadas por pasta e categoria.
-    - Como faz: Agrega no banco com `Sum` em `DecimalField` e `Coalesce` para zero, depois quantiza cada total.
+      Quando `status` não é informado, contabiliza apenas os status comprometidos (`ENVIADO`, `APROVADO`, `PAGO`),
+      mantendo coerência com `Coordenacao.total_comprometido`.
+    - Como faz: Filtra via `filtrar_despesas_relatorio`, restringe a `STATUS_COMPROMETIDOS_BALANCETE` quando
+      `status` é omitido, agrega no banco com `Sum` em `DecimalField` e `Coalesce` para zero, depois quantiza cada total.
       A ordenação padrão do model é removida antes do `GROUP BY` para não fatiar o agrupamento.
-    - Qual finalidade atende: Fecha a prestação de contas consolidada do AG VII com precisão de centavos (RF08).
+    - Qual finalidade atende: Fecha a prestação de contas consolidada do AG VII com precisão de centavos (RF08),
+      sem inflar o balancete com rascunhos, rejeições ou cancelamentos.
     """
     queryset = filtrar_despesas_relatorio(
         usuario,
@@ -195,6 +224,8 @@ def gerar_balancete_sintetico(usuario, *, coordenacao=None, categoria=None, stat
         categoria=categoria,
         status=status,
     ).order_by()
+    if not _texto_filtro(status):
+        queryset = queryset.filter(status__in=STATUS_COMPROMETIDOS_BALANCETE)
     agregados = queryset.values(
         'coordenacao_id',
         'coordenacao__sigla',
