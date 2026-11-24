@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load moeda %}
 
 {% block title %}Prestação de Contas{% endblock %}
 
@@ -7,7 +8,7 @@
     <div class="col-md-8">
         <h2 class="fw-bold mb-1">Prestação de Contas</h2>
         <p class="text-muted mb-0">
-            Balancete sintético por coordenação e categoria, no recorte do seu papel.
+            Veja quanto foi gasto em cada pasta, separado por categoria.
         </p>
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -22,7 +23,7 @@
         <div class="col-md-4">
             <label for="coordenacao" class="form-label small fw-semibold">Coordenação</label>
             <select id="coordenacao" name="coordenacao" class="form-select">
-                <option value="">Todas as pastas visíveis</option>
+                <option value="">Todas</option>
                 {% for pasta in coordenacoes %}
                 <option value="{{ pasta.sigla }}" {% if filtros.coordenacao == pasta.sigla %}selected{% endif %}>
                     {{ pasta.sigla }} — {{ pasta.nome }}
@@ -57,20 +58,20 @@
 <div class="row g-3 mb-4">
     <div class="col-md-6">
         <div class="card card-stat bg-white p-3 border-start border-4 border-success h-100">
-            <span class="text-muted small text-uppercase fw-semibold">Total consolidado</span>
-            <h4 class="fw-bold text-dark mt-1 mb-0">R$ {{ balancete.total_geral }}</h4>
+            <span class="text-muted small text-uppercase fw-semibold">Total de despesas</span>
+            <h4 class="fw-bold text-dark mt-1 mb-0">R$ {{ balancete.total_geral|reais }}</h4>
         </div>
     </div>
     <div class="col-md-6">
         <div class="card card-stat bg-white p-3 border-start border-4 border-primary h-100">
-            <span class="text-muted small text-uppercase fw-semibold">Lançamentos no recorte</span>
+            <span class="text-muted small text-uppercase fw-semibold">Quantidade de despesas</span>
             <h4 class="fw-bold text-dark mt-1 mb-0">{{ balancete.quantidade_total }}</h4>
         </div>
     </div>
 </div>
 
 <div class="card card-stat bg-white p-4">
-    <h5 class="fw-bold mb-3"><i class="bi bi-table me-2 text-success"></i>Balancete por coordenação e categoria</h5>
+    <h5 class="fw-bold mb-3"><i class="bi bi-table me-2 text-success"></i>Gastos por pasta e categoria</h5>
     {% if balancete.linhas %}
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -90,14 +91,14 @@
                     <td>{{ linha.coordenacao }}</td>
                     <td>{{ linha.categoria_descricao }}</td>
                     <td>{{ linha.quantidade }}</td>
-                    <td>{{ linha.total }}</td>
+                    <td>{{ linha.total|reais }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
     {% else %}
-    <p class="text-muted mb-0">Nenhuma despesa encontrada para os filtros e o papel atuais.</p>
+    <p class="text-muted mb-0">Nenhuma despesa encontrada com esses filtros.</p>
     {% endif %}
 </div>
 {% endblock %}

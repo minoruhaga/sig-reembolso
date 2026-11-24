@@ -33,6 +33,7 @@ CABECALHO_CSV = (
     'status',
     'status_descricao',
     'titulo',
+    'solicitante',
     'tipo',
     'forma_pagamento',
     'valor',
@@ -83,10 +84,41 @@ def _formatar_valor_csv(valor: Decimal) -> str:
     Formata um `Decimal` para a célula monetária da planilha.
 
     - O que faz: Serializa o valor quantizado com vírgula decimal, no padrão de planilha pt-BR.
-    - Como faz: Produz duas casas com ponto e substitui o separador decimal por vírgula.
+    - Como faz: Produz duas casas com ponto e substitui o separador decimal por vírgula, sem ponto de milhar.
     - Qual finalidade atende: Permite abrir o CSV no Excel em português sem deslocar os centavos (RF08).
     """
     return f'{_quantizar_moeda(valor):.2f}'.replace('.', ',')
+
+
+def formatar_reais_exibicao(valor: Decimal) -> str:
+    """
+    Formata um `Decimal` para leitura na tela, no padrão brasileiro.
+
+    - O que faz: Devolve o montante com separador de milhar e vírgula decimal, como `40.788,40`.
+    - Como faz: Quantiza em centavos e agrupa a parte inteira de três em três, sem converter para `float`.
+    - Qual finalidade atende: Deixa os totais da prestação de contas legíveis para o voluntário em campo (RF08).
+    """
+    quantizado = _quantizar_moeda(valor)
+    sinal = '-' if quantizado < ZERO else ''
+    texto = f'{abs(quantizado):.2f}'
+    inteiro, centavos = texto.split('.')
+    grupos = []
+    while inteiro:
+        grupos.append(inteiro[-3:])
+        inteiro = inteiro[:-3]
+    return f"{sinal}{'.'.join(reversed(grupos))},{centavos}"
+
+
+def _nome_solicitante(usuario) -> str:
+    """
+    Escolhe o nome do solicitante que vai para a planilha.
+
+    - O que faz: Identifica quem lançou a despesa na coluna `solicitante` do CSV.
+    - Como faz: Usa o nome completo e, se estiver em branco, o username.
+    - Qual finalidade atende: Permite à Tesouraria achar o voluntário na prestação de contas sem abrir cada despesa.
+    """
+    nome = (usuario.get_full_name() or '').strip()
+    return nome or usuario.get_username()
 
 
 def filtrar_despesas_relatorio(usuario, *, coordenacao=None, categoria=None, status=None):
@@ -115,7 +147,7 @@ def gerar_csv_despesas(usuario, *, coordenacao=None, categoria=None, status=None
     """
     Gera a planilha analítica de despesas em CSV.
 
-    - O que faz: Exporta uma linha por despesa do recorte autorizado, com cabeçalho estável e valor em centavos.
+    - O que faz: Exporta uma linha por despesa do recorte autorizado, com cabeçalho estável, solicitante e valor em centavos.
     - Como faz: Percorre `filtrar_despesas_relatorio` e escreve com `csv.writer` usando separador `;`.
       O valor sai de `Decimal` quantizado, nunca de `float`.
     - Qual finalidade atende: Entrega a planilha estruturada da prestação de contas do AG VII (RF08 / Issue #34).
@@ -140,6 +172,7 @@ def gerar_csv_despesas(usuario, *, coordenacao=None, categoria=None, status=None
             despesa.status,
             _rotulo_escolha(StatusDespesa, despesa.status),
             despesa.titulo,
+            _nome_solicitante(despesa.solicitante),
             despesa.tipo,
             despesa.forma_pagamento_original,
             _formatar_valor_csv(despesa.valor),

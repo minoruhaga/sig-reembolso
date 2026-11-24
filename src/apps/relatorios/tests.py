@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from apps.despesas.models import CategoriaDespesa, Despesa, FormaPagamentoOriginal, StatusDespesa, TipoDespesa
 from apps.financeiro.models import Coordenacao
-from apps.relatorios.services import gerar_balancete_sintetico, gerar_csv_despesas
+from apps.relatorios.services import formatar_reais_exibicao, gerar_balancete_sintetico, gerar_csv_despesas
 from apps.usuarios.models import PapelUsuario, Usuario
 
 
@@ -67,6 +67,8 @@ class PrestacaoContasRelatoriosTestCase(TestCase):
         self.coordenador = Usuario.objects.create_user(
             username='coord_alim',
             password='pass123',  # nosec B106
+            first_name='Ana',
+            last_name='Cozinha',
             papel=PapelUsuario.COORDENADOR,
             coordenacao=self.alim,
         )
@@ -189,11 +191,15 @@ class PrestacaoContasRelatoriosTestCase(TestCase):
                 'status',
                 'status_descricao',
                 'titulo',
+                'solicitante',
                 'tipo',
                 'forma_pagamento',
                 'valor',
             ],
         )
+        indice_solicitante = linhas[0].index('solicitante')
+        solicitantes = {linha[indice_solicitante] for linha in linhas[1:]}
+        self.assertEqual(solicitantes, {'Ana Cozinha'})
         valores = sorted(linha[-1] for linha in linhas[1:])
         siglas = {linha[2] for linha in linhas[1:]}
         self.assertEqual(valores, ['0,10', '0,20', '7,00'])
@@ -239,6 +245,8 @@ class PrestacaoContasRelatoriosTestCase(TestCase):
         self.client.force_login(self.coordenador)
         pagina = self.client.get(reverse('relatorios:balancete'))
         self.assertEqual(pagina.status_code, 200)
+        self.assertContains(pagina, 'Total de despesas')
+        self.assertContains(pagina, 'Veja quanto foi gasto em cada pasta, separado por categoria.')
         self.assertContains(pagina, 'ALIM')
         self.assertContains(pagina, '0,30')
         self.assertContains(pagina, '5,30')
@@ -249,6 +257,8 @@ class PrestacaoContasRelatoriosTestCase(TestCase):
         self.assertIn('text/csv', csv_coord['Content-Type'])
         self.assertIn('prestacao_contas_ag7.csv', csv_coord['Content-Disposition'])
         corpo = csv_coord.content.decode('utf-8-sig')
+        self.assertIn('solicitante', corpo)
+        self.assertIn('Ana Cozinha', corpo)
         self.assertIn('5,00', corpo)
         self.assertNotIn('7,00', corpo)
         self.assertNotIn('INFRA', corpo)
@@ -268,3 +278,28 @@ class PrestacaoContasRelatoriosTestCase(TestCase):
         self.assertContains(pagina_admin, 'ALIM')
         self.assertContains(pagina_admin, 'INFRA')
         self.assertContains(pagina_admin, '12,30')
+
+    def test_totais_da_tela_usam_separador_de_milhar(self):
+        """
+        Exibe totais grandes com ponto de milhar e vírgula decimal.
+
+        - O que faz: Confere a formatação `40.788,40` no serviço e no HTML do balancete.
+        - Como faz: Formata `Decimal('40788.40')` e renderiza a página do tesoureiro com uma despesa desse valor.
+        - Qual finalidade atende: Deixa o total legível para o voluntário sem perder os centavos (RF08).
+        """
+        self.assertEqual(formatar_reais_exibicao(Decimal('40788.40')), '40.788,40')
+        self.assertEqual(formatar_reais_exibicao(Decimal('0.30')), '0,30')
+        self.assertEqual(formatar_reais_exibicao(Decimal('-1000.50')), '-1.000,50')
+
+        self._criar_despesa(
+            coordenacao=self.alim,
+            titulo='Compra grande',
+            categoria=CategoriaDespesa.INFRAESTRUTURA,
+            status=StatusDespesa.PAGO,
+            valor=Decimal('40788.40'),
+        )
+        self.client.force_login(self.tesoureiro)
+        pagina = self.client.get(reverse('relatorios:balancete'))
+        self.assertContains(pagina, 'Total de despesas')
+        self.assertContains(pagina, '40.788,40')
+        self.assertContains(pagina, '40.800,70')
