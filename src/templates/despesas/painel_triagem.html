@@ -65,6 +65,7 @@
     .aud-lateral dt { font-size: .8rem; text-transform: uppercase; color: #6c757d; font-weight: 600; }
     .aud-lateral dd { margin-bottom: .75rem; }
     .aud-atalhos kbd { font-size: .75rem; }
+    .aud-filtros .form-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
 </style>
 {% endblock %}
 
@@ -106,11 +107,11 @@
 </div>
 
 <!-- Filtros -->
-<div class="card card-stat bg-white p-3 mb-4">
+<div class="card card-stat bg-white p-3 mb-4 aud-filtros">
     <form method="get" class="row g-2 align-items-end">
         <div class="col-md-4">
             <label for="filtroStatus" class="form-label small fw-semibold mb-1">Situação</label>
-            <select id="filtroStatus" name="status" class="form-select form-select-sm">
+            <select id="filtroStatus" name="status" class="form-select">
                 <option value="PENDENTES" {% if status_filtro == 'PENDENTES' %}selected{% endif %}>Pendentes (aguardando decisão ou PIX)</option>
                 <option value="ENVIADO" {% if status_filtro == 'ENVIADO' %}selected{% endif %}>Aguardando decisão</option>
                 <option value="APROVADO" {% if status_filtro == 'APROVADO' %}selected{% endif %}>Aprovadas (pagar PIX)</option>
@@ -121,7 +122,7 @@
         </div>
         <div class="col-md-5">
             <label for="filtroCoord" class="form-label small fw-semibold mb-1">Coordenação</label>
-            <select id="filtroCoord" name="coordenacao" class="form-select form-select-sm">
+            <select id="filtroCoord" name="coordenacao" class="form-select">
                 <option value="">Todas as coordenações</option>
                 {% for c in coordenacoes %}
                     <option value="{{ c.id }}" {% if coordenacao_filtro == c.id|stringformat:'s' %}selected{% endif %}>
@@ -131,10 +132,10 @@
             </select>
         </div>
         <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-success btn-sm flex-grow-1 fw-semibold">
+            <button type="submit" class="btn btn-success flex-grow-1 fw-semibold">
                 <i class="bi bi-funnel me-1"></i> Filtrar
             </button>
-            <a href="{% url 'despesas:triagem' %}" class="btn btn-outline-secondary btn-sm">Limpar</a>
+            <a href="{% url 'despesas:triagem' %}" class="btn btn-outline-secondary">Limpar</a>
         </div>
     </form>
 </div>
