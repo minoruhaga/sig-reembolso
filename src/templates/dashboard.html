@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load moeda %}
 
 {% block title %}Painel Orçamentário e Operacional{% endblock %}
 
@@ -28,7 +29,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <span class="text-muted small text-uppercase fw-semibold">Orçamento Global Previsto</span>
-                    <h3 class="fw-bold text-dark mt-1 mb-0">R$ {{ total_orcado|floatformat:2 }}</h3>
+                    <h3 class="fw-bold text-dark mt-1 mb-0">R$ {{ total_orcado|reais }}</h3>
                 </div>
                 <div class="bg-primary-subtle text-primary p-3 rounded-circle">
                     <i class="bi bi-wallet2 fs-4"></i>
@@ -42,7 +43,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <span class="text-muted small text-uppercase fw-semibold">Total Comprometido</span>
-                    <h3 class="fw-bold text-dark mt-1 mb-0">R$ {{ total_comprometido|floatformat:2 }}</h3>
+                    <h3 class="fw-bold text-dark mt-1 mb-0">R$ {{ total_comprometido|reais }}</h3>
                 </div>
                 <div class="bg-warning-subtle text-warning p-3 rounded-circle">
                     <i class="bi bi-hourglass-split fs-4"></i>
@@ -56,7 +57,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <span class="text-muted small text-uppercase fw-semibold">Saldo Financeiro Livre</span>
-                    <h3 class="fw-bold text-success mt-1 mb-0">R$ {{ total_saldo_livre|floatformat:2 }}</h3>
+                    <h3 class="fw-bold text-success mt-1 mb-0">R$ {{ total_saldo_livre|reais }}</h3>
                 </div>
                 <div class="bg-success-subtle text-success p-3 rounded-circle">
                     <i class="bi bi-piggy-bank fs-4"></i>
@@ -95,23 +96,23 @@
                                 <strong>{{ coord.nome }}</strong>
                                 <div class="text-muted small text-truncate" style="max-width: 320px;">{{ coord.descricao }}</div>
                             </td>
-                            <td>R$ {{ coord.teto_orcamentario|floatformat:2 }}</td>
+                            <td>R$ {{ coord.teto_orcamentario|reais }}</td>
                             <td>
                                 {% if coord.total_comprometido > 0 %}
-                                    <span class="text-warning fw-semibold">R$ {{ coord.total_comprometido|floatformat:2 }}</span>
+                                    <span class="text-warning fw-semibold">R$ {{ coord.total_comprometido|reais }}</span>
                                 {% else %}
                                     <span class="text-muted">R$ 0,00</span>
                                 {% endif %}
                             </td>
                             <td>
                                 <strong class="{% if coord.saldo_disponivel < 0 %}text-danger{% else %}text-success{% endif %}">
-                                    R$ {{ coord.saldo_disponivel|floatformat:2 }}
+                                    R$ {{ coord.saldo_disponivel|reais }}
                                 </strong>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="progress flex-grow-1 termometro-barra" role="progressbar">
-                                        <div class="progress-bar {% if coord.percentual_consumido > 90 %}bg-danger{% elif coord.percentual_consumido > 60 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ coord.percentual_consumido }}%"></div>
+                                    <div class="progress flex-grow-1 termometro-barra" role="progressbar" aria-valuenow="{{ coord.percentual_consumido|stringformat:'.1f' }}" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar {% if coord.percentual_consumido > 90 %}bg-danger{% elif coord.percentual_consumido > 60 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ coord.percentual_consumido|stringformat:'.1f' }}%"></div>
                                     </div>
                                     <span class="small fw-semibold text-muted">{{ coord.percentual_consumido }}%</span>
                                 </div>
@@ -162,7 +163,7 @@
                             <td><span class="badge bg-light text-dark">{{ d.coordenacao.sigla }}</span></td>
                             <td>{{ d.solicitante.get_full_name|default:d.solicitante.username }}</td>
                             <td>{{ d.data_despesa|date:"d/m/Y" }}</td>
-                            <td class="fw-bold">R$ {{ d.valor|floatformat:2 }}</td>
+                            <td class="fw-bold">R$ {{ d.valor|reais }}</td>
                             <td>
                                 {% if d.status == 'PAGO' %}
                                     <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Pago</span>

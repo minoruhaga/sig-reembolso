@@ -43,7 +43,7 @@
         <div class="col-md-3">
             <label for="status" class="form-label small fw-semibold">Status</label>
             <select id="status" name="status" class="form-select">
-                <option value="">Comprometidos (Enviado, Aprovado e Pago)</option>
+                <option value="">Comprometidos (padrão)</option>
                 {% for codigo, rotulo in status_opcoes %}
                 <option value="{{ codigo }}" {% if filtros.status == codigo %}selected{% endif %}>{{ rotulo }}</option>
                 {% endfor %}
