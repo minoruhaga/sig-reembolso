@@ -15,6 +15,19 @@ def usuario_pode_acessar_admin(user) -> bool:
     return bool(getattr(user, 'is_authenticated', False) and user.pode_acessar_admin)
 
 
+def usuario_pode_acessar_painel_auditoria(user) -> bool:
+    """
+    Decide se o usuário autenticado pode abrir o painel de auditoria da Tesouraria.
+
+    - O que faz: Encapsula a autorização do painel `/despesas/triagem/` com base no papel do `Usuario`.
+    - Como faz: Exige sessão autenticada e delega à propriedade `pode_acessar_painel_auditoria`
+      (somente Tesoureiro ou superusuário).
+    - Qual finalidade atende: Mantém a regra de acesso da Issue #13 fora da view e dos templates, num único
+      ponto reaproveitado pelo painel, pelo menu e pelo dashboard.
+    """
+    return bool(getattr(user, 'is_authenticated', False) and user.pode_acessar_painel_auditoria)
+
+
 def url_pos_login(user) -> str:
     """
     Escolhe a URL inicial após autenticação bem-sucedida conforme o papel.
