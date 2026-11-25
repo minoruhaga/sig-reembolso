@@ -159,15 +159,18 @@ class DespesaForm(forms.ModelForm):
           o comprovante como opcional no nível de formulário para permitir salvamento preliminar como rascunho (RF05 / RN01).
         - Como faz: Sobrescreve `__init__` recebendo `usuario=None`; quando informado, aplica `coordenacoes_visiveis(usuario)`
           ao campo `coordenacao`; caso contrário, lista coordenações ativas ordenadas por nome; define
-          `self.fields['comprovante'].required = False`.
+          `self.fields['comprovante'].required = False`; mostra só o nome da coordenação nas opções do seletor.
         - Qual finalidade atende: Impede que coordenadores visualizem ou selecionem pastas de terceiros (RF01),
-          dá suporte à criação de rascunhos sem foto prévia e evita exibição de coordenações inativas.
+          dá suporte à criação de rascunhos sem foto prévia e evita exibição de coordenações inativas. O rótulo
+          curto cabe num celular de 360 px sem cortar o texto ("ALIM - Alimentação e Cozinha Central" passava
+          da largura); a sigla continua visível no termômetro logo abaixo.
         """
         super().__init__(*args, **kwargs)
         if usuario is not None:
             self.fields['coordenacao'].queryset = coordenacoes_visiveis(usuario)
         else:
             self.fields['coordenacao'].queryset = Coordenacao.objects.filter(ativo=True).order_by('nome')
+        self.fields['coordenacao'].label_from_instance = lambda coordenacao: coordenacao.nome
         self.fields['comprovante'].required = False
 
     def clean_valor(self):

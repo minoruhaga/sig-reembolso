@@ -79,7 +79,7 @@ def previa_orcamento_view(request):
         return JsonResponse({'erro': 'Coordenação não encontrada.'}, status=404)
 
     dados = dict(previa)
-    for campo in ('teto', 'comprometido', 'saldo_atual', 'valor', 'saldo_apos', 'valor_excedente'):
+    for campo in ('teto', 'comprometido', 'saldo_atual', 'valor', 'saldo_apos', 'valor_excedente', 'estouro_atual'):
         dados[campo] = f"{previa[campo]:.2f}"
     return JsonResponse(dados)
 

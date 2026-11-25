@@ -40,6 +40,18 @@
         footer {
             margin-top: auto;
         }
+        /* Celular: botões e campos com pelo menos 44 px de altura (WCAG 2.5.5), inclusive os .btn-sm. */
+        @media (max-width: 767.98px) {
+            .btn {
+                min-height: 2.75rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .form-control, .form-select, .navbar-toggler {
+                min-height: 2.75rem;
+            }
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>

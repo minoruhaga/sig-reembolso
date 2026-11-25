@@ -32,7 +32,8 @@ def simular_impacto_orcamentario(*, usuario, coordenacao_id, valor: Decimal | No
     Projeta o efeito de uma compra ainda não enviada sobre o saldo da coordenação.
 
     - O que faz: Para uma coordenação visível ao usuário, devolve teto, comprometido, saldo atual, saldo após
-      a compra, sinalização de estouro (RN02) e as larguras da barra do termômetro (comprometido e compra).
+      a compra, sinalização de estouro (RN02), se a verba já passou do teto antes desta compra (e em quanto)
+      e as larguras da barra do termômetro (comprometido e compra).
     - Como faz: Restringe a busca a `coordenacoes_visiveis(usuario)` (RBAC); lê o termômetro oficial via
       `calcular_termometro_coordenacao`; aplica a mesma regra de soft-block usada na submissão
       (`calcular_soft_block_rn02`), tudo em `Decimal`. Nada é gravado: é uma leitura.
@@ -65,6 +66,7 @@ def simular_impacto_orcamentario(*, usuario, coordenacao_id, valor: Decimal | No
     else:
         excede_teto, valor_excedente = False, ZERO
     espaco_livre = max(teto - comprometido, ZERO)
+    teto_ja_estourado = saldo_atual < ZERO
 
     return {
         'coordenacao_id': coordenacao.id,
@@ -77,6 +79,8 @@ def simular_impacto_orcamentario(*, usuario, coordenacao_id, valor: Decimal | No
         'saldo_apos': saldo_atual - valor_dec,
         'excede_teto': excede_teto,
         'valor_excedente': valor_excedente,
+        'teto_ja_estourado': teto_ja_estourado,
+        'estouro_atual': -saldo_atual if teto_ja_estourado else ZERO,
         'pct_comprometido': _percentual_da_barra(comprometido, teto),
         'pct_compra': _percentual_da_barra(min(valor_dec, espaco_livre), teto),
     }

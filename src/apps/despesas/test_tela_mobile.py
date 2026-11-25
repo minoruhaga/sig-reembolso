@@ -287,3 +287,106 @@ class ValorEmReaisTestCase(TestCase):
             resposta,
             f'Rascunho #{despesa.id} salvo. Você pode voltar depois para anexar a foto da NF ou recibo e enviar.',
         )
+
+
+class VerbaEstouradaTelaMobileTestCase(TestCase):
+    """
+    Testes do aviso de verba já estourada e do rótulo curto da coordenação (verificação em 360 px, Issue #16).
+
+    - O que faz: Verifica que, com a coordenação acima do teto, o termômetro e o painel mostram o saldo negativo
+      como estouro (vermelho e texto próprio) e que o seletor de coordenação usa só o nome da pasta.
+    - Como faz: Cria uma coordenação com teto de R$ 1.000,00 e uma despesa ENVIADA de R$ 1.250,00; chama o
+      serviço de prévia, o endpoint JSON, a tela nova e o painel com o test client.
+    - Qual finalidade atende: Antes, o saldo de R$ -250,00 aparecia em preto no termômetro e em verde no painel,
+      sugerindo verba sobrando; e "ALIM - Alimentação e Cozinha Central" era cortado num celular de 360 px.
+    """
+
+    def setUp(self):
+        """
+        Prepara a pasta ALIM com R$ 250,00 gastos acima do teto e o coordenador logado.
+        """
+        self.alim = Coordenacao.objects.create(
+            nome='Alimentação e Cozinha Central', sigla='ALIM',
+            teto_orcamentario=Decimal('1000.00'), ativo=True,
+        )
+        self.coordenador = Usuario.objects.create_user(
+            username='coord_alim', password='senha_teste_123',
+            papel=PapelUsuario.COORDENADOR, coordenacao=self.alim,
+        )
+        Despesa.objects.create(
+            coordenacao=self.alim, solicitante=self.coordenador, titulo='Feira grande',
+            valor=Decimal('1250.00'), data_despesa='2026-11-01', status=StatusDespesa.ENVIADO,
+        )
+        self.client.login(username='coord_alim', password='senha_teste_123')
+
+    def test_previa_sem_valor_indica_teto_ja_estourado(self):
+        """
+        Sem valor digitado, a prévia marca `teto_ja_estourado` e informa o estouro como valor positivo.
+        """
+        previa = simular_impacto_orcamentario(
+            usuario=self.coordenador, coordenacao_id=self.alim.id, valor=None
+        )
+
+        self.assertTrue(previa['teto_ja_estourado'])
+        self.assertEqual(previa['estouro_atual'], Decimal('250.00'))
+        self.assertFalse(previa['excede_teto'])
+
+    def test_previa_dentro_do_teto_nao_indica_estouro(self):
+        """
+        Com saldo positivo, `teto_ja_estourado` é falso e `estouro_atual` é zero.
+        """
+        self.alim.teto_orcamentario = Decimal('2000.00')
+        self.alim.save()
+        previa = simular_impacto_orcamentario(
+            usuario=self.coordenador, coordenacao_id=self.alim.id, valor=None
+        )
+
+        self.assertFalse(previa['teto_ja_estourado'])
+        self.assertEqual(previa['estouro_atual'], Decimal('0.00'))
+
+    def test_tela_nova_mostra_termometro_vermelho_com_texto_de_estouro(self):
+        """
+        A tela nova já abre com o termômetro em estado de estouro, o texto do estouro e a nota da tesouraria.
+        """
+        resposta = self.client.get(reverse('despesas:nova'))
+        html = resposta.content.decode()
+
+        self.assertIn('termometro termometro--estouro', html)
+        self.assertContains(resposta, 'A verba já passou do teto em R$ 250,00.')
+        self.assertNotContains(resposta, 'Saldo livre: R$ -')
+        self.assertRegex(html, r'<p class="termometro-nota" id="termo-nota"\s*>')
+
+    def test_endpoint_previa_envia_estouro_atual_em_texto(self):
+        """
+        O JSON da prévia traz `teto_ja_estourado` e `estouro_atual` com duas casas, para o JS repintar.
+        """
+        resposta = self.client.get(
+            reverse('despesas:previa_orcamento'), {'coordenacao': self.alim.id, 'valor': '0'}
+        )
+        dados = resposta.json()
+
+        self.assertTrue(dados['teto_ja_estourado'])
+        self.assertEqual(dados['estouro_atual'], '250.00')
+
+    def test_painel_mostra_saldo_negativo_em_vermelho(self):
+        """
+        No painel, o cartão "Saldo Financeiro Livre" fica vermelho e explica que há gasto acima do teto.
+        """
+        resposta = self.client.get(reverse('dashboard'))
+        html = resposta.content.decode()
+
+        self.assertIn('text-danger mt-1 mb-0">R$ -250,00', html)
+        self.assertContains(resposta, 'Gastos acima do teto da sua coordenação')
+        self.assertNotIn('text-success mt-1 mb-0">R$ -', html)
+
+    def test_seletor_de_coordenacao_mostra_so_o_nome(self):
+        """
+        A opção do seletor é "Alimentação e Cozinha Central", sem o prefixo "ALIM - ".
+        """
+        resposta = self.client.get(reverse('despesas:nova'))
+
+        self.assertRegex(
+            resposta.content.decode(),
+            r'<option value="%d" selected>Alimentação e Cozinha Central</option>' % self.alim.id,
+        )
+        self.assertNotContains(resposta, 'ALIM - Alimentação')
