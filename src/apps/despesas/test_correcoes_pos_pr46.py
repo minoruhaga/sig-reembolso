@@ -174,14 +174,46 @@ class CorrecoesPosPR46TestCase(TestCase):
         resp_dash = self.client.get(url_dashboard)
         self.assertEqual(resp_dash.status_code, 200)
         self.assertContains(resp_dash, f'href="{url_saldos}"')
-        self.assertContains(resp_dash, f'class="nav-link active" aria-current="page" href="{url_dashboard}"')
+        self.assertContains(resp_dash, f'class="nav-link text-nowrap active" aria-current="page" href="{url_dashboard}"')
 
         resp_saldos = self.client.get(url_saldos)
         self.assertEqual(resp_saldos.status_code, 200)
-        self.assertContains(resp_saldos, f'class="nav-link active" aria-current="page" href="{url_saldos}"')
-        self.assertNotContains(resp_saldos, f'class="nav-link active" aria-current="page" href="{url_dashboard}"')
+        self.assertContains(resp_saldos, f'class="nav-link text-nowrap active" aria-current="page" href="{url_saldos}"')
+        self.assertNotContains(resp_saldos, f'class="nav-link text-nowrap active" aria-current="page" href="{url_dashboard}"')
 
         resp_balancete = self.client.get(url_balancete)
         self.assertEqual(resp_balancete.status_code, 200)
-        self.assertContains(resp_balancete, f'class="nav-link active" aria-current="page" href="{url_balancete}"')
-        self.assertNotContains(resp_balancete, f'class="nav-link active" aria-current="page" href="{url_dashboard}"')
+        self.assertContains(resp_balancete, f'class="nav-link text-nowrap active" aria-current="page" href="{url_balancete}"')
+        self.assertNotContains(resp_balancete, f'class="nav-link text-nowrap active" aria-current="page" href="{url_dashboard}"')
+
+    def test_termometro_css_e_moeda_com_milhar_no_dashboard_e_saldos(self):
+        """
+        Garante largura CSS válida com ponto decimal nos termômetros e separador de milhar em Reais (BUG-E2E-01/03).
+
+        - O que faz: Cria uma despesa representando 53,2% do teto de R$ 1.000,00 e verifica o HTML do
+          Painel Geral (`/`) e da tela de Saldos (`/financeiro/saldos/`).
+        - Como faz: Persiste despesa `ENVIADO` de `Decimal('532.00')` em ALIM e confere `width: 53.2%`,
+          `aria-valuenow="53.2"`, ausência de `width: 53,2%` e formatação `1.000,00`.
+        - Qual finalidade atende: Corrige a barra vazia (0%) causada por vírgula pt-BR no CSS e padroniza
+          a exibição de valores monetários entre todas as telas.
+        """
+        Despesa.objects.create(
+            coordenacao=self.alim,
+            solicitante=self.coordenador,
+            titulo='Compra termômetro 53.2%',
+            categoria=CategoriaDespesa.ALIMENTACAO,
+            tipo=TipoDespesa.REEMBOLSO,
+            forma_pagamento_original=FormaPagamentoOriginal.PIX,
+            valor=Decimal('532.00'),
+            data_despesa=timezone.now().date(),
+            status=StatusDespesa.ENVIADO,
+        )
+        self.client.force_login(self.coordenador)
+
+        for rota in (reverse('dashboard'), reverse('financeiro:saldos')):
+            resp = self.client.get(rota)
+            self.assertEqual(resp.status_code, 200)
+            self.assertContains(resp, 'style="width: 53.2%"')
+            self.assertContains(resp, 'aria-valuenow="53.2"')
+            self.assertNotContains(resp, 'style="width: 53,2%"')
+            self.assertContains(resp, 'R$ 1.000,00')

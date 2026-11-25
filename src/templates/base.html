@@ -44,9 +44,9 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm">
+    <nav class="navbar navbar-expand-xl navbar-dark bg-success shadow-sm">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'dashboard' %}">
+            <a class="navbar-brand d-flex align-items-center gap-2 text-nowrap" href="{% url 'dashboard' %}">
                 <i class="bi bi-compass fs-4"></i>
                 <span>SIG-Reembolso</span>
             </a>
@@ -54,35 +54,35 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav me-auto mb-2 mb-xl-0">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %} href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i> Painel Geral</a>
+                        <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %} href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i> Painel Geral</a>
                     </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.view_name == 'financeiro:saldos' %}active{% endif %}" {% if request.resolver_match.view_name == 'financeiro:saldos' %}aria-current="page"{% endif %} href="{% url 'financeiro:saldos' %}"><i class="bi bi-wallet2 me-1"></i> Saldos</a>
+                        <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'financeiro:saldos' %}active{% endif %}" {% if request.resolver_match.view_name == 'financeiro:saldos' %}aria-current="page"{% endif %} href="{% url 'financeiro:saldos' %}"><i class="bi bi-wallet2 me-1"></i> Saldos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.view_name == 'despesas:nova' %}active{% endif %}" {% if request.resolver_match.view_name == 'despesas:nova' %}aria-current="page"{% endif %} href="{% url 'despesas:nova' %}"><i class="bi bi-camera me-1"></i> Nova Despesa</a>
+                        <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'despesas:nova' %}active{% endif %}" {% if request.resolver_match.view_name == 'despesas:nova' %}aria-current="page"{% endif %} href="{% url 'despesas:nova' %}"><i class="bi bi-camera me-1"></i> Nova Despesa</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.view_name == 'despesas:minhas' %}active{% endif %}" {% if request.resolver_match.view_name == 'despesas:minhas' %}aria-current="page"{% endif %} href="{% url 'despesas:minhas' %}"><i class="bi bi-receipt me-1"></i> Minhas Despesas</a>
+                        <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'despesas:minhas' %}active{% endif %}" {% if request.resolver_match.view_name == 'despesas:minhas' %}aria-current="page"{% endif %} href="{% url 'despesas:minhas' %}"><i class="bi bi-receipt me-1"></i> Minhas Despesas</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.view_name == 'relatorios:balancete' %}active{% endif %}" {% if request.resolver_match.view_name == 'relatorios:balancete' %}aria-current="page"{% endif %} href="{% url 'relatorios:balancete' %}"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Prestação de Contas</a>
+                        <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'relatorios:balancete' %}active{% endif %}" {% if request.resolver_match.view_name == 'relatorios:balancete' %}aria-current="page"{% endif %} href="{% url 'relatorios:balancete' %}"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Prestação de Contas</a>
                     </li>
                     {% endif %}
                     {% if user.is_authenticated and user.pode_acessar_admin %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.view_name == 'despesas:triagem' %}active{% endif %}" {% if request.resolver_match.view_name == 'despesas:triagem' %}aria-current="page"{% endif %} href="{% url 'despesas:triagem' %}"><i class="bi bi-check2-square me-1"></i> Triagem Tesouraria</a>
+                        <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'despesas:triagem' %}active{% endif %}" {% if request.resolver_match.view_name == 'despesas:triagem' %}aria-current="page"{% endif %} href="{% url 'despesas:triagem' %}"><i class="bi bi-check2-square me-1"></i> Triagem Tesouraria</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-1"></i> Administração</a>
+                        <a class="nav-link text-nowrap" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-1"></i> Administração</a>
                     </li>
                     {% endif %}
                 </ul>
-                <div class="d-flex align-items-center text-white gap-3">
-                    <span class="badge bg-light text-dark py-2 px-3 rounded-pill">
+                <div class="d-flex align-items-center text-white gap-2">
+                    <span class="badge bg-light text-dark py-2 px-3 rounded-pill d-none d-xxl-inline-block text-nowrap">
                         <i class="bi bi-tree me-1 text-success"></i> AG VII - Juquitiba
                     </span>
                     {% if user.is_authenticated %}

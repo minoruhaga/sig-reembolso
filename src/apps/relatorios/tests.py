@@ -378,3 +378,49 @@ class PrestacaoContasRelatoriosTestCase(TestCase):
         balancete_rascunho = gerar_balancete_sintetico(self.tesoureiro, status=StatusDespesa.RASCUNHO)
         self.assertEqual(balancete_rascunho['total_geral'], Decimal('99.00'))
         self.assertEqual(balancete_rascunho['quantidade_total'], 1)
+
+    def test_csv_padrao_exclui_rascunho_rejeitado_e_cancelado(self):
+        """
+        Mantém a exportação CSV sem filtro de status alinhada ao balancete padrão (BUG-E2E-02).
+
+        - O que faz: Garante que `gerar_csv_despesas` sem `status` exporte apenas despesas comprometidas
+          (`ENVIADO`, `APROVADO`, `PAGO`), mas permita exportar rascunhos quando filtrados explicitamente.
+        - Como faz: Cria despesas em `RASCUNHO`, `REJEITADO` e `CANCELADO` e valida a quantidade e os
+          status presentes no CSV padrão e no CSV filtrado por `RASCUNHO`.
+        - Qual finalidade atende: Evita divergência entre o total exibido no balancete e a soma da planilha CSV.
+        """
+        self._criar_despesa(
+            coordenacao=self.alim,
+            titulo='Rascunho fora do CSV padrao',
+            categoria=CategoriaDespesa.ALIMENTACAO,
+            status=StatusDespesa.RASCUNHO,
+            valor=Decimal('111.00'),
+        )
+        self._criar_despesa(
+            coordenacao=self.alim,
+            titulo='Rejeitada fora do CSV padrao',
+            categoria=CategoriaDespesa.ALIMENTACAO,
+            status=StatusDespesa.REJEITADO,
+            valor=Decimal('222.00'),
+        )
+        self._criar_despesa(
+            coordenacao=self.infra,
+            titulo='Cancelada fora do CSV padrao',
+            categoria=CategoriaDespesa.INFRAESTRUTURA,
+            status=StatusDespesa.CANCELADO,
+            valor=Decimal('333.00'),
+        )
+
+        linhas_padrao = self._ler_csv(gerar_csv_despesas(self.tesoureiro))
+        indice_status = linhas_padrao[0].index('status')
+        status_exportados = {linha[indice_status] for linha in linhas_padrao[1:]}
+        self.assertEqual(len(linhas_padrao) - 1, 4)
+        self.assertNotIn(StatusDespesa.RASCUNHO, status_exportados)
+        self.assertNotIn(StatusDespesa.REJEITADO, status_exportados)
+        self.assertNotIn(StatusDespesa.CANCELADO, status_exportados)
+
+        linhas_rascunho = self._ler_csv(
+            gerar_csv_despesas(self.tesoureiro, status=StatusDespesa.RASCUNHO)
+        )
+        self.assertEqual(len(linhas_rascunho) - 1, 1)
+        self.assertEqual(linhas_rascunho[1][indice_status], StatusDespesa.RASCUNHO)

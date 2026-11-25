@@ -172,9 +172,11 @@ def gerar_csv_despesas(usuario, *, coordenacao=None, categoria=None, status=None
     Gera a planilha analítica de despesas em CSV.
 
     - O que faz: Exporta uma linha por despesa do recorte autorizado, com cabeçalho estável, solicitante e valor em centavos.
-    - Como faz: Percorre `filtrar_despesas_relatorio`, sanitiza células textuais via `_sanitizar_celula_csv`
-      contra CSV Formula Injection e escreve com `csv.writer` usando separador `;`.
-      O valor sai de `Decimal` quantizado, nunca de `float`.
+      Quando `status` não é informado, exporta apenas os status comprometidos (`ENVIADO`, `APROVADO`, `PAGO`),
+      mantendo consistência exata com `gerar_balancete_sintetico`.
+    - Como faz: Percorre `filtrar_despesas_relatorio`, aplica `STATUS_COMPROMETIDOS_BALANCETE` quando `status`
+      é omitido, sanitiza células textuais via `_sanitizar_celula_csv` contra CSV Formula Injection e escreve
+      com `csv.writer` usando separador `;`. O valor sai de `Decimal` quantizado, nunca de `float`.
     - Qual finalidade atende: Entrega a planilha estruturada e segura da prestação de contas do AG VII (RF08 / Issue #34).
     """
     buffer = StringIO()
@@ -186,6 +188,8 @@ def gerar_csv_despesas(usuario, *, coordenacao=None, categoria=None, status=None
         categoria=categoria,
         status=status,
     )
+    if not _texto_filtro(status):
+        despesas = despesas.filter(status__in=STATUS_COMPROMETIDOS_BALANCETE)
     for despesa in despesas:
         escritor.writerow([
             despesa.id,
