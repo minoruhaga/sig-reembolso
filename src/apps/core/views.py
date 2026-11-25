@@ -3,7 +3,12 @@ from decimal import Decimal
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from apps.usuarios.services import coordenacoes_visiveis, despesas_visiveis, usuario_pode_acessar_admin
+from apps.usuarios.services import (
+    coordenacoes_visiveis,
+    despesas_visiveis,
+    usuario_pode_acessar_admin,
+    usuario_pode_acessar_painel_auditoria,
+)
 
 
 @login_required
@@ -15,7 +20,8 @@ def dashboard_view(request):
     - Como faz: Delega o recorte a `coordenacoes_visiveis` e `despesas_visiveis`; soma tetos e
       comprometidos apenas sobre esse queryset com aritmética `Decimal`.
     - Qual finalidade atende: Atende RF03 com isolamento RF01 — coordenador vê a própria pasta;
-      Tesouraria e Diretoria veem as 15 coordenações.
+      Tesouraria e Diretoria veem as 15 coordenações. O atalho para o painel de auditoria só aparece
+      para quem pode abri-lo (Tesouraria, Issue #13).
     """
     coordenacoes = list(coordenacoes_visiveis(request.user))
     total_orcado = sum((c.teto_orcamentario for c in coordenacoes), start=Decimal('0.00'))
@@ -30,5 +36,6 @@ def dashboard_view(request):
         'total_saldo_livre': total_saldo_livre,
         'despesas_recentes': despesas_recentes,
         'visao_gestor': usuario_pode_acessar_admin(request.user),
+        'pode_auditar': usuario_pode_acessar_painel_auditoria(request.user),
     }
     return render(request, 'dashboard.html', context)

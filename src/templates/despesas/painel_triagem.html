@@ -1,13 +1,80 @@
 {% extends "base.html" %}
 
-{% block title %}Triagem da Tesouraria{% endblock %}
+{% block title %}Auditoria de Notas{% endblock %}
+
+{% block extra_head %}
+{# Issue #13: painel desktop da Tesouraria com cards e modal de zoom para a NF ou recibo. #}
+<style>
+    .aud-card {
+        display: flex; flex-direction: column; height: 100%;
+        border: 1px solid #dee2e6; border-radius: 12px; background: #fff;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow: hidden;
+    }
+    .aud-card--estouro { border: 2px solid #dc3545; }
+    .aud-miniatura {
+        position: relative; display: block; width: 100%; height: 11rem; padding: 0;
+        border: 0; border-bottom: 1px solid #dee2e6; background: #f1f3f5; cursor: zoom-in;
+    }
+    .aud-miniatura img { width: 100%; height: 100%; object-fit: cover; }
+    .aud-miniatura .aud-miniatura-pdf {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        height: 100%; color: #b02a37; font-weight: 600;
+    }
+    .aud-miniatura .aud-miniatura-pdf i { font-size: 3rem; }
+    .aud-miniatura .aud-lupa {
+        position: absolute; right: .5rem; bottom: .5rem;
+        background: rgba(0,0,0,.72); color: #fff; border-radius: 999px; padding: .25rem .6rem; font-size: .8rem;
+    }
+    .aud-miniatura:focus-visible { outline: 3px solid #0d6efd; outline-offset: -3px; }
+    .aud-sem-anexo {
+        display: flex; align-items: center; justify-content: center; height: 11rem;
+        background: #f8f9fa; color: #6c757d; border-bottom: 1px solid #dee2e6;
+    }
+    .aud-valor { font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+    /* Modal de conferência em tela cheia */
+    /* Desktop: visor e lateral lado a lado, cada um com a altura da tela; só a lateral rola. */
+    #modalAuditoria .modal-body {
+        display: grid; grid-template-columns: minmax(0, 1fr) 22rem; grid-template-rows: minmax(0, 1fr);
+        padding: 0; min-height: 0; overflow: hidden;
+    }
+    .aud-visor { display: flex; flex-direction: column; min-height: 0; overflow: hidden; background: #212529; }
+    .aud-visor-barra {
+        display: flex; flex-wrap: wrap; align-items: center; gap: .375rem;
+        padding: .5rem .75rem; background: #343a40; color: #fff;
+    }
+    .aud-visor-barra .btn { min-width: 2.5rem; }
+    .aud-zoom-nivel { min-width: 3.75rem; text-align: center; font-variant-numeric: tabular-nums; }
+    .aud-palco {
+        position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden;
+        cursor: grab; touch-action: none; user-select: none;
+    }
+    .aud-palco.arrastando { cursor: grabbing; }
+    .aud-palco img {
+        position: absolute; top: 0; left: 0; max-width: none; transform-origin: 0 0;
+        image-rendering: auto; box-shadow: 0 0 24px rgba(0,0,0,.5);
+    }
+    .aud-palco iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
+    .aud-lateral { padding: 1.25rem; overflow-y: auto; border-left: 1px solid #dee2e6; background: #fff; }
+    /* Telas menores: visor com altura fixa no topo e dados/ações abaixo, rolando o modal inteiro. */
+    @media (max-width: 991.98px) {
+        #modalAuditoria .modal-body { display: block; overflow-y: auto; }
+        .aud-visor { height: 70vh; }
+        .aud-lateral { overflow: visible; border-left: 0; border-top: 1px solid #dee2e6; }
+    }
+    .aud-lateral dt { font-size: .8rem; text-transform: uppercase; color: #6c757d; font-weight: 600; }
+    .aud-lateral dd { margin-bottom: .75rem; }
+    .aud-atalhos kbd { font-size: .75rem; }
+    .aud-filtros .form-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="row align-items-center mb-4">
     <div class="col-md-8">
-        <h2 class="fw-bold mb-1">Painel de Triagem da Tesouraria</h2>
+        <h2 class="fw-bold mb-1">Auditoria de Notas da Tesouraria</h2>
         <p class="text-muted mb-0">
-            Auditoria de cupons fiscais, verificação de estouro de teto e liquidação via Banco Cora PJ.
+            Confira a NF ou recibo de cada despesa, aprove, rejeite ou registre o pagamento via Banco Cora PJ.
         </p>
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -17,46 +84,46 @@
     </div>
 </div>
 
-<!-- Cards de Resumo da Fila -->
+<!-- Resumo da fila -->
 <div class="row g-3 mb-4">
     <div class="col-md-4">
         <div class="card card-stat bg-white p-3 border-start border-4 border-warning">
-            <span class="text-muted small text-uppercase fw-semibold">Aguardando Parecer (ENVIADO)</span>
+            <span class="text-muted small text-uppercase fw-semibold">Aguardando decisão</span>
             <h3 class="fw-bold text-warning mt-1 mb-0">{{ qtd_enviadas }}</h3>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card card-stat bg-white p-3 border-start border-4 border-info">
-            <span class="text-muted small text-uppercase fw-semibold">Aguardando PIX Cora (APROVADO)</span>
+            <span class="text-muted small text-uppercase fw-semibold">Aprovadas, aguardando PIX</span>
             <h3 class="fw-bold text-info mt-1 mb-0">{{ qtd_aprovadas }}</h3>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card card-stat bg-white p-3 border-start border-4 border-danger">
-            <span class="text-muted small text-uppercase fw-semibold">Alertas de Estouro</span>
+            <span class="text-muted small text-uppercase fw-semibold">Acima do teto</span>
             <h3 class="fw-bold text-danger mt-1 mb-0">{{ qtd_estouro }}</h3>
         </div>
     </div>
 </div>
 
 <!-- Filtros -->
-<div class="card card-stat bg-white p-3 mb-4">
+<div class="card card-stat bg-white p-3 mb-4 aud-filtros">
     <form method="get" class="row g-2 align-items-end">
         <div class="col-md-4">
-            <label for="filtroStatus" class="form-label small fw-semibold mb-1">Situação na Fila</label>
-            <select id="filtroStatus" name="status" class="form-select form-select-sm">
-                <option value="PENDENTES" {% if status_filtro == 'PENDENTES' %}selected{% endif %}>Pendentes (Enviado + Aprovado)</option>
-                <option value="ENVIADO" {% if status_filtro == 'ENVIADO' %}selected{% endif %}>Somente Enviado para Triagem</option>
-                <option value="APROVADO" {% if status_filtro == 'APROVADO' %}selected{% endif %}>Somente Aprovado (Pagar PIX)</option>
-                <option value="PAGO" {% if status_filtro == 'PAGO' %}selected{% endif %}>Liquidado (Pago)</option>
-                <option value="REJEITADO" {% if status_filtro == 'REJEITADO' %}selected{% endif %}>Rejeitado</option>
-                <option value="TODAS" {% if status_filtro == 'TODAS' %}selected{% endif %}>Todas as Despesas</option>
+            <label for="filtroStatus" class="form-label small fw-semibold mb-1">Situação</label>
+            <select id="filtroStatus" name="status" class="form-select">
+                <option value="PENDENTES" {% if status_filtro == 'PENDENTES' %}selected{% endif %}>Pendentes (aguardando decisão ou PIX)</option>
+                <option value="ENVIADO" {% if status_filtro == 'ENVIADO' %}selected{% endif %}>Aguardando decisão</option>
+                <option value="APROVADO" {% if status_filtro == 'APROVADO' %}selected{% endif %}>Aprovadas (pagar PIX)</option>
+                <option value="PAGO" {% if status_filtro == 'PAGO' %}selected{% endif %}>Pagas</option>
+                <option value="REJEITADO" {% if status_filtro == 'REJEITADO' %}selected{% endif %}>Rejeitadas</option>
+                <option value="TODAS" {% if status_filtro == 'TODAS' %}selected{% endif %}>Todas</option>
             </select>
         </div>
         <div class="col-md-5">
             <label for="filtroCoord" class="form-label small fw-semibold mb-1">Coordenação</label>
-            <select id="filtroCoord" name="coordenacao" class="form-select form-select-sm">
-                <option value="">Todas as Coordenações</option>
+            <select id="filtroCoord" name="coordenacao" class="form-select">
+                <option value="">Todas as coordenações</option>
                 {% for c in coordenacoes %}
                     <option value="{{ c.id }}" {% if coordenacao_filtro == c.id|stringformat:'s' %}selected{% endif %}>
                         {{ c.sigla }} - {{ c.nome }}
@@ -65,209 +132,222 @@
             </select>
         </div>
         <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-success btn-sm flex-grow-1 fw-semibold">
+            <button type="submit" class="btn btn-success flex-grow-1 fw-semibold">
                 <i class="bi bi-funnel me-1"></i> Filtrar
             </button>
-            <a href="{% url 'despesas:triagem' %}" class="btn btn-outline-secondary btn-sm">Limpar</a>
+            <a href="{% url 'despesas:triagem' %}" class="btn btn-outline-secondary">Limpar</a>
         </div>
     </form>
 </div>
 
-<!-- Listagem da Triagem -->
-<div class="card card-stat bg-white p-4">
-    {% if despesas %}
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>ID / Área</th>
-                    <th>Despesa e Solicitante</th>
-                    <th>Data / Valor</th>
-                    <th>Comprovante</th>
-                    <th>Status</th>
-                    <th class="text-end">Ações da Tesouraria</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for d in despesas %}
-                <tr class="{% if d.excede_teto %}table-danger{% endif %}">
-                    <td>
-                        <strong class="d-block">#{{ d.id }}</strong>
-                        <span class="badge bg-dark-subtle text-dark">{{ d.coordenacao.sigla }}</span>
-                    </td>
-                    <td>
-                        <strong class="d-block">{{ d.titulo }}</strong>
-                        <div class="small text-muted">
-                            Solicitante: <strong>{{ d.solicitante.get_full_name|default:d.solicitante.username }}</strong>
-                            {% if d.solicitante.chave_pix %}
-                                • PIX: <code>{{ d.solicitante.chave_pix }}</code>
-                            {% endif %}
+<!-- Cards das despesas -->
+{% if despesas %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3" id="listaAuditoria">
+    {% for d in despesas %}
+    <div class="col">
+        <article class="aud-card{% if d.excede_teto %} aud-card--estouro{% endif %}"
+                 id="despesa-{{ d.id }}"
+                 data-id="{{ d.id }}"
+                 data-titulo="{{ d.titulo }}"
+                 data-valor="{{ d.valor|floatformat:'2g' }}"
+                 data-data="{{ d.data_despesa|date:'d/m/Y' }}"
+                 data-sigla="{{ d.coordenacao.sigla }}"
+                 data-coordenacao="{{ d.coordenacao.nome }}"
+                 data-solicitante="{{ d.solicitante.get_full_name|default:d.solicitante.username }}"
+                 data-pix="{{ d.solicitante.chave_pix|default:'Não informada' }}"
+                 data-categoria="{{ d.get_categoria_display }}"
+                 data-tipo="{{ d.get_tipo_display }}"
+                 data-pagamento="{{ d.get_forma_pagamento_original_display }}"
+                 data-descricao="{{ d.descricao|default:'' }}"
+                 data-status="{{ d.status }}"
+                 data-status-texto="{{ d.get_status_display }}"
+                 data-estouro="{% if d.excede_teto %}{{ d.valor_excedente|floatformat:'2g' }}{% endif %}"
+                 data-parecer="{{ d.motivo_rejeicao|default:'' }}"
+                 data-impedido="{% if d.impedido_rn03 %}1{% else %}0{% endif %}"
+                 data-nota-url="{% if d.comprovante %}{% url 'despesas:comprovante' d.id 'nota' %}{% endif %}"
+                 data-nota-pdf="{% if d.comprovante_eh_pdf %}1{% else %}0{% endif %}"
+                 data-pagamento-url="{% if d.comprovante_pagamento %}{% url 'despesas:comprovante' d.id 'pagamento' %}{% endif %}"
+                 data-pagamento-pdf="{% if d.comprovante_pagamento_eh_pdf %}1{% else %}0{% endif %}"
+                 data-url-aprovar="{% url 'despesas:aprovar' d.id %}"
+                 data-url-rejeitar="{% url 'despesas:rejeitar' d.id %}"
+                 data-url-liquidar="{% url 'despesas:liquidar' d.id %}">
+            {% if d.comprovante %}
+                <button type="button" class="aud-miniatura btn-abrir-auditoria" aria-label="Conferir NF ou recibo da despesa #{{ d.id }}">
+                    {% if d.comprovante_eh_pdf %}
+                        <span class="aud-miniatura-pdf"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> PDF</span>
+                    {% else %}
+                        <img src="{% url 'despesas:comprovante' d.id 'nota' %}" alt="" loading="lazy">
+                    {% endif %}
+                    <span class="aud-lupa"><i class="bi bi-zoom-in me-1" aria-hidden="true"></i> Conferir</span>
+                </button>
+            {% else %}
+                <div class="aud-sem-anexo"><i class="bi bi-file-earmark-x me-2" aria-hidden="true"></i> Sem anexo</div>
+            {% endif %}
+
+            <div class="p-3 d-flex flex-column flex-grow-1">
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                    <span class="badge bg-dark-subtle text-dark">#{{ d.id }} · {{ d.coordenacao.sigla }}</span>
+                    {% if d.status == 'PAGO' %}
+                        <span class="badge bg-success-subtle text-success">Pago</span>
+                    {% elif d.status == 'APROVADO' %}
+                        <span class="badge bg-info-subtle text-info-emphasis">Aprovado</span>
+                    {% elif d.status == 'ENVIADO' %}
+                        <span class="badge bg-warning-subtle text-warning-emphasis">Aguardando decisão</span>
+                    {% elif d.status == 'REJEITADO' %}
+                        <span class="badge bg-danger-subtle text-danger">Rejeitado</span>
+                    {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary">{{ d.get_status_display }}</span>
+                    {% endif %}
+                    {% if d.excede_teto %}
+                        <span class="badge bg-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>ESTOURO DE TETO (+R$ {{ d.valor_excedente|floatformat:'2g' }})
+                        </span>
+                    {% endif %}
+                    {% if d.impedido_rn03 and d.status in 'ENVIADO,APROVADO' %}
+                        <span class="badge bg-secondary-subtle text-dark" title="Outro tesoureiro precisa decidir">
+                            <i class="bi bi-shield-exclamation me-1" aria-hidden="true"></i>Solicitação própria
+                        </span>
+                    {% endif %}
+                </div>
+
+                <h3 class="h6 fw-bold mb-1">{{ d.titulo }}</h3>
+                <div class="small text-muted mb-2">
+                    {{ d.solicitante.get_full_name|default:d.solicitante.username }} · {{ d.data_despesa|date:"d/m/Y" }}
+                    {% if d.solicitante.chave_pix %}<br>PIX: <code>{{ d.solicitante.chave_pix }}</code>{% endif %}
+                </div>
+                {% if d.status == 'REJEITADO' and d.motivo_rejeicao %}
+                    <div class="small text-danger mb-2"><strong>Parecer:</strong> {{ d.motivo_rejeicao }}</div>
+                {% endif %}
+
+                <div class="mt-auto d-flex align-items-end justify-content-between gap-2">
+                    <span class="aud-valor">R$ {{ d.valor|floatformat:'2g' }}</span>
+                    {% if d.comprovante %}
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-abrir-auditoria">
+                            <i class="bi bi-zoom-in me-1" aria-hidden="true"></i> Conferir nota
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card card-stat bg-white text-center py-5 text-muted">
+    <i class="bi bi-inbox fs-1 d-block mb-2" aria-hidden="true"></i>
+    Nenhuma despesa encontrada para os filtros selecionados.
+</div>
+{% endif %}
+
+<!-- Modal de conferência em tela cheia com zoom -->
+<div class="modal fade" id="modalAuditoria" tabindex="-1" aria-labelledby="audTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0" id="audTitulo">Conferência</h5>
+                    <div class="small text-muted" id="audSubtitulo"></div>
+                </div>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="audAnterior" aria-label="Despesa anterior" title="Anterior (←)">
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    </button>
+                    <span class="small text-muted text-nowrap" id="audPosicao"></span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="audProxima" aria-label="Próxima despesa" title="Próxima (→)">
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <section class="aud-visor" aria-label="Visualização do documento">
+                    <div class="aud-visor-barra">
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Documento exibido" id="audAbas">
+                            <button type="button" class="btn btn-light active" data-doc="nota" aria-pressed="true">NF ou recibo</button>
+                            <button type="button" class="btn btn-outline-light" data-doc="pagamento" aria-pressed="false" id="audAbaPagamento">Comprovante de pagamento</button>
                         </div>
-                        {% if d.excede_teto %}
-                            <span class="badge bg-danger mt-1">
-                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                                ESTOURO DE TETO (+R$ {{ d.valor_excedente|floatformat:2 }})
-                            </span>
-                        {% endif %}
-                        {% if d.status == 'REJEITADO' and d.motivo_rejeicao %}
-                            <div class="small text-danger mt-1"><strong>Parecer:</strong> {{ d.motivo_rejeicao }}</div>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="small text-muted">{{ d.data_despesa|date:"d/m/Y" }}</div>
-                        <strong class="fs-6">R$ {{ d.valor|floatformat:2 }}</strong>
-                    </td>
-                    <td>
-                        {% if d.comprovante %}
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-primary btn-ver-comprovante"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalComprovante"
-                                    data-url="{{ d.comprovante.url }}"
-                                    data-titulo="#{{ d.id }} - {{ d.titulo }} (R$ {{ d.valor|floatformat:2 }})">
-                                <i class="bi bi-zoom-in me-1"></i> Conferir Nota
+                        <div class="btn-group btn-group-sm ms-md-3" role="group" aria-label="Zoom" id="audControlesZoom">
+                            <button type="button" class="btn btn-outline-light" data-zoom="menos" title="Diminuir (−)" aria-label="Diminuir zoom"><i class="bi bi-zoom-out" aria-hidden="true"></i></button>
+                            <span class="btn btn-outline-light disabled aud-zoom-nivel" id="audZoomNivel">100%</span>
+                            <button type="button" class="btn btn-outline-light" data-zoom="mais" title="Aumentar (+)" aria-label="Aumentar zoom"><i class="bi bi-zoom-in" aria-hidden="true"></i></button>
+                            <button type="button" class="btn btn-outline-light" data-zoom="ajustar" title="Ajustar à tela (0)">Ajustar</button>
+                            <button type="button" class="btn btn-outline-light" data-zoom="real" title="Tamanho real (1)">1:1</button>
+                            <button type="button" class="btn btn-outline-light" data-zoom="girar" title="Girar 90° (G)" aria-label="Girar 90 graus"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i></button>
+                        </div>
+                        <a class="btn btn-sm btn-outline-light ms-auto" id="audAbrirOriginal" href="#" target="_blank" rel="noopener noreferrer">
+                            <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i> Abrir original
+                        </a>
+                    </div>
+                    <div class="aud-palco" id="audPalco">
+                        <img id="audImagem" alt="" hidden draggable="false">
+                        <iframe id="audPdf" title="Documento em PDF" hidden></iframe>
+                    </div>
+                </section>
+
+                <aside class="aud-lateral" aria-label="Dados e ações">
+                    <div class="d-flex flex-wrap gap-1 mb-3" id="audBadges"></div>
+                    <div class="fs-3 fw-bold mb-3" id="audValor"></div>
+                    <dl>
+                        <dt>Coordenação</dt><dd id="audCoordenacao"></dd>
+                        <dt>Solicitante</dt><dd id="audSolicitante"></dd>
+                        <dt>Chave PIX</dt><dd><code id="audPix"></code></dd>
+                        <dt>Data do gasto</dt><dd id="audData"></dd>
+                        <dt>Categoria · Tipo</dt><dd id="audCategoria"></dd>
+                        <dt>Pago com</dt><dd id="audPagamento"></dd>
+                        <dt id="audDescricaoRotulo">Observações</dt><dd id="audDescricao"></dd>
+                    </dl>
+                    <div class="alert alert-danger small" id="audParecer" hidden></div>
+
+                    <div id="audAcoesDecisao" hidden>
+                        <form method="post" action="" id="audFormAprovar" class="d-grid mb-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success fw-semibold">
+                                <i class="bi bi-check-circle me-1" aria-hidden="true"></i> Aprovar <kbd class="ms-1">A</kbd>
                             </button>
-                        {% else %}
-                            <span class="badge bg-secondary-subtle text-secondary">Sem anexo</span>
-                        {% endif %}
-                        {% if d.comprovante_pagamento %}
-                            <a href="{{ d.comprovante_pagamento.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success mt-1 d-block">
-                                <i class="bi bi-bank me-1"></i> PIX Cora
-                            </a>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if d.status == 'PAGO' %}
-                            <span class="badge bg-success-subtle text-success py-1 px-2">Pago</span>
-                        {% elif d.status == 'APROVADO' %}
-                            <span class="badge bg-info-subtle text-info py-1 px-2">Aprovado</span>
-                        {% elif d.status == 'ENVIADO' %}
-                            <span class="badge bg-warning-subtle text-warning py-1 px-2">Em Triagem</span>
-                        {% elif d.status == 'REJEITADO' %}
-                            <span class="badge bg-danger-subtle text-danger py-1 px-2">Rejeitado</span>
-                        {% else %}
-                            <span class="badge bg-secondary-subtle text-secondary">{{ d.get_status_display }}</span>
-                        {% endif %}
-                    </td>
-                    <td class="text-end">
-                        {% if d.solicitante_id == user.id and not user.is_superuser and d.status in 'ENVIADO,APROVADO' %}
-                            <span class="badge bg-secondary-subtle text-dark" title="Regra de Segregação de Funções">
-                                <i class="bi bi-shield-exclamation me-1"></i> Solicitação própria
-                            </span>
-                        {% elif pode_operar_triagem and d.status == 'ENVIADO' %}
-                            <div class="d-flex justify-content-end gap-1">
-                                <form method="post" action="{% url 'despesas:aprovar' d.id %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-success fw-semibold">
-                                        <i class="bi bi-check-circle me-1"></i> Aprovar
-                                    </button>
-                                </form>
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-danger btn-abrir-rejeicao"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#modalRejeicao"
-                                        data-action="{% url 'despesas:rejeitar' d.id %}"
-                                        data-titulo="#{{ d.id }} - {{ d.titulo }}">
-                                    <i class="bi bi-x-circle me-1"></i> Rejeitar
+                        </form>
+                        <form method="post" action="" id="audFormRejeitar">
+                            {% csrf_token %}
+                            <label for="id_motivo_rejeicao" class="form-label fw-semibold small mb-1">
+                                Motivo da rejeição <span class="text-danger">*</span>
+                            </label>
+                            {{ rejeicao_form.motivo_rejeicao }}
+                            <div class="form-text" id="audDicaRejeicao">
+                                Escreva o motivo e aperte <kbd>Ctrl</kbd>+<kbd>Enter</kbd>, ou saia da caixa e aperte <kbd>R</kbd>.
+                            </div>
+                            <div class="d-grid mt-2">
+                                <button type="submit" class="btn btn-outline-danger fw-semibold">
+                                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i> Rejeitar <kbd class="ms-1">R</kbd>
                                 </button>
                             </div>
-                        {% elif pode_operar_triagem and d.status == 'APROVADO' %}
-                            <button type="button"
-                                    class="btn btn-sm btn-primary fw-semibold btn-abrir-liquidacao"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalLiquidacao"
-                                    data-action="{% url 'despesas:liquidar' d.id %}"
-                                    data-titulo="#{{ d.id }} - {{ d.titulo }} (R$ {{ d.valor|floatformat:2 }})"
-                                    data-pix="{{ d.solicitante.chave_pix|default:'Não informada' }}">
-                                <i class="bi bi-cash-coin me-1"></i> Liquidar Cora PJ
+                        </form>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" action="" id="audFormLiquidar" hidden>
+                        {% csrf_token %}
+                        <label for="id_comprovante_pagamento" class="form-label fw-semibold small mb-1">
+                            Comprovante bancário Cora PJ <span class="text-danger">*</span>
+                        </label>
+                        {{ liquidacao_form.comprovante_pagamento }}
+                        <div class="d-grid mt-2">
+                            <button type="submit" class="btn btn-primary fw-semibold">
+                                <i class="bi bi-cash-coin me-1" aria-hidden="true"></i> Registrar pagamento
                             </button>
-                        {% else %}
-                            <span class="text-muted small"><i class="bi bi-lock-fill"></i></span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="text-center py-5 text-muted">
-        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-        Nenhuma despesa encontrada para os filtros selecionados.
-    </div>
-    {% endif %}
-</div>
+                        </div>
+                    </form>
 
-<!-- Modal Visualização de Comprovante -->
-<div class="modal fade" id="modalComprovante" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="tituloModalComprovante">Comprovante Fiscal</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    <p class="small text-muted" id="audImpedido" hidden>
+                        <i class="bi bi-shield-exclamation me-1" aria-hidden="true"></i>
+                        Esta despesa é sua. Outro tesoureiro precisa decidir.
+                    </p>
+
+                    <div class="aud-atalhos small text-muted border-top pt-3 mt-3">
+                        Atalhos: <kbd>←</kbd> <kbd>→</kbd> navegar · <kbd>+</kbd> <kbd>−</kbd> zoom ·
+                        <kbd>0</kbd> ajustar · <kbd>G</kbd> girar · <kbd>A</kbd> aprovar · <kbd>R</kbd> rejeitar (com motivo preenchido) ·
+                        <kbd>Ctrl</kbd>+<kbd>Enter</kbd> rejeitar dentro da caixa · <kbd>Esc</kbd> fechar
+                    </div>
+                </aside>
             </div>
-            <div class="modal-body text-center bg-light">
-                <img id="imgModalComprovante" src="" alt="Comprovante Fiscal" class="img-fluid rounded shadow-sm d-none">
-                <div id="pdfModalComprovante" class="d-none py-4">
-                    <p class="text-muted mb-3">O comprovante está no formato PDF.</p>
-                    <a id="linkPdfComprovante" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                        <i class="bi bi-file-earmark-pdf me-1"></i> Abrir PDF em Nova Aba
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Rejeição Obrigatória (RN04) -->
-<div class="modal fade" id="modalRejeicao" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form id="formModalRejeicao" method="post" action="">
-                {% csrf_token %}
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-x-octagon me-2"></i>Reprovar Despesa</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small text-muted mb-2">Item: <strong id="tituloModalRejeicao"></strong></p>
-                    <label for="id_motivo_rejeicao" class="form-label fw-semibold">
-                        Justificativa Obrigatória <span class="text-danger">*</span>
-                    </label>
-                    {{ rejeicao_form.motivo_rejeicao }}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger fw-semibold">Confirmar Reprovação</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Liquidação Cora PJ (RF07) -->
-<div class="modal fade" id="modalLiquidacao" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form id="formModalLiquidacao" method="post" enctype="multipart/form-data" action="">
-                {% csrf_token %}
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-bank me-2"></i>Liquidar Reembolso (Banco Cora PJ)</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small mb-1">Despesa: <strong id="tituloModalLiquidacao"></strong></p>
-                    <p class="small mb-3">Chave PIX do voluntário: <code id="pixModalLiquidacao"></code></p>
-                    <label for="id_comprovante_pagamento" class="form-label fw-semibold">
-                        Anexar Comprovante Bancário Cora PJ <span class="text-danger">*</span>
-                    </label>
-                    {{ liquidacao_form.comprovante_pagamento }}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary fw-semibold">Confirmar Pagamento (PAGO)</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -275,40 +355,252 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.btn-ver-comprovante').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const url = this.dataset.url;
-            const titulo = this.dataset.titulo;
-            document.getElementById('tituloModalComprovante').textContent = titulo;
-            const imgEl = document.getElementById('imgModalComprovante');
-            const pdfEl = document.getElementById('pdfModalComprovante');
-            if (url.toLowerCase().endsWith('.pdf')) {
-                imgEl.classList.add('d-none');
-                pdfEl.classList.remove('d-none');
-                document.getElementById('linkPdfComprovante').href = url;
-            } else {
-                pdfEl.classList.add('d-none');
-                imgEl.src = url;
-                imgEl.classList.remove('d-none');
+(function () {
+    "use strict";
+    var modalEl = document.getElementById("modalAuditoria");
+    if (!modalEl) { return; }
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    var cards = Array.prototype.slice.call(document.querySelectorAll(".aud-card"));
+    var palco = document.getElementById("audPalco");
+    var img = document.getElementById("audImagem");
+    var pdf = document.getElementById("audPdf");
+    var nivel = document.getElementById("audZoomNivel");
+    var controlesZoom = document.getElementById("audControlesZoom");
+    var abaPagamento = document.getElementById("audAbaPagamento");
+    var motivo = document.getElementById("id_motivo_rejeicao");
+    var atual = -1;
+    var doc = "nota";
+    var estado = { escala: 1, x: 0, y: 0, giro: 0 };
+    var ZOOM_MIN = 0.1, ZOOM_MAX = 8;
+
+    function $(id) { return document.getElementById(id); }
+
+    /* --- Zoom e arraste ------------------------------------------------- */
+    function aplicar() {
+        var w = img.naturalWidth, h = img.naturalHeight;
+        var t = "translate(" + estado.x + "px," + estado.y + "px) scale(" + estado.escala + ")";
+        if (estado.giro) {
+            t += " translate(" + (w / 2) + "px," + (h / 2) + "px) rotate(" + estado.giro + "deg) translate(" + (-w / 2) + "px," + (-h / 2) + "px)";
+        }
+        img.style.transform = t;
+        nivel.textContent = Math.round(estado.escala * 100) + "%";
+    }
+    function dimensoesGiradas() {
+        var deitado = estado.giro % 180 !== 0;
+        return deitado ? { w: img.naturalHeight, h: img.naturalWidth } : { w: img.naturalWidth, h: img.naturalHeight };
+    }
+    function ajustar() {
+        if (!img.naturalWidth) { return; }
+        var d = dimensoesGiradas();
+        var largura = palco.clientWidth, altura = palco.clientHeight;
+        estado.escala = Math.min(largura / d.w, altura / d.h, 1) * 0.96;
+        centralizar();
+    }
+    function centralizar() {
+        var w = img.naturalWidth * estado.escala, h = img.naturalHeight * estado.escala;
+        estado.x = (palco.clientWidth - w) / 2;
+        estado.y = (palco.clientHeight - h) / 2;
+        aplicar();
+    }
+    function zoomEm(fator, cx, cy) {
+        var nova = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, estado.escala * fator));
+        if (cx === undefined) { cx = palco.clientWidth / 2; cy = palco.clientHeight / 2; }
+        estado.x = cx - (cx - estado.x) * (nova / estado.escala);
+        estado.y = cy - (cy - estado.y) * (nova / estado.escala);
+        estado.escala = nova;
+        aplicar();
+    }
+    function acaoZoom(acao) {
+        if (img.hidden) { return; }
+        if (acao === "mais") { zoomEm(1.25); }
+        else if (acao === "menos") { zoomEm(0.8); }
+        else if (acao === "ajustar") { ajustar(); }
+        else if (acao === "real") { estado.escala = 1; centralizar(); }
+        else if (acao === "girar") { estado.giro = (estado.giro + 90) % 360; ajustar(); }
+    }
+    controlesZoom.addEventListener("click", function (e) {
+        var botao = e.target.closest("[data-zoom]");
+        if (botao) { acaoZoom(botao.dataset.zoom); }
+    });
+    palco.addEventListener("wheel", function (e) {
+        if (img.hidden) { return; }
+        e.preventDefault();
+        var r = palco.getBoundingClientRect();
+        zoomEm(e.deltaY < 0 ? 1.15 : 1 / 1.15, e.clientX - r.left, e.clientY - r.top);
+    }, { passive: false });
+    palco.addEventListener("dblclick", function (e) {
+        if (img.hidden) { return; }
+        var r = palco.getBoundingClientRect();
+        zoomEm(2, e.clientX - r.left, e.clientY - r.top);
+    });
+    var arraste = null;
+    palco.addEventListener("pointerdown", function (e) {
+        if (img.hidden) { return; }
+        arraste = { px: e.clientX, py: e.clientY, x: estado.x, y: estado.y };
+        palco.setPointerCapture(e.pointerId);
+        palco.classList.add("arrastando");
+    });
+    palco.addEventListener("pointermove", function (e) {
+        if (!arraste) { return; }
+        estado.x = arraste.x + (e.clientX - arraste.px);
+        estado.y = arraste.y + (e.clientY - arraste.py);
+        aplicar();
+    });
+    function soltar() { arraste = null; palco.classList.remove("arrastando"); }
+    palco.addEventListener("pointerup", soltar);
+    palco.addEventListener("pointercancel", soltar);
+    img.addEventListener("load", ajustar);
+
+    /* --- Documento exibido ---------------------------------------------- */
+    function mostrarDocumento(qual) {
+        var c = cards[atual].dataset;
+        doc = qual;
+        var url = qual === "pagamento" ? c.pagamentoUrl : c.notaUrl;
+        var ehPdf = (qual === "pagamento" ? c.pagamentoPdf : c.notaPdf) === "1";
+        document.querySelectorAll("#audAbas [data-doc]").forEach(function (b) {
+            var ativo = b.dataset.doc === qual;
+            b.classList.toggle("active", ativo);
+            b.classList.toggle("btn-light", ativo);
+            b.classList.toggle("btn-outline-light", !ativo);
+            b.setAttribute("aria-pressed", ativo ? "true" : "false");
+        });
+        $("audAbrirOriginal").href = url || "#";
+        controlesZoom.hidden = ehPdf;
+        estado = { escala: 1, x: 0, y: 0, giro: 0 };
+        if (ehPdf) {
+            img.hidden = true; img.removeAttribute("src");
+            pdf.hidden = false; pdf.src = url;
+        } else {
+            pdf.hidden = true; pdf.removeAttribute("src");
+            img.hidden = false;
+            img.alt = (qual === "pagamento" ? "Comprovante de pagamento" : "NF ou recibo") + " da despesa #" + c.id;
+            if (img.getAttribute("src") === url && img.complete) { ajustar(); } else { img.src = url; }
+        }
+    }
+    document.getElementById("audAbas").addEventListener("click", function (e) {
+        var b = e.target.closest("[data-doc]");
+        if (b && !b.disabled) { mostrarDocumento(b.dataset.doc); }
+    });
+
+    /* --- Preenchimento do modal ----------------------------------------- */
+    function badge(texto, classe) {
+        var s = document.createElement("span");
+        s.className = "badge " + classe;
+        s.textContent = texto;
+        return s;
+    }
+    function preencher(indice) {
+        atual = indice;
+        var c = cards[indice].dataset;
+        $("audTitulo").textContent = "#" + c.id + " · " + c.titulo;
+        $("audSubtitulo").textContent = c.sigla + " · " + c.solicitante + " · " + c.data;
+        $("audPosicao").textContent = (indice + 1) + " de " + cards.length;
+        $("audAnterior").disabled = indice === 0;
+        $("audProxima").disabled = indice === cards.length - 1;
+        $("audValor").textContent = "R$ " + c.valor;
+        $("audCoordenacao").textContent = c.sigla + " - " + c.coordenacao;
+        $("audSolicitante").textContent = c.solicitante;
+        $("audPix").textContent = c.pix;
+        $("audData").textContent = c.data;
+        $("audCategoria").textContent = c.categoria + " · " + c.tipo;
+        $("audPagamento").textContent = c.pagamento;
+        $("audDescricao").textContent = c.descricao;
+        $("audDescricao").hidden = $("audDescricaoRotulo").hidden = !c.descricao;
+
+        var badges = $("audBadges");
+        badges.textContent = "";
+        badges.appendChild(badge(c.statusTexto, "bg-secondary"));
+        if (c.estouro) { badges.appendChild(badge("ESTOURO DE TETO (+R$ " + c.estouro + ")", "bg-danger")); }
+
+        var parecer = $("audParecer");
+        parecer.hidden = !c.parecer;
+        parecer.textContent = c.parecer ? "Parecer: " + c.parecer : "";
+
+        var impedido = c.impedido === "1";
+        var podeDecidir = c.status === "ENVIADO" && !impedido;
+        var podeLiquidar = c.status === "APROVADO" && !impedido;
+        $("audAcoesDecisao").hidden = !podeDecidir;
+        $("audFormLiquidar").hidden = !podeLiquidar;
+        $("audImpedido").hidden = !(impedido && (c.status === "ENVIADO" || c.status === "APROVADO"));
+        $("audFormAprovar").action = c.urlAprovar;
+        $("audFormRejeitar").action = c.urlRejeitar;
+        $("audFormLiquidar").action = c.urlLiquidar;
+        if (motivo) { motivo.value = ""; }
+
+        abaPagamento.disabled = !c.pagamentoUrl;
+        mostrarDocumento("nota");
+    }
+
+    cards.forEach(function (card, i) {
+        card.querySelectorAll(".btn-abrir-auditoria").forEach(function (b) {
+            b.addEventListener("click", function () { preencher(i); modal.show(); });
+        });
+    });
+    $("audAnterior").addEventListener("click", function () { if (atual > 0) { preencher(atual - 1); } });
+    $("audProxima").addEventListener("click", function () { if (atual < cards.length - 1) { preencher(atual + 1); } });
+    modalEl.addEventListener("shown.bs.modal", function () { if (!img.hidden) { ajustar(); } });
+    modalEl.addEventListener("hidden.bs.modal", function () {
+        img.removeAttribute("src"); pdf.removeAttribute("src");
+    });
+    window.addEventListener("resize", function () { if (modalEl.classList.contains("show") && !img.hidden) { ajustar(); } });
+
+    $("audFormAprovar").addEventListener("submit", function (e) {
+        var c = cards[atual].dataset;
+        if (!window.confirm("Aprovar a despesa #" + c.id + " de R$ " + c.valor + "?")) { e.preventDefault(); }
+    });
+    $("audFormRejeitar").addEventListener("submit", function (e) {
+        var c = cards[atual].dataset;
+        if (motivo && !motivo.value.trim()) {
+            e.preventDefault();
+            motivo.classList.add("is-invalid");
+            motivo.focus();
+            return;
+        }
+        if (!window.confirm("Rejeitar a despesa #" + c.id + " de R$ " + c.valor + "?\n\nMotivo: " + motivo.value.trim())) {
+            e.preventDefault();
+        }
+    });
+    if (motivo) {
+        motivo.addEventListener("input", function () { motivo.classList.remove("is-invalid"); });
+        /* Ctrl+Enter (ou Cmd+Enter) dentro da caixa envia a rejeição sem tirar a mão do teclado. */
+        motivo.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !$("audAcoesDecisao").hidden) {
+                e.preventDefault();
+                $("audFormRejeitar").requestSubmit();
             }
         });
-    });
+    }
 
-    document.querySelectorAll('.btn-abrir-rejeicao').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            document.getElementById('formModalRejeicao').action = this.dataset.action;
-            document.getElementById('tituloModalRejeicao').textContent = this.dataset.titulo;
-        });
-    });
+    /* R: com motivo preenchido, rejeita (com confirmação); sem motivo, leva o cursor à caixa. */
+    function atalhoRejeitar() {
+        if (motivo.value.trim()) {
+            $("audFormRejeitar").requestSubmit();
+        } else {
+            motivo.classList.add("is-invalid");
+            motivo.focus();
+        }
+    }
 
-    document.querySelectorAll('.btn-abrir-liquidacao').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            document.getElementById('formModalLiquidacao').action = this.dataset.action;
-            document.getElementById('tituloModalLiquidacao').textContent = this.dataset.titulo;
-            document.getElementById('pixModalLiquidacao').textContent = this.dataset.pix;
-        });
+    /* --- Atalhos de teclado (só com o modal aberto e fora de campos) ------ */
+    document.addEventListener("keydown", function (e) {
+        if (!modalEl.classList.contains("show") || e.ctrlKey || e.metaKey || e.altKey) { return; }
+        var alvo = e.target;
+        if (alvo && (alvo.tagName === "TEXTAREA" || alvo.tagName === "INPUT" || alvo.tagName === "SELECT" || alvo.isContentEditable)) { return; }
+        var k = e.key;
+        if (k === "ArrowLeft") { $("audAnterior").click(); }
+        else if (k === "ArrowRight") { $("audProxima").click(); }
+        else if (k === "+" || k === "=") { acaoZoom("mais"); }
+        else if (k === "-" || k === "_") { acaoZoom("menos"); }
+        else if (k === "0") { acaoZoom("ajustar"); }
+        else if (k === "1") { acaoZoom("real"); }
+        else if (k === "g" || k === "G") { acaoZoom("girar"); }
+        else if ((k === "a" || k === "A") && !$("audAcoesDecisao").hidden) {
+            $("audFormAprovar").requestSubmit();
+        } else if ((k === "r" || k === "R") && !$("audAcoesDecisao").hidden && motivo) {
+            atalhoRejeitar();
+        } else { return; }
+        e.preventDefault();
     });
-});
+})();
 </script>
 {% endblock %}

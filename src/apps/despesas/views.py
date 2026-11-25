@@ -1,9 +1,12 @@
+import mimetypes
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.http import JsonResponse
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.core.exceptions import PermissaoNegadaDominioError
@@ -14,6 +17,7 @@ from apps.despesas.forms import (
     converter_valor_reais,
 )
 from apps.despesas.models import Despesa, StatusDespesa
+from apps.despesas.regras import verificar_impedimento_rn03
 from apps.despesas.services import (
     aprovar_despesa_triagem,
     criar_ou_atualizar_despesa,
@@ -23,6 +27,7 @@ from apps.despesas.services import (
     simular_impacto_orcamentario,
 )
 from apps.financeiro.models import Coordenacao
+from apps.usuarios.services import usuario_pode_acessar_painel_auditoria
 
 
 def _previa_inicial(request, form):
@@ -317,20 +322,26 @@ def _extrair_mensagem_erro(exc: ValidationError) -> str:
 @login_required
 def painel_triagem_view(request):
     """
-    Exibe a fila consolidada de triagem e liquidação da Tesouraria (RF06 e RF07).
+    Exibe o painel de auditoria da Tesouraria em cards, com modal de zoom da NF ou recibo (RF06, RF07, Issue #13).
 
-    - O que faz: Lista despesas pendentes de aprovação (`ENVIADO`) e pagamento (`APROVADO`), permitindo
-      filtragem por status e coordenação, conferência de comprovantes e ações rápidas.
-    - Como faz: Restringe o acesso a usuários com perfil de Tesouraria ou Administração Geral; delega
-      a consulta a `listar_despesas_triagem`; prepara formulários de rejeição e liquidação para os modais.
-    - Qual finalidade atende: Centraliza o fluxo operacional da Tesouraria substituindo mensagens dispersas.
+    - O que faz: Lista despesas pendentes de aprovação (`ENVIADO`) e pagamento (`APROVADO`) em cards com
+      badges de status e de estouro, filtragem por status e coordenação e ações rápidas de aprovar, rejeitar
+      e liquidar dentro do modal de conferência.
+    - Como faz: Libera o acesso somente quando `usuario_pode_acessar_painel_auditoria` aprova (Tesoureiro ou
+      superusuário; Administrador Geral e Coordenador recebem 403); delega a consulta a
+      `listar_despesas_triagem`; marca em cada despesa o impedimento de segregação de funções calculado por
+      `verificar_impedimento_rn03`, para o template só esconder os botões; prepara os formulários dos modais.
+    - Qual finalidade atende: Dá à auditoria da Tesouraria uma conferência rápida e nítida dos cupons sem
+      expor o painel a quem não audita as contas do AG VII.
     """
-    if not (getattr(request.user, 'is_tesoureiro', False) or getattr(request.user, 'is_admin_geral', False)):
-        raise PermissionDenied("Apenas a Tesouraria ou Administração Geral pode acessar o painel de triagem.")
+    if not usuario_pode_acessar_painel_auditoria(request.user):
+        raise PermissionDenied("Apenas a Tesouraria pode acessar o painel de auditoria.")
 
     status_filtro = request.GET.get('status', 'PENDENTES')
     coordenacao_id = request.GET.get('coordenacao')
     despesas = list(listar_despesas_triagem(status_filtro=status_filtro, coordenacao_id=coordenacao_id))
+    for despesa in despesas:
+        despesa.impedido_rn03 = verificar_impedimento_rn03(despesa, request.user)
 
     return render(request, 'despesas/painel_triagem.html', {
         'despesas': despesas,
@@ -339,11 +350,55 @@ def painel_triagem_view(request):
         'coordenacao_filtro': str(coordenacao_id or ''),
         'rejeicao_form': RejeicaoDespesaForm(),
         'liquidacao_form': LiquidacaoDespesaForm(),
-        'pode_operar_triagem': getattr(request.user, 'is_tesoureiro', False),
         'qtd_enviadas': sum(1 for d in despesas if d.status == StatusDespesa.ENVIADO),
         'qtd_aprovadas': sum(1 for d in despesas if d.status == StatusDespesa.APROVADO),
         'qtd_estouro': sum(1 for d in despesas if d.excede_teto),
     })
+
+
+CAMPOS_COMPROVANTE = {'nota': 'comprovante', 'pagamento': 'comprovante_pagamento'}
+
+
+@login_required
+@require_GET
+@xframe_options_sameorigin
+def comprovante_auditoria_view(request, pk, tipo):
+    """
+    Entrega a NF/recibo ou o comprovante de pagamento de uma despesa para o painel de auditoria.
+
+    - O que faz: Devolve o arquivo (`tipo='nota'` para a NF ou recibo, `tipo='pagamento'` para o comprovante
+      Cora PJ) para exibição dentro do modal de conferência ou numa aba nova.
+    - Como faz: Exige `usuario_pode_acessar_painel_auditoria` (403 para os demais); responde 404 para tipo
+      desconhecido, despesa inexistente ou sem arquivo; abre o arquivo pelo storage e responde com
+      `FileResponse` inline, tipo MIME pela extensão, `nosniff` e cache privado. O decorador
+      `xframe_options_sameorigin` troca o `X-Frame-Options: DENY` global por `SAMEORIGIN` só nesta rota.
+    - Qual finalidade atende: Permite exibir PDFs no modal da Issue #13 (o `DENY` global bloqueava o
+      `<iframe>`) sem afrouxar a proteção contra clickjacking do resto do site, e só entrega o documento
+      fiscal a quem audita as contas do AG VII.
+    """
+    if not usuario_pode_acessar_painel_auditoria(request.user):
+        raise PermissionDenied("Apenas a Tesouraria pode abrir os comprovantes no painel de auditoria.")
+
+    campo = CAMPOS_COMPROVANTE.get(tipo)
+    if campo is None:
+        raise Http404("Tipo de comprovante desconhecido.")
+
+    despesa = get_object_or_404(Despesa, pk=pk)
+    arquivo = getattr(despesa, campo)
+    if not arquivo:
+        raise Http404("Esta despesa não tem esse comprovante.")
+
+    try:
+        conteudo = arquivo.open('rb')
+    except FileNotFoundError as exc:
+        raise Http404("Arquivo do comprovante não encontrado.") from exc
+
+    tipo_mime = mimetypes.guess_type(arquivo.name)[0] or 'application/octet-stream'
+    resposta = FileResponse(conteudo, content_type=tipo_mime)
+    resposta['Content-Disposition'] = 'inline'
+    resposta['X-Content-Type-Options'] = 'nosniff'
+    resposta['Cache-Control'] = 'private, max-age=300'
+    return resposta
 
 
 @login_required

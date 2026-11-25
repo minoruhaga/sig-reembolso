@@ -14,6 +14,7 @@ urlpatterns = [
     path('<int:pk>/editar/', views.editar_despesa_view, name='editar'),
     path('<int:pk>/submeter/', views.submeter_despesa_view, name='submeter'),
     path('triagem/', views.painel_triagem_view, name='triagem'),
+    path('<int:pk>/comprovante/<str:tipo>/', views.comprovante_auditoria_view, name='comprovante'),
     path('<int:pk>/aprovar/', views.aprovar_despesa_view, name='aprovar'),
     path('<int:pk>/rejeitar/', views.rejeitar_despesa_view, name='rejeitar'),
     path('<int:pk>/liquidar/', views.liquidar_despesa_view, name='liquidar'),

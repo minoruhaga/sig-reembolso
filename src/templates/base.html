@@ -72,10 +72,12 @@
                         <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'relatorios:balancete' %}active{% endif %}" {% if request.resolver_match.view_name == 'relatorios:balancete' %}aria-current="page"{% endif %} href="{% url 'relatorios:balancete' %}"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Prestação de Contas</a>
                     </li>
                     {% endif %}
-                    {% if user.is_authenticated and user.pode_acessar_admin %}
+                    {% if user.is_authenticated and user.pode_acessar_painel_auditoria %}
                     <li class="nav-item">
-                        <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'despesas:triagem' %}active{% endif %}" {% if request.resolver_match.view_name == 'despesas:triagem' %}aria-current="page"{% endif %} href="{% url 'despesas:triagem' %}"><i class="bi bi-check2-square me-1"></i> Triagem Tesouraria</a>
+                        <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'despesas:triagem' %}active{% endif %}" {% if request.resolver_match.view_name == 'despesas:triagem' %}aria-current="page"{% endif %} href="{% url 'despesas:triagem' %}"><i class="bi bi-check2-square me-1"></i> Auditoria de Notas</a>
                     </li>
+                    {% endif %}
+                    {% if user.is_authenticated and user.pode_acessar_admin %}
                     <li class="nav-item">
                         <a class="nav-link text-nowrap" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-1"></i> Administração</a>
                     </li>

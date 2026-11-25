@@ -252,6 +252,30 @@ class Despesa(models.Model):
         """
         return avaliar_alerta_estouro_rn02(self)
 
+    @property
+    def comprovante_eh_pdf(self) -> bool:
+        """
+        Indica se a NF ou recibo anexado é um PDF (e não uma foto).
+
+        - O que faz: Retorna `True` quando o arquivo de `comprovante` termina em `.pdf`.
+        - Como faz: Compara a extensão do nome do arquivo, sem abrir o arquivo nem consultar o storage.
+        - Qual finalidade atende: Permite ao painel de auditoria (Issue #13) escolher entre o visualizador
+          de imagem com zoom e o leitor de PDF sem lógica de arquivo no template.
+        """
+        return bool(self.comprovante) and self.comprovante.name.lower().endswith('.pdf')
+
+    @property
+    def comprovante_pagamento_eh_pdf(self) -> bool:
+        """
+        Indica se o comprovante bancário do pagamento é um PDF.
+
+        - O que faz: Retorna `True` quando o arquivo de `comprovante_pagamento` termina em `.pdf`.
+        - Como faz: Compara a extensão do nome do arquivo, como em `comprovante_eh_pdf`.
+        - Qual finalidade atende: Mostra o comprovante Cora PJ no mesmo modal de auditoria, com o
+          visualizador adequado ao tipo de arquivo.
+        """
+        return bool(self.comprovante_pagamento) and self.comprovante_pagamento.name.lower().endswith('.pdf')
+
     def _validar_imutabilidade_rn05(self):
         """
         Verifica e bloqueia alterações em campos contábeis após aprovação ou pagamento (RN05).

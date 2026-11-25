@@ -114,3 +114,16 @@ class Usuario(AbstractUser):
           administrativa (critério de aceite da Issue #6 / RF01).
         """
         return self.is_tesoureiro or self.is_admin_geral
+
+    @property
+    def pode_acessar_painel_auditoria(self):
+        """
+        Indica se o usuário pode abrir o painel de auditoria de notas fiscais da Tesouraria.
+
+        - O que faz: Retorna `True` apenas para Tesoureiro (o que inclui superusuário, via `is_tesoureiro`).
+        - Como faz: Reutiliza `is_tesoureiro`; o papel Administrador Geral sozinho não basta.
+        - Qual finalidade atende: Restringe a conferência de NF/recibo e as decisões de aprovar, rejeitar e
+          liquidar a quem audita as contas do AG VII (Issue #13), separando a auditoria da administração
+          de cadastros.
+        """
+        return self.is_tesoureiro
