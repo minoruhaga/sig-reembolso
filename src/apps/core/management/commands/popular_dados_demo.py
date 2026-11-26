@@ -1,30 +1,40 @@
 from decimal import Decimal
-from io import BytesIO
 
 from django.core.files.base import ContentFile
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from PIL import Image
 
+from apps.core.services import gerar_imagem_cupom_simulado
 from apps.despesas.models import CategoriaDespesa, Despesa, FormaPagamentoOriginal, StatusDespesa, TipoDespesa
 from apps.financeiro.models import Coordenacao
 from apps.usuarios.models import PapelUsuario, Usuario
 
 
-def _gerar_comprovante_demo(nome: str) -> ContentFile:
+def _gerar_comprovante_demo(
+    nome: str,
+    *,
+    titulo: str = 'Despesa de Demonstracao AG VII',
+    valor: str = '0,00',
+    data: str = '2026',
+    tipo_doc: str = 'CUPOM FISCAL - AG VII',
+) -> ContentFile:
     """
-    Gera um arquivo de imagem JPEG válido em memória para dados de demonstração.
+    Gera um arquivo de imagem JPEG válido e legível em memória para dados de demonstração.
 
-    - O que faz: Cria uma imagem JPEG sintética de 200x200 pixels encapsulada em `ContentFile`.
-    - Como faz: Instancia uma imagem RGB via Pillow, serializa em buffer JPEG e retorna `ContentFile` nomeado.
+    - O que faz: Cria uma imagem JPEG simulando cupom fiscal ou comprovante bancário em `ContentFile`.
+    - Como faz: Delega a renderização textual via Pillow para `gerar_imagem_cupom_simulado` e encapsula os
+      bytes retornados em `ContentFile` nomeado.
     - Qual finalidade atende: Garante que as despesas de exemplo criadas por `popular_dados_demo` tenham
-      anexos fiscais válidos que passem em `full_clean()` e na otimização Pillow (`RN01` e `RNF02`).
+      anexos fiscais válidos e legíveis no modal de zoom da Auditoria de Notas (`RN01` e `RNF02`).
     """
-    img = Image.new('RGB', (200, 200), color=(34, 139, 34))
-    buffer = BytesIO()
-    img.save(buffer, format='JPEG')
-    return ContentFile(buffer.getvalue(), name=nome)
+    bytes_jpeg = gerar_imagem_cupom_simulado(
+        titulo=titulo,
+        valor=valor,
+        data=data,
+        tipo_doc=tipo_doc,
+    )
+    return ContentFile(bytes_jpeg, name=nome)
 
 
 class Command(BaseCommand):
@@ -141,6 +151,8 @@ class Command(BaseCommand):
                 d1 = None
 
             if not d1:
+                data_hoje = timezone.now().date()
+                data_br = data_hoje.strftime('%d/%m/%Y')
                 d1 = Despesa(
                     coordenacao=cozinha,
                     solicitante=coord_cozinha,
@@ -150,9 +162,21 @@ class Command(BaseCommand):
                     tipo=TipoDespesa.REEMBOLSO,
                     forma_pagamento_original=FormaPagamentoOriginal.PIX,
                     valor=Decimal('342.50'),
-                    data_despesa=timezone.now().date(),
-                    comprovante=_gerar_comprovante_demo('cupom_sacolao_juquitiba.jpg'),
-                    comprovante_pagamento=_gerar_comprovante_demo('pix_cora_sacolao.jpg'),
+                    data_despesa=data_hoje,
+                    comprovante=_gerar_comprovante_demo(
+                        'cupom_sacolao_juquitiba.jpg',
+                        titulo='Verduras e Legumes Frescos (Sacolao)',
+                        valor='342,50',
+                        data=data_br,
+                        tipo_doc='CUPOM FISCAL - SACOLAO',
+                    ),
+                    comprovante_pagamento=_gerar_comprovante_demo(
+                        'pix_cora_sacolao.jpg',
+                        titulo='Reembolso Cozinha - Mariana',
+                        valor='342,50',
+                        data=data_br,
+                        tipo_doc='COMPROVANTE PIX - BANCO CORA PJ',
+                    ),
                     status=StatusDespesa.PAGO,
                     analisado_por=tesoureiro,
                     analisado_em=timezone.now(),
@@ -172,6 +196,7 @@ class Command(BaseCommand):
                 d2 = None
 
             if not d2:
+                data_hoje = timezone.now().date()
                 d2 = Despesa(
                     coordenacao=infra,
                     solicitante=coord_infra,
@@ -181,8 +206,14 @@ class Command(BaseCommand):
                     tipo=TipoDespesa.REEMBOLSO,
                     forma_pagamento_original=FormaPagamentoOriginal.CARTAO_DEBITO,
                     valor=Decimal('378.00'),
-                    data_despesa=timezone.now().date(),
-                    comprovante=_gerar_comprovante_demo('cupom_posto_juquitiba.jpg'),
+                    data_despesa=data_hoje,
+                    comprovante=_gerar_comprovante_demo(
+                        'cupom_posto_juquitiba.jpg',
+                        titulo='Oleo Diesel S10 - Gerador 1',
+                        valor='378,00',
+                        data=data_hoje.strftime('%d/%m/%Y'),
+                        tipo_doc='CUPOM FISCAL - AUTO POSTO',
+                    ),
                     status=StatusDespesa.ENVIADO,
                 )
                 d2.full_clean()

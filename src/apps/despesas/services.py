@@ -202,6 +202,30 @@ def listar_despesas_triagem(status_filtro: str | None = None, coordenacao_id: in
     return queryset
 
 
+def contar_pendencias_triagem(coordenacao_id: int | str | None = None) -> dict:
+    """
+    Conta as pendências reais da fila da Tesouraria independentemente do filtro de situação exibido.
+
+    - O que faz: Calcula `qtd_enviadas` (`ENVIADO`), `qtd_aprovadas` (`APROVADO`) e `qtd_estouro`
+      (`excede_teto=True` dentro das pendentes), respeitando apenas filtro opcional por coordenação.
+    - Como faz: Consulta `Despesa.objects.filter(status__in=[ENVIADO, APROVADO])` e executa as
+      contagens diretamente no banco sem aplicar filtro de status selecionado na tela.
+    - Qual finalidade atende: Impede que os contadores do topo do Painel de Auditoria zerem quando o
+      tesoureiro filtra a listagem por despesas já pagas ou rejeitadas (RF06).
+    """
+    pendentes = Despesa.objects.filter(
+        status__in=[StatusDespesa.ENVIADO, StatusDespesa.APROVADO]
+    )
+    if coordenacao_id:
+        pendentes = pendentes.filter(coordenacao_id=coordenacao_id)
+
+    return {
+        'qtd_enviadas': pendentes.filter(status=StatusDespesa.ENVIADO).count(),
+        'qtd_aprovadas': pendentes.filter(status=StatusDespesa.APROVADO).count(),
+        'qtd_estouro': pendentes.filter(excede_teto=True).count(),
+    }
+
+
 @transaction.atomic
 def aprovar_despesa_triagem(*, despesa: Despesa, tesoureiro, observacao: str = '') -> Despesa:
     """

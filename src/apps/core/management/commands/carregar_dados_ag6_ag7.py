@@ -4,7 +4,6 @@ import re
 import unicodedata
 import uuid
 from decimal import Decimal, InvalidOperation
-from io import BytesIO
 from pathlib import Path
 
 from django.conf import settings
@@ -12,7 +11,6 @@ from django.core.files.base import ContentFile
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from PIL import Image
 
 from apps.despesas.models import (
     CategoriaDespesa,
@@ -96,16 +94,21 @@ def _parse_data_br(texto: str) -> datetime.date:
 
 def _gerar_bytes_comprovante_padrao() -> bytes:
     """
-    Gera em memória os bytes de um JPEG simples para lastro documental de importações históricas.
+    Gera em memória os bytes de um cupom fiscal simulado legível para lastro documental de importações.
 
-    - O que faz: Produz um payload JPEG válido de 120x120 px para representar notas antigas do AG VI.
-    - Como faz: Usa Pillow (`Image.new`) gravando em `BytesIO` uma única vez por execução do comando.
-    - Qual finalidade atende: Satisfaz `RN01` e `full_clean()` sem reprocessar imagens dezenas de vezes.
+    - O que faz: Produz um payload JPEG válido simulando cupom fiscal para representar notas da carga AG VI/VII.
+    - Como faz: Delega a renderização para `gerar_imagem_cupom_simulado` uma única vez por execução do comando.
+    - Qual finalidade atende: Satisfaz `RN01` e `full_clean()` sem reprocessar imagens dezenas de vezes e exibe
+      imagem legível ao inspecionar notas históricas no modal de zoom da Auditoria.
     """
-    img = Image.new('RGB', (120, 120), color=(25, 135, 84))
-    buf = BytesIO()
-    img.save(buf, format='JPEG', quality=75)
-    return buf.getvalue()
+    from apps.core.services import gerar_imagem_cupom_simulado
+
+    return gerar_imagem_cupom_simulado(
+        titulo='Despesa Historica AG VI / AG VII',
+        valor='Conforme lancamento',
+        data='2026',
+        tipo_doc='CUPOM FISCAL - HISTORICO',
+    )
 
 
 def _criar_anexo_uuid(bytes_jpeg: bytes) -> ContentFile:

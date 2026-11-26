@@ -24,6 +24,11 @@
             font-weight: 700;
             letter-spacing: -0.5px;
         }
+        .navbar .nav-link {
+            padding-left: 0.55rem;
+            padding-right: 0.55rem;
+            font-size: 0.92rem;
+        }
         .termometro-barra {
             height: 10px;
             border-radius: 5px;
@@ -57,7 +62,7 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-xl navbar-dark bg-success shadow-sm">
-        <div class="container">
+        <div class="container-fluid px-lg-4">
             <a class="navbar-brand d-flex align-items-center gap-2 text-nowrap" href="{% url 'dashboard' %}">
                 <i class="bi bi-compass fs-4"></i>
                 <span>SIG-Reembolso</span>
@@ -68,7 +73,7 @@
             <div class="collapse navbar-collapse" id="navContent">
                 <ul class="navbar-nav me-auto mb-2 mb-xl-0">
                     <li class="nav-item">
-                        <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %} href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i> Painel Geral</a>
+                        <a class="nav-link text-nowrap {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %} href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-1"></i> Painel</a>
                     </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item">
@@ -81,7 +86,7 @@
                         <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'despesas:minhas' %}active{% endif %}" {% if request.resolver_match.view_name == 'despesas:minhas' %}aria-current="page"{% endif %} href="{% url 'despesas:minhas' %}"><i class="bi bi-receipt me-1"></i> Minhas Despesas</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'relatorios:balancete' %}active{% endif %}" {% if request.resolver_match.view_name == 'relatorios:balancete' %}aria-current="page"{% endif %} href="{% url 'relatorios:balancete' %}"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Prestação de Contas</a>
+                        <a class="nav-link text-nowrap {% if request.resolver_match.view_name == 'relatorios:balancete' %}active{% endif %}" {% if request.resolver_match.view_name == 'relatorios:balancete' %}aria-current="page"{% endif %} href="{% url 'relatorios:balancete' %}"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Balancete</a>
                     </li>
                     {% endif %}
                     {% if user.is_authenticated and user.pode_acessar_painel_auditoria %}
@@ -101,7 +106,7 @@
                     </span>
                     {% if user.is_authenticated %}
                         <div class="dropdown">
-                            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <button class="btn btn-outline-light btn-sm dropdown-toggle text-nowrap" type="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i> {{ user.get_full_name|default:user.username }}
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">

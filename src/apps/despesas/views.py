@@ -20,6 +20,7 @@ from apps.despesas.models import Despesa, StatusDespesa
 from apps.despesas.regras import verificar_impedimento_rn03
 from apps.despesas.services import (
     aprovar_despesa_triagem,
+    contar_pendencias_triagem,
     criar_ou_atualizar_despesa,
     liquidar_despesa_triagem,
     listar_despesas_triagem,
@@ -342,6 +343,7 @@ def painel_triagem_view(request):
     despesas = list(listar_despesas_triagem(status_filtro=status_filtro, coordenacao_id=coordenacao_id))
     for despesa in despesas:
         despesa.impedido_rn03 = verificar_impedimento_rn03(despesa, request.user)
+    contadores = contar_pendencias_triagem(coordenacao_id=coordenacao_id)
 
     return render(request, 'despesas/painel_triagem.html', {
         'despesas': despesas,
@@ -350,9 +352,9 @@ def painel_triagem_view(request):
         'coordenacao_filtro': str(coordenacao_id or ''),
         'rejeicao_form': RejeicaoDespesaForm(),
         'liquidacao_form': LiquidacaoDespesaForm(),
-        'qtd_enviadas': sum(1 for d in despesas if d.status == StatusDespesa.ENVIADO),
-        'qtd_aprovadas': sum(1 for d in despesas if d.status == StatusDespesa.APROVADO),
-        'qtd_estouro': sum(1 for d in despesas if d.excede_teto),
+        'qtd_enviadas': contadores['qtd_enviadas'],
+        'qtd_aprovadas': contadores['qtd_aprovadas'],
+        'qtd_estouro': contadores['qtd_estouro'],
     })
 
 
