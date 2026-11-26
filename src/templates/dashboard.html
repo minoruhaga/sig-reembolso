@@ -53,17 +53,18 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card card-stat bg-white p-3 border-start border-4 border-success">
+        {# Saldo negativo = gastos acima do teto somado: vermelho, como no painel de saldos. #}
+        <div class="card card-stat bg-white p-3 border-start border-4 {% if total_saldo_livre < 0 %}border-danger{% else %}border-success{% endif %}">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <span class="text-muted small text-uppercase fw-semibold">Saldo Financeiro Livre</span>
-                    <h3 class="fw-bold text-success mt-1 mb-0">R$ {{ total_saldo_livre|reais }}</h3>
+                    <h3 class="fw-bold {% if total_saldo_livre < 0 %}text-danger{% else %}text-success{% endif %} mt-1 mb-0">R$ {{ total_saldo_livre|reais }}</h3>
                 </div>
-                <div class="bg-success-subtle text-success p-3 rounded-circle">
-                    <i class="bi bi-piggy-bank fs-4"></i>
+                <div class="{% if total_saldo_livre < 0 %}bg-danger-subtle text-danger{% else %}bg-success-subtle text-success{% endif %} p-3 rounded-circle">
+                    <i class="bi {% if total_saldo_livre < 0 %}bi-exclamation-triangle{% else %}bi-piggy-bank{% endif %} fs-4"></i>
                 </div>
             </div>
-            <span class="small text-muted mt-2 d-block">Disponível na conta Banco Cora PJ</span>
+            <span class="small text-muted mt-2 d-block">{% if total_saldo_livre < 0 %}Gastos acima do teto{% if not visao_gestor %} da sua coordenação{% endif %}{% else %}Disponível na conta Banco Cora PJ{% endif %}</span>
         </div>
     </div>
 </div>

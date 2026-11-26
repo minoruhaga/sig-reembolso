@@ -290,7 +290,7 @@
         </div>
 
         {# Termômetro (RF03): números vindos de simular_impacto_orcamentario; o JS só atualiza o texto. #}
-        <section class="termometro{% if previa.excede_teto %} termometro--estouro{% endif %}" id="termometro"
+        <section class="termometro{% if previa.excede_teto or previa.teto_ja_estourado %} termometro--estouro{% endif %}" id="termometro"
                  aria-live="polite" {% if not previa %}hidden{% endif %}>
             <div class="termometro-cabeca">
                 <span>Verba da <span id="termo-sigla">{{ previa.sigla }}</span></span>
@@ -309,11 +309,13 @@
                     Passa do teto em R$ {{ previa.valor_excedente|floatformat:"2g" }}.
                 {% elif previa.valor %}
                     Depois desta compra sobram R$ {{ previa.saldo_apos|floatformat:"2g" }}.
+                {% elif previa.teto_ja_estourado %}
+                    A verba já passou do teto em R$ {{ previa.estouro_atual|floatformat:"2g" }}.
                 {% else %}
                     Saldo livre: R$ {{ previa.saldo_atual|floatformat:"2g" }}.
                 {% endif %}
             </p>
-            <p class="termometro-nota" id="termo-nota" {% if not previa.excede_teto %}hidden{% endif %}>
+            <p class="termometro-nota" id="termo-nota" {% if not previa.excede_teto and not previa.teto_ja_estourado %}hidden{% endif %}>
                 Você ainda pode enviar. A tesouraria decide se libera a verba extra.
             </p>
         </section>
@@ -439,11 +441,14 @@
             resultado.textContent = "Passa do teto em R$ " + reais(d.valor_excedente) + ".";
         } else if (Number(d.valor) > 0) {
             resultado.textContent = "Depois desta compra sobram R$ " + reais(d.saldo_apos) + ".";
+        } else if (d.teto_ja_estourado) {
+            resultado.textContent = "A verba já passou do teto em R$ " + reais(d.estouro_atual) + ".";
         } else {
             resultado.textContent = "Saldo livre: R$ " + reais(d.saldo_atual) + ".";
         }
-        document.getElementById("termo-nota").hidden = !d.excede_teto;
-        termo.classList.toggle("termometro--estouro", d.excede_teto);
+        var estouro = d.excede_teto || d.teto_ja_estourado;
+        document.getElementById("termo-nota").hidden = !estouro;
+        termo.classList.toggle("termometro--estouro", estouro);
         termo.hidden = false;
     }
 
