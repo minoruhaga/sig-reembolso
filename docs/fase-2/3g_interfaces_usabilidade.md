@@ -321,7 +321,7 @@ A primeira rodada encontrou três problemas:
 
 Correções feitas em seguida, e conferidas de novo nas duas larguras:
 
-- **Seletor de coordenação.** A opção mostra só o nome da pasta ("Alimentação e Cozinha Central"). Em 360 px o texto ocupa 243 dos 280 px úteis do campo. A sigla continua no cabeçalho do termômetro ("Verba da ALIM").
+- **Seletor de coordenação.** A opção mostra só o nome da pasta (sem o prefixo `"SIGLA - "`). Mesmo em pastas com nomes longos (como o caso de teste `"Alimentação e Cozinha Central"`, posteriormente simplificado para `"Alimentação"` na fixture oficial `coordenacoes_iniciais.json`), em 360 px o texto cabe nos 280 px úteis do campo. A sigla continua no cabeçalho do termômetro ("Verba da ALIM").
 - **Saldo negativo.** O serviço `simular_impacto_orcamentario` passou a informar se a verba já estava acima do teto e em quanto. O termômetro abre em vermelho com "A verba já passou do teto em R$ 3.166,97." e a nota da tesouraria. No painel operacional, o cartão "Saldo financeiro livre" fica vermelho, com ícone de alerta e a legenda "Gastos acima do teto da sua coordenação", como já acontecia na tela de saldos.
 - **Alvos de toque nas telas de apoio.** Abaixo de 768 px, botões (inclusive os pequenos), campos, seletores e o botão do menu passam a ter pelo menos 44 px de altura. Depois da correção, nenhum controle visível das cinco telas ficou abaixo de 44 px, em 360 ou em 430 px, e nenhuma ganhou rolagem horizontal.
 
