@@ -2,27 +2,27 @@
 
 **Projeto:** SIG-Reembolso  
 **Organização / Piloto Real:** Acampamento Geral VII - Grupo Escoteiro Caramuru  
-**Orçamento Global Operacional:** R$ 180.000,00  
+**Teto Orçamentário Consolidado (Cenário Otimista 271 + 10%):** R$ 193.320,00  
 **Conta de Custódia:** Banco Cora PJ  
-**Referência:** Item 5.4 da especificação
+**Referência:** Planilha *AG VII - Modelagem de Precificação e Cenários* (`3_CUSTOS_COORDENACOES`, Tabela 1) e `docs/referencias/coordenadores_ag7.csv`
 
 ---
 
 | ID | Sigla | Nome da Coordenação | Atribuição Operacional Primária | Teto Alocado (R$) | % Orçamento |
 | :-: | :---: | :--- | :--- | :---: | :---: |
-| 1 | `ALIM` | **Alimentação e Cozinha Central** | 5 refeições diárias para ~400 pessoas por 7 dias; perecíveis de emergência | R$ 65.000,00 | 36,1% |
-| 2 | `INFRA` | **Infraestrutura e Manutenção** | Rede elétrica, hidráulica, geradores, bombas e ferragens | R$ 25.000,00 | 13,9% |
-| 3 | `TRANS` | **Transporte e Logística** | Vans de apoio, combustível de campo, pedágios e fretes locais | R$ 20.000,00 | 11,1% |
-| 4 | `PROG` | **Programa e Atividades Gerais** | Oficinas pedagógicas, gincanas, materiais dos 4 ramos escoteiros | R$ 14.000,00 | 7,8% |
-| 5 | `MULT` | **Som, Iluminação e Multimídia** | Equipamentos de som, iluminação cênica, cabos e adaptadores | R$ 12.000,00 | 6,7% |
-| 6 | `SAUDE` | **Saúde e Primeiros Socorros** | Farmácia de campo, curativos, medicamentos emergenciais e descartáveis | R$ 8.000,00 | 4,4% |
-| 7 | `SEG` | **Segurança e Brigada de Campo** | Rádios comunicadores, lanternas, pilhas e itens de vigília noturna | R$ 6.000,00 | 3,3% |
-| 8 | `SEC` | **Secretaria e Recepção** | Crachás, pulseiras de identificação, kits de boas-vindas e papelaria | R$ 5.000,00 | 2,8% |
-| 9 | `CANT` | **Bazar e Cantina Operacional** | Suprimentos de apoio e bem-estar contínuo aos voluntários de serviço | R$ 5.000,00 | 2,8% |
-| 10 | `ALMOX` | **Almoxarifado e Compras de Campo** | Ferramental rústico, machadinhas, cordas de sisal, fitas e lonas | R$ 4.000,00 | 2,2% |
-| 11 | `ALOJ` | **Alojamentos e Barracas** | Estrutura de abrigo, esteios, estacas extras e reparos de acantonamento | R$ 4.000,00 | 2,2% |
-| 12 | `LIMP` | **Limpeza e Gestão de Resíduos** | Produtos de desinfecção hospitalar/cozinha, sacos reforçados e lixeiras | R$ 4.000,00 | 2,2% |
-| 13 | `ESPIR` | **Espiritualidade e Capelania** | Materiais devocionais ecumênicos, velas e folhetos cerimoniais | R$ 3.000,00 | 1,7% |
-| 14 | `COM` | **Comunicação e Mídias** | Cartões de memória, baterias, backdrop e sinalização visual | R$ 3.000,00 | 1,7% |
-| 15 | `TES` | **Fundo de Reserva da Tesouraria** | Reserva técnica para contingências orçamentárias e suplementações | R$ 6.000,00 | 3,3% |
-| **—** | **TOTAL** | **Orçamento Consolidado do Evento** | **15 Coordenações Operacionais Ativas** | **R$ 180.000,00** | **100,0%** |
+| 1 | `ALIM` | **Alimentação** | 4 refeições diárias para ~400 pessoas por 7 dias; perecíveis de emergência | R$ 75.000,00 | 38,8% |
+| 2 | `INFRA` | **Infraestrutura** | Toldos, bambus, gás e cordas | R$ 16.400,00 | 8,5% |
+| 3 | `TRANS` | **Transporte** | Ônibus, caminhão e vans de apoio, combustível de campo, pedágios e fretes locais | R$ 48.700,00 | 25,2% |
+| 4 | `ATIV` | **Atividades** | Oficinas pedagógicas, gincanas, materiais dos 4 ramos escoteiros | R$ 20.600,00 | 10,7% |
+| 5 | `SOM` | **Som** | Equipamentos de som | R$ 0,00 | 0,0% |
+| 6 | `SAUDE` | **Saúde e Bem-Estar** | Farmácia de campo, curativos, medicamentos emergenciais e descartáveis | R$ 1.500,00 | 0,8% |
+| 7 | `DECO` | **Decoração** | Cenografia, ambientação temática e kits de jovens e voluntários | R$ 24.300,00 | 12,6% |
+| 8 | `LOG` | **Logística de Materiais** | Frete de caminhão baú, movimentação e controle de materiais de campo | R$ 3.300,00 | 1,7% |
+| 9 | `SUST` | **Sustentabilidade** | Gestão de resíduos, coleta seletiva e conservação ambiental do campo | R$ 3.300,00 | 1,7% |
+| 10 | `DIV` | **Divulgação** | Comunicação, impressos, cobertura fotográfica e mídias do evento | R$ 220,00 | 0,1% |
+| 11 | `CAPT` | **Captação** | Captação de recursos, patrocínios institucionais e parcerias | R$ 0,00 | 0,0% |
+| 12 | `FIN` | **Financeiro** | Gestão orçamentária, triagem fiscal, conciliação e liquidação bancária | R$ 0,00 | 0,0% |
+| 13 | `GERAL` | **Geral e Programação** | Coordenação executiva geral e cronograma integrado do acampamento | R$ 0,00 | 0,0% |
+| 14 | `INSC` | **Inscrição** | Credenciamento, controle de inscritos, autorizações e secretaria | R$ 0,00 | 0,0% |
+| 15 | `MUS` | **Música** | Animação musical, canções escoteiras e momentos culturais | R$ 0,00 | 0,0% |
+| **—** | **TOTAL** | **Orçamento Consolidado do Evento** | **15 Coordenações Reais do AG VII** | **R$ 193.320,00** | **100,0%** |

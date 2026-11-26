@@ -2,8 +2,13 @@
 Configuração de rotas do aplicativo de Usuários e Autenticação (RBAC).
 """
 
+from django.urls import path
+
+from apps.usuarios import views
+
 app_name = 'usuarios'
 
 urlpatterns = [
-    # As rotas de login, logout e perfil da Onda 1 (Issue #6) serão registradas aqui.
+    path('login/', views.LoginView.as_view(), name='login'),
+    path('logout/', views.LogoutView.as_view(), name='logout'),
 ]

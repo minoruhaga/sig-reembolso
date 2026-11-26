@@ -19,10 +19,10 @@ O **SIG-Reembolso** é uma solução web focada em mobilidade (*Mobile-First*) e
 
 | Integrante | Papel no Projeto | Responsabilidades Principais |
 | :--- | :--- | :--- |
-| **Gustavo Minoru Haga** (`@minoruhaga`) | **Tech Lead / Core Backend & Governança** | Arquitetura Django, RBAC (`apps.usuarios`), gestão financeira de tetos (`apps.financeiro`), CI/CD e revisão de PRs. |
-| **Integrante 2** | **Backend de Despesas & Regras de Negócio** | CRUD de despesas, máquina de estados finita, compressão Pillow (`RNF02`), soft-block (`RN02`) e auditoria (`RN06`). |
-| **Integrante 3** | **Frontend, UX & Interfaces Mobile-First** | Telas Bootstrap 5, formulário de captura rápida por câmera, painel de triagem desktop da tesouraria e **Item 3.g (Usabilidade)**. |
-| **Integrante 4** | **QA, Testes, Manuais e Homologação** | Fixtures com dados do AG VI/VII, suíte de testes (`TestCase` - **Item 3.i**), manuais de operação/treinamento (**3.j / 3.k**) e homologação (**3.l**). |
+| **Gustavo Minoru Haga** (`@minoruhaga`) | **Tech Lead, Product Owner, Backend Core & QA** | Arquitetura Django, modelagem relacional, regras contábeis (RN01 a RN06), gestão de tetos (`apps.financeiro`), fluxo de submissão/Pillow (`apps.despesas`), CI/CD e **frentes absorvidas *(era de `@xixinho`)*:** carga de dados AG VI/VII (Issue `#9`) e suíte de testes (**Item 3.i**). Entregáveis: **3.h**, **3.i**, **3.j**, **3.k** e **3.l**. |
+| **Marina** (`@Mah-Rod`) | **Backend de Acesso, Autenticação & Relatórios** | Módulo de autenticação e usuários (`apps.usuarios`), controle de acesso por papel (RBAC), proteção de rotas restritas, rotinas de exportação contábil (`apps.relatorios` - Issue `#34`) e apoio no **Item 3.h** (Segurança e Autenticação). |
+| **Ricardo Sakugawa** (`@ricardosakugawa`) | **Frontend & UI/UX Completo** | Identidade visual em Bootstrap 5.3 + Icons, telas de campo *Mobile-First* com câmera nativa, painel desktop da Tesouraria (triagem e modal de zoom) e entregável **Item 3.g (Usabilidade e Interfaces)**. |
+| **Giovanni** (`@xixinho`) | **QA & Testes *(Atribuição original redistribuída em 19/11)*** | Atribuições originais (carga de dados AG VI/VII e Item **3.i**) absorvidas por `@minoruhaga` para garantir o cumprimento do cronograma da Fase 2. |
 
 ---
 
@@ -127,6 +127,7 @@ python src/manage.py check
 
 * [Quadro Kanban Oficial no GitHub Projects (#1)](https://github.com/users/minoruhaga/projects/1)
 * [Quadro Kanban e Sequenciamento de Entregas (Fase 2)](docs/fase-2/kanban_fase_2.md)
+* [Estratégia de Divisão de Tarefas da Equipe (RACI)](docs/fase-2/divisao_tarefas_equipe.md)
 * [Catálogo de Issues para o GitHub](docs/fase-2/backlog_issues_github.md)
 * [Guia de Configuração do Ambiente (WSL, Nix, GitHub CLI)](docs/configuracao-ambiente.md)
 * [Manual de Uso do Git e Branches](docs/manual-git.md)
@@ -135,6 +136,8 @@ python src/manage.py check
 * [Regras de Domínio e Backend Django (src/AGENTS.md)](src/AGENTS.md)
 * [Guia de Governança de IA e Uso das Skills](docs/guia-uso-ia-e-skills.md)
 * [Planejamento de Entregas da 2ª Fase (Itens 3.g a 3.l)](docs/fase-2/planejamento_fase_2.md)
+* [Item 3.h — Documentação do sistema desenvolvido (programas-fonte, arquitetura e execução)](docs/fase-2/3h_documentacao_sistema.md)
+* [Guia da Issue #6 — Login, logout e RBAC (o que foi feito e como testar)](docs/fase-2/guia-login-rbac.md)
 * [Requisitos Funcionais (RF01 a RF08)](docs/requisitos/requisitos_funcionais.md)
 * [Regras de Negócio e Domínio (RN01 a RN06)](docs/requisitos/regras_de_negocio.md)
 * [Modelo de Dados Relacional (DER)](docs/arquitetura/modelo_dados.md)

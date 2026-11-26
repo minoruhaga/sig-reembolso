@@ -3,10 +3,10 @@
     "model": "financeiro.coordenacao",
     "pk": 1,
     "fields": {
-      "nome": "Alimentação e Cozinha Central",
+      "nome": "Alimentação",
       "sigla": "ALIM",
-      "descricao": "5 refeições diárias para ~400 pessoas por 7 dias; perecíveis de emergência",
-      "teto_orcamentario": "65000.00",
+      "descricao": "4 refeições diárias para ~400 pessoas por 7 dias; perecíveis de emergência",
+      "teto_orcamentario": "75000.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -15,10 +15,10 @@
     "model": "financeiro.coordenacao",
     "pk": 2,
     "fields": {
-      "nome": "Infraestrutura e Manutenção",
+      "nome": "Infraestrutura",
       "sigla": "INFRA",
-      "descricao": "Rede elétrica, hidráulica, geradores, bombas e ferragens",
-      "teto_orcamentario": "25000.00",
+      "descricao": "Toldos, bambus, gás e cordas",
+      "teto_orcamentario": "16400.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -27,10 +27,10 @@
     "model": "financeiro.coordenacao",
     "pk": 3,
     "fields": {
-      "nome": "Transporte e Logística",
+      "nome": "Transporte",
       "sigla": "TRANS",
-      "descricao": "Vans de apoio, combustível de campo, pedágios e fretes locais",
-      "teto_orcamentario": "20000.00",
+      "descricao": "Ônibus, caminhão e vans de apoio, combustível de campo, pedágios e fretes locais",
+      "teto_orcamentario": "48700.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -39,10 +39,10 @@
     "model": "financeiro.coordenacao",
     "pk": 4,
     "fields": {
-      "nome": "Programa e Atividades Gerais",
-      "sigla": "PROG",
+      "nome": "Atividades",
+      "sigla": "ATIV",
       "descricao": "Oficinas pedagógicas, gincanas, materiais dos 4 ramos escoteiros",
-      "teto_orcamentario": "14000.00",
+      "teto_orcamentario": "20600.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -51,10 +51,10 @@
     "model": "financeiro.coordenacao",
     "pk": 5,
     "fields": {
-      "nome": "Som, Iluminação e Multimídia",
-      "sigla": "MULT",
-      "descricao": "Equipamentos de som, iluminação cênica, cabos e adaptadores",
-      "teto_orcamentario": "12000.00",
+      "nome": "Som",
+      "sigla": "SOM",
+      "descricao": "Equipamentos de som",
+      "teto_orcamentario": "0.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -63,10 +63,10 @@
     "model": "financeiro.coordenacao",
     "pk": 6,
     "fields": {
-      "nome": "Saúde e Primeiros Socorros",
+      "nome": "Saúde e Bem-Estar",
       "sigla": "SAUDE",
       "descricao": "Farmácia de campo, curativos, medicamentos emergenciais e descartáveis",
-      "teto_orcamentario": "8000.00",
+      "teto_orcamentario": "1500.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -75,10 +75,10 @@
     "model": "financeiro.coordenacao",
     "pk": 7,
     "fields": {
-      "nome": "Segurança e Brigada de Campo",
-      "sigla": "SEG",
-      "descricao": "Rádios comunicadores, lanternas, pilhas e itens de vigília noturna",
-      "teto_orcamentario": "6000.00",
+      "nome": "Decoração",
+      "sigla": "DECO",
+      "descricao": "Cenografia, ambientação temática e kits de jovens e voluntários",
+      "teto_orcamentario": "24300.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -87,10 +87,10 @@
     "model": "financeiro.coordenacao",
     "pk": 8,
     "fields": {
-      "nome": "Secretaria e Recepção",
-      "sigla": "SEC",
-      "descricao": "Crachás, pulseiras de identificação, kits de boas-vindas e papelaria",
-      "teto_orcamentario": "5000.00",
+      "nome": "Logística de Materiais",
+      "sigla": "LOG",
+      "descricao": "Frete de caminhão baú, movimentação e controle de materiais de campo",
+      "teto_orcamentario": "3300.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -99,10 +99,10 @@
     "model": "financeiro.coordenacao",
     "pk": 9,
     "fields": {
-      "nome": "Bazar e Cantina Operacional",
-      "sigla": "CANT",
-      "descricao": "Suprimentos de apoio e bem-estar contínuo aos voluntários de serviço",
-      "teto_orcamentario": "5000.00",
+      "nome": "Sustentabilidade",
+      "sigla": "SUST",
+      "descricao": "Gestão de resíduos, coleta seletiva e conservação ambiental do campo",
+      "teto_orcamentario": "3300.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -111,10 +111,10 @@
     "model": "financeiro.coordenacao",
     "pk": 10,
     "fields": {
-      "nome": "Almoxarifado e Compras de Campo",
-      "sigla": "ALMOX",
-      "descricao": "Ferramental rústico, machadinhas, cordas de sisal, fitas e lonas",
-      "teto_orcamentario": "4000.00",
+      "nome": "Divulgação",
+      "sigla": "DIV",
+      "descricao": "Comunicação, impressos, cobertura fotográfica e mídias do evento",
+      "teto_orcamentario": "220.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -123,10 +123,10 @@
     "model": "financeiro.coordenacao",
     "pk": 11,
     "fields": {
-      "nome": "Alojamentos e Barracas",
-      "sigla": "ALOJ",
-      "descricao": "Estrutura de abrigo, esteios, estacas extras e reparos de acantonamento",
-      "teto_orcamentario": "4000.00",
+      "nome": "Captação",
+      "sigla": "CAPT",
+      "descricao": "Captação de recursos, patrocínios institucionais e parcerias",
+      "teto_orcamentario": "0.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -135,10 +135,10 @@
     "model": "financeiro.coordenacao",
     "pk": 12,
     "fields": {
-      "nome": "Limpeza e Gestão de Resíduos",
-      "sigla": "LIMP",
-      "descricao": "Produtos de desinfecção hospitalar/cozinha, sacos reforçados e lixeiras",
-      "teto_orcamentario": "4000.00",
+      "nome": "Financeiro",
+      "sigla": "FIN",
+      "descricao": "Gestão orçamentária, triagem fiscal, conciliação e liquidação bancária",
+      "teto_orcamentario": "0.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -147,10 +147,10 @@
     "model": "financeiro.coordenacao",
     "pk": 13,
     "fields": {
-      "nome": "Espiritualidade e Capelania",
-      "sigla": "ESPIR",
-      "descricao": "Materiais devocionais ecumênicos, velas e folhetos cerimoniais",
-      "teto_orcamentario": "3000.00",
+      "nome": "Geral e Programação",
+      "sigla": "GERAL",
+      "descricao": "Coordenação executiva geral e cronograma integrado do acampamento",
+      "teto_orcamentario": "0.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -159,10 +159,10 @@
     "model": "financeiro.coordenacao",
     "pk": 14,
     "fields": {
-      "nome": "Comunicação e Mídias",
-      "sigla": "COM",
-      "descricao": "Cartões de memória, baterias, backdrop e sinalização visual",
-      "teto_orcamentario": "3000.00",
+      "nome": "Inscrição",
+      "sigla": "INSC",
+      "descricao": "Credenciamento, controle de inscritos, autorizações e secretaria",
+      "teto_orcamentario": "0.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }
@@ -171,10 +171,10 @@
     "model": "financeiro.coordenacao",
     "pk": 15,
     "fields": {
-      "nome": "Fundo de Reserva da Tesouraria",
-      "sigla": "TES",
-      "descricao": "Reserva técnica para contingências orçamentárias e suplementações",
-      "teto_orcamentario": "6000.00",
+      "nome": "Música",
+      "sigla": "MUS",
+      "descricao": "Animação musical, canções escoteiras e momentos culturais",
+      "teto_orcamentario": "0.00",
       "ativo": true,
       "criado_em": "2026-10-22T00:00:00Z"
     }

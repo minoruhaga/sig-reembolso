@@ -28,6 +28,11 @@ media/
 *.swp
 *~
 
+# Testes e Cobertura
+.coverage
+.coverage.*
+htmlcov/
+
 # Sistema Operacional e Logs Temporários
 .DS_Store
 Thumbs.db

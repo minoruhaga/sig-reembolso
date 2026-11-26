@@ -1,5 +1,6 @@
 """
-Django settings para o projeto SIG-Reembolso.
+Configurações base compartilhadas do projeto SIG-Reembolso.
+
 Acampamento Geral VII - Grupo Escoteiro Caramuru
 FATEC-SP - Laboratório de Engenharia de Software (LES)
 """
@@ -7,16 +8,15 @@ FATEC-SP - Laboratório de Engenharia de Software (LES)
 import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+from django.contrib.messages import constants as message_constants
+from dotenv import load_dotenv
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'sig-reembolso-dev-key-change-in-prod-fatec-les-2026')
+# Aponta para a pasta src/ (subindo settings -> config -> src)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
-
-ALLOWED_HOSTS = ['*']
+# Carrega variáveis de ambiente do arquivo .env na raiz do projeto ou em src/
+load_dotenv(BASE_DIR.parent / '.env')
+load_dotenv(BASE_DIR / '.env')
 
 # Custom User Model (RBAC)
 AUTH_USER_MODEL = 'usuarios.Usuario'
@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'apps.usuarios',
     'apps.financeiro',
     'apps.despesas',
+    'apps.relatorios',
 ]
 
 MIDDLEWARE = [
@@ -44,6 +45,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'apps.usuarios.middleware.BloqueioAdminCoordenadorMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -65,15 +67,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -111,6 +104,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Autenticação
-LOGIN_URL = 'login'
+LOGIN_URL = 'usuarios:login'
 LOGIN_REDIRECT_URL = 'dashboard'
-LOGOUT_REDIRECT_URL = 'login'
+LOGOUT_REDIRECT_URL = 'usuarios:login'
+
+# Mapeamento de níveis de mensagens do Django para classes do Bootstrap 5
+MESSAGE_TAGS = {
+    message_constants.DEBUG: 'secondary',
+    message_constants.ERROR: 'danger',
+}

@@ -1,22 +1,53 @@
 from decimal import Decimal
 
+from django.core.files.base import ContentFile
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from apps.core.services import gerar_imagem_cupom_simulado
 from apps.despesas.models import CategoriaDespesa, Despesa, FormaPagamentoOriginal, StatusDespesa, TipoDespesa
 from apps.financeiro.models import Coordenacao
 from apps.usuarios.models import PapelUsuario, Usuario
+
+
+def _gerar_comprovante_demo(
+    nome: str,
+    *,
+    titulo: str = 'Despesa de Demonstracao AG VII',
+    valor: str = '0,00',
+    data: str = '2026',
+    tipo_doc: str = 'CUPOM FISCAL - AG VII',
+) -> ContentFile:
+    """
+    Gera um arquivo de imagem JPEG válido e legível em memória para dados de demonstração.
+
+    - O que faz: Cria uma imagem JPEG simulando cupom fiscal ou comprovante bancário em `ContentFile`.
+    - Como faz: Delega a renderização textual via Pillow para `gerar_imagem_cupom_simulado` e encapsula os
+      bytes retornados em `ContentFile` nomeado.
+    - Qual finalidade atende: Garante que as despesas de exemplo criadas por `popular_dados_demo` tenham
+      anexos fiscais válidos e legíveis no modal de zoom da Auditoria de Notas (`RN01` e `RNF02`).
+    """
+    bytes_jpeg = gerar_imagem_cupom_simulado(
+        titulo=titulo,
+        valor=valor,
+        data=data,
+        tipo_doc=tipo_doc,
+    )
+    return ContentFile(bytes_jpeg, name=nome)
 
 
 class Command(BaseCommand):
     """
     Comando de gerenciamento Django para carga de usuários e despesas de demonstração do AG VII.
 
-    - O que faz: Cria de forma idempotente as contas padrão (`admin`, `tesoureiro`, `coord_cozinha`, `coord_infra`)
-      e insere despesas exemplares com histórico de auditoria nas coordenações de Alimentação e Infraestrutura.
-    - Como faz: Utiliza `get_or_create` nos modelos `Usuario` e `Despesa` para evitar duplicações em execuções repetidas.
-    - Qual finalidade atende: Permite que os 4 desenvolvedores da equipe e a banca avaliadora testem imediatamente
-      o dashboard e os fluxos de RBAC logo após clonar o repositório.
+    - O que faz: Cria de forma idempotente as contas padrão (`admin`, `tesoureiro`, `coord_cozinha`, `coord_infra`),
+      vincula os coordenadores às respectivas pastas (`ALIM` e `INFRA`) e insere despesas exemplares com
+      comprovantes válidos e histórico de auditoria.
+    - Como faz: Utiliza `get_or_create` nos modelos `Usuario` e `Despesa`, gera anexos sintéticos com
+      `_gerar_comprovante_demo` e executa `full_clean()` antes da persistência para evitar estados inválidos.
+    - Qual finalidade atende: Permite que os desenvolvedores da equipe e a banca avaliadora testem imediatamente
+      o dashboard, os fluxos de RBAC e a triagem financeira logo após clonar o repositório.
     """
 
     help = 'Popula usuários de demonstração e despesas de exemplo baseadas no AG VI / AG VII (Grupo Escoteiro Caramuru)'
@@ -25,8 +56,10 @@ class Command(BaseCommand):
         """
         Executa a rotina principal de população de dados de demonstração no banco local.
 
-        - O que faz: Persiste os 4 usuários de teste com senhas conhecidas e 2 despesas representativas do campo.
-        - Como faz: Invoca métodos do ORM do Django e gera registros correspondentes de transição de status.
+        - O que faz: Persiste os 4 usuários de teste com senhas conhecidas, vincula suas coordenações de atuação
+          e cria 2 despesas representativas do campo com lastro comprobatório.
+        - Como faz: Invoca métodos do ORM do Django, valida os lançamentos via `full_clean()` e gera registros
+          correspondentes de transição de status.
         - Qual finalidade atende: Viabiliza a homologação imediata e reprodutível do ambiente local de desenvolvimento.
         """
         self.stdout.write("Criando usuários de demonstração...")
@@ -99,45 +132,93 @@ class Command(BaseCommand):
             coord_infra.save()
             self.stdout.write(self.style.SUCCESS("✓ Coordenador Infra: coord_infra / infra123"))
 
-        # Despesas de Demonstração
+        # Vínculo de coordenações para isolamento RBAC e despesas de demonstração
         self.stdout.write("Criando despesas de teste com base na realidade de campo...")
         cozinha = Coordenacao.objects.filter(sigla='ALIM').first()
         infra = Coordenacao.objects.filter(sigla='INFRA').first()
 
-        if cozinha and not Despesa.objects.filter(titulo__contains='Verduras e Legumes').exists():
-            d1 = Despesa.objects.create(
-                coordenacao=cozinha,
-                solicitante=coord_cozinha,
-                titulo='Verduras e Legumes Frescos (Sacolão Juquitiba)',
-                descricao='Compra emergencial de 20kg de tomate, alface e cenoura para o almoço do dia 2.',
-                categoria=CategoriaDespesa.ALIMENTACAO,
-                tipo=TipoDespesa.REEMBOLSO,
-                forma_pagamento_original=FormaPagamentoOriginal.PIX,
-                valor=Decimal('342.50'),
-                data_despesa=timezone.now().date(),
-                status=StatusDespesa.PAGO,
-                analisado_por=tesoureiro,
-                analisado_em=timezone.now(),
-                pago_por=tesoureiro,
-                pago_em=timezone.now(),
-            )
-            d1._registrar_transicao('RASCUNHO', 'ENVIADO', coord_cozinha, 'Submissão de compra')
-            d1._registrar_transicao('ENVIADO', 'APROVADO', tesoureiro, 'Nota fiscal conferida e aprovada')
-            d1._registrar_transicao('APROVADO', 'PAGO', tesoureiro, 'Transferência PIX realizada via Banco Cora')
+        if cozinha and coord_cozinha.coordenacao_id != cozinha.id:
+            coord_cozinha.coordenacao = cozinha
+            coord_cozinha.save(update_fields=['coordenacao'])
+        if infra and coord_infra.coordenacao_id != infra.id:
+            coord_infra.coordenacao = infra
+            coord_infra.save(update_fields=['coordenacao'])
 
-        if infra and not Despesa.objects.filter(titulo__contains='Óleo Diesel').exists():
-            d2 = Despesa.objects.create(
-                coordenacao=infra,
-                solicitante=coord_infra,
-                titulo='Óleo Diesel S10 para Grupo Gerador 1',
-                descricao='Abastecimento emergencial de 60 litros de diesel para garantir refrigeração da cozinha.',
-                categoria=CategoriaDespesa.COMBUSTIVEL,
-                tipo=TipoDespesa.REEMBOLSO,
-                forma_pagamento_original=FormaPagamentoOriginal.CARTAO_DEBITO,
-                valor=Decimal('378.00'),
-                data_despesa=timezone.now().date(),
-                status=StatusDespesa.ENVIADO,
-            )
-            d2._registrar_transicao('RASCUNHO', 'ENVIADO', coord_infra, 'Submetido em campo')
+        if cozinha:
+            d1 = Despesa.objects.filter(titulo__contains='Verduras e Legumes').first()
+            if d1 and not d1.comprovante:
+                Despesa.objects.filter(pk=d1.pk).delete()
+                d1 = None
 
+            if not d1:
+                data_hoje = timezone.now().date()
+                data_br = data_hoje.strftime('%d/%m/%Y')
+                d1 = Despesa(
+                    coordenacao=cozinha,
+                    solicitante=coord_cozinha,
+                    titulo='Verduras e Legumes Frescos (Sacolão Juquitiba)',
+                    descricao='Compra emergencial de 20kg de tomate, alface e cenoura para o almoço do dia 2.',
+                    categoria=CategoriaDespesa.ALIMENTACAO,
+                    tipo=TipoDespesa.REEMBOLSO,
+                    forma_pagamento_original=FormaPagamentoOriginal.PIX,
+                    valor=Decimal('342.50'),
+                    data_despesa=data_hoje,
+                    comprovante=_gerar_comprovante_demo(
+                        'cupom_sacolao_juquitiba.jpg',
+                        titulo='Verduras e Legumes Frescos (Sacolao)',
+                        valor='342,50',
+                        data=data_br,
+                        tipo_doc='CUPOM FISCAL - SACOLAO',
+                    ),
+                    comprovante_pagamento=_gerar_comprovante_demo(
+                        'pix_cora_sacolao.jpg',
+                        titulo='Reembolso Cozinha - Mariana',
+                        valor='342,50',
+                        data=data_br,
+                        tipo_doc='COMPROVANTE PIX - BANCO CORA PJ',
+                    ),
+                    status=StatusDespesa.PAGO,
+                    analisado_por=tesoureiro,
+                    analisado_em=timezone.now(),
+                    pago_por=tesoureiro,
+                    pago_em=timezone.now(),
+                )
+                d1.full_clean()
+                d1.save()
+                d1._registrar_transicao('RASCUNHO', 'ENVIADO', coord_cozinha, 'Submissão de compra')
+                d1._registrar_transicao('ENVIADO', 'APROVADO', tesoureiro, 'Nota fiscal conferida e aprovada')
+                d1._registrar_transicao('APROVADO', 'PAGO', tesoureiro, 'Transferência PIX realizada via Banco Cora')
+
+        if infra:
+            d2 = Despesa.objects.filter(titulo__contains='Óleo Diesel').first()
+            if d2 and not d2.comprovante:
+                Despesa.objects.filter(pk=d2.pk).delete()
+                d2 = None
+
+            if not d2:
+                data_hoje = timezone.now().date()
+                d2 = Despesa(
+                    coordenacao=infra,
+                    solicitante=coord_infra,
+                    titulo='Óleo Diesel S10 para Grupo Gerador 1',
+                    descricao='Abastecimento emergencial de 60 litros de diesel para garantir refrigeração da cozinha.',
+                    categoria=CategoriaDespesa.COMBUSTIVEL,
+                    tipo=TipoDespesa.REEMBOLSO,
+                    forma_pagamento_original=FormaPagamentoOriginal.CARTAO_DEBITO,
+                    valor=Decimal('378.00'),
+                    data_despesa=data_hoje,
+                    comprovante=_gerar_comprovante_demo(
+                        'cupom_posto_juquitiba.jpg',
+                        titulo='Oleo Diesel S10 - Gerador 1',
+                        valor='378,00',
+                        data=data_hoje.strftime('%d/%m/%Y'),
+                        tipo_doc='CUPOM FISCAL - AUTO POSTO',
+                    ),
+                    status=StatusDespesa.ENVIADO,
+                )
+                d2.full_clean()
+                d2.save()
+                d2._registrar_transicao('RASCUNHO', 'ENVIADO', coord_infra, 'Submetido em campo')
+
+        call_command('carregar_dados_ag6_ag7', stdout=self.stdout)
         self.stdout.write(self.style.SUCCESS("Carga de dados de demonstração concluída com sucesso!"))

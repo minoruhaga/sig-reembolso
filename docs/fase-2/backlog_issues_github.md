@@ -1,6 +1,6 @@
 # Catálogo de Issues no GitHub Projects - Fase 2
 
-Este documento reúne a lista oficial das 18 Issues abertas e concluídas no GitHub da equipe ([minoruhaga/sig-reembolso/issues](https://github.com/minoruhaga/sig-reembolso/issues)), distribuídas entre os 4 integrantes para cobrir tanto o sistema funcionando quanto os itens avaliativos da 2ª Fase (**Itens 3.g a 3.l do edital**).
+Este documento reúne a lista oficial das Issues abertas e concluídas no GitHub da equipe ([minoruhaga/sig-reembolso/issues](https://github.com/minoruhaga/sig-reembolso/issues)), distribuídas entre os integrantes ativos para cobrir tanto o sistema funcionando quanto os itens avaliativos da 2ª Fase (**Itens 3.g a 3.l do edital**).
 
 ---
 
@@ -51,42 +51,47 @@ Este documento reúne a lista oficial das 18 Issues abertas e concluídas no Git
 
 ---
 
-## 📌 Ondas 1 a 3: Backlog de Desenvolvimento e Entregas (Distribuído entre os 4 Integrantes)
+## 📌 Ondas 1 a 3: Backlog de Desenvolvimento e Entregas (Redistribuição da Reta Final)
 
-### 👤 Membro 1: Gustavo Minoru Haga (`@minoruhaga` — Tech Lead / Core Backend & RBAC)
-* **[Issue #6](https://github.com/minoruhaga/sig-reembolso/issues/6): `[RBAC] Telas de Login, Logout e Controle por Papel (Usuario)`** *(Milestone: Onda 1 - 04/11/2026)*
-  * Implementar telas de login/logout customizadas no Django utilizando o modelo `Usuario`.
-  * Restringir visualizações: Coordenador só vê sua área; Tesoureiro e Admin visualizam todas as 15 coordenações.
-* **[Issue #10](https://github.com/minoruhaga/sig-reembolso/issues/10): `[Financeiro] API e View dinâmica de saldos e tetos das 15 coordenações (RF03)`** *(Milestone: Onda 2 - 13/11/2026)*
-  * View dedicada para cálculo do termômetro de consumo de verba em tempo real.
-  * Garantir integridade de centavos com `Decimal`.
-* **[Issue #14](https://github.com/minoruhaga/sig-reembolso/issues/14): `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido`** *(Milestone: Onda 3 - 27/11/2026)*
-  * Elaborar o documento formal exigido pela professora descrevendo os programas fontes, dependências e ambiente de execução.
+### 👤 Gustavo Minoru Haga (`@minoruhaga` — Tech Lead, Product Owner, Backend Core & QA Absorvido)
+* **[Issue #7](https://github.com/minoruhaga/sig-reembolso/issues/7): `[Despesas] Formulário de Submissão com Pillow (RNF02 e RN01)`** — ✅ **Concluída (`PR #31`)**
+  * Formulário web e endpoint para lançamento de despesa em campo com anexo obrigatório de cupom fiscal (**RN01**) e compressão Pillow (`RNF02`).
+* **[Issue #32](https://github.com/minoruhaga/sig-reembolso/issues/32): `[Fix] Correções de Integridade Contábil (RN01-RN06), Segurança, Demonstração e Configurações`** — ✅ **Concluída (`PR #33`)**
+  * Blindagem de `RN01`–`RN06`, método `cancelar()`, proteção contra exclusão física, carregamento de `.env` e expansão da suíte de testes.
+* **[Issue #9](https://github.com/minoruhaga/sig-reembolso/issues/9): `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII`** — ✅ **Concluída (`PR #37`)** *(assumida e finalizada por `@minoruhaga`)*
+  * Comando idempotente `carregar_dados_ag6_ag7` para carregar os dados anonimizados de `docs/referencias/coordenadores_ag7.csv` e `gastos_historicos_ag6/alimentacao_gastos_ag6.csv`.
+* **[Issue #10](https://github.com/minoruhaga/sig-reembolso/issues/10): `[Financeiro] API e View dinâmica de saldos e tetos das 15 coordenações (RF03)`** *(Milestone: Onda 2)*
+  * Modelagem e cálculo do saldo dinâmico livre em tempo real com `Sum()` e precisão `Decimal`.
+* **[Issue #11](https://github.com/minoruhaga/sig-reembolso/issues/11): `[Workflow] Ações de Triagem da Tesouraria: Aprovar, Rejeitar com Justificativa e Liquidar`** *(Milestone: Onda 2)*
+  * Máquina de estados atômica (`@transaction.atomic`) para Aprovar, Rejeitar com Justificativa (**RN04**) e Liquidar Reembolso com anexo do comprovante Cora PJ.
+* **[Issue #12](https://github.com/minoruhaga/sig-reembolso/issues/12): `[Regras] Soft-block de estouro com alerta e Segregação de Funções (RN02 e RN03)`** *(Milestone: Onda 2)*
+  * Lógica de validação contábil: flag automática `excede_teto = True` e cálculo de `valor_excedente`, além de impedir auto-aprovação (**RN03**).
+* **[Issue #14](https://github.com/minoruhaga/sig-reembolso/issues/14): `[Docs] Item 3.h - Documentação técnica do sistema desenvolvido`** *(Milestone: Onda 3 — Prazo: 26/11 às 23:59)*
+  * Elaborar o documento formal exigido pela professora descrevendo os programas fontes, dependências, arquitetura e instruções completas para execução do sistema.
+* **[Issue #19](https://github.com/minoruhaga/sig-reembolso/issues/19): `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)`** *(Milestone: Onda 3 — Prazo: 27/11 às 18:00)*
+  * Guia ilustrado passo a passo ensinando os coordenadores a tirar fotos legíveis e enviar despesas.
+* **[Issue #20](https://github.com/minoruhaga/sig-reembolso/issues/20): `[Docs] Item 3.l - Procedimentos de Homologação e Aprovação do Sistema`** *(Milestone: Onda 3 — Prazo: 27/11 às 18:00)*
+  * Roteiro formal de testes de aceitação e minuta do Termo de Homologação com a Diretoria do Grupo Escoteiro Caramuru / Coordenação Executiva do AG VII.
 
-### 👤 Membro 2: Backend de Despesas & Máquina de Estados
-* **[Issue #7](https://github.com/minoruhaga/sig-reembolso/issues/7): `[Despesas] Formulário de Submissão com Pillow (RNF02 e RN01)`** *(Milestone: Onda 1 - 04/11/2026)*
-  * Formulário web para lançamento de despesa em campo com anexo obrigatório de cupom fiscal (**RN01**).
-  * Integração com `apps.core.services.otimizar_comprovante_fiscal` para compactar imagens pesadas de celular.
-* **[Issue #11](https://github.com/minoruhaga/sig-reembolso/issues/11): `[Workflow] Ações de Triagem da Tesouraria: Aprovar, Rejeitar com Justificativa e Liquidar`** *(Milestone: Onda 2 - 13/11/2026)*
-  * Endpoints e botões de ação para Aprovar, Rejeitar com Justificativa (**RN04**) e Liquidar Reembolso com anexo do comprovante Cora PJ.
-* **[Issue #12](https://github.com/minoruhaga/sig-reembolso/issues/12): `[Regras] Soft-block de estouro com alerta e Segregação de Funções (RN02 e RN03)`** *(Milestone: Onda 2 - 13/11/2026)*
-  * Flag automática `excede_teto = True` e cálculo de `valor_excedente`.
-  * Impedir que membros do Financeiro aprovem reembolsos de compras solicitadas por eles mesmos.
+### 👤 Marina (`@Mah-Rod` — Backend de Acesso, Autenticação, Relatórios & Manual 3.k)
+* **[Issue #6](https://github.com/minoruhaga/sig-reembolso/issues/6): `[RBAC] Telas de Login, Logout e Controle por Papel (Usuario)`** — ✅ **Concluída (`PR #29`)**
+  * Telas de login/logout customizadas no Django utilizando o modelo `Usuario` e isolamento por coordenação/papel.
+* **[Issue #34](https://github.com/minoruhaga/sig-reembolso/issues/34): `[Relatórios] Módulo de Exportação de Prestação de Contas (CSV e Balancete)`** — ✅ **Concluída (`PR #43` e `PR #46`)**
+  * Criação de rotinas em `src/apps/relatorios/` para exportação de dados contábeis em CSV e balancete sintético de prestação de contas (RF08).
+* **[Issue #48](https://github.com/minoruhaga/sig-reembolso/issues/48): `[Docs] Item 3.k - Manual de Treinamento da Tesouraria`** *(Milestone: Onda 3 — Prazo: 27/11 às 18:00)*
+  * Manual de operação financeira e treinamento para a Tesouraria (`docs/fase-2/3k_manual_treinamento.md`), cobrindo o painel de triagem, modal de conferência de notas, aprovação, reprovação (RN04), liquidação Cora PJ (RF07) e exportação do balancete/CSV (RF08).
 
-### 👤 Membro 3: Frontend, UX & Interfaces Mobile-First (Item 3.g)
-* **[Issue #8](https://github.com/minoruhaga/sig-reembolso/issues/8): `[UI/UX] Interface Mobile-First com Câmera Nativa (RNF01)`** *(Milestone: Onda 1 - 04/11/2026)*
-  * Tela de submissão otimizada para smartphones (360px–430px) com botão direto `<input type="file" accept="image/*" capture="environment">`.
-* **[Issue #13](https://github.com/minoruhaga/sig-reembolso/issues/13): `[UI/UX] Painel Desktop da Tesouraria com Modal de Zoom para Notas Fiscais`** *(Milestone: Onda 2 - 13/11/2026)*
-  * Painel com cards de despesas pendentes, badges de status e modal em alta resolução para auditoria de comprovantes fiscais.
+### 👤 Ricardo Sakugawa (`@ricardosakugawa` — Frontend & UI/UX Completo)
+* **[Issue #8](https://github.com/minoruhaga/sig-reembolso/issues/8): `[UI/UX] Interface Mobile-First com Câmera Nativa (RNF01)`** *(Milestone: Onda 1)*
+  * Refinamento da tela de submissão otimizada para smartphones (360px–430px) com `<input type="file" accept="image/*" capture="environment">` e termômetro visual.
+* **[Issue #13](https://github.com/minoruhaga/sig-reembolso/issues/13): `[UI/UX] Painel Desktop da Tesouraria com Modal de Zoom para Notas Fiscais`** *(Milestone: Onda 2)*
+  * Painel com cards de despesas pendentes, badges coloridos de status e modal em alta resolução para auditoria de comprovantes fiscais.
 * **[Issue #16](https://github.com/minoruhaga/sig-reembolso/issues/16): `[Docs] Item 3.g - Definição e justificativa das interfaces com base na usabilidade`** *(Milestone: Onda 3 - 27/11/2026)*
   * Redigir documento acadêmico justificando as decisões ergonômicas, acessibilidade, contraste para uso sob luz solar no campo e facilidade em conexões lentas (Starlink).
 
-### 👤 Membro 4: QA, Testes, Manuais e Homologação (Itens 3.i a 3.l)
-* **[Issue #9](https://github.com/minoruhaga/sig-reembolso/issues/9): `[Dados] Carga de Dados Reais do AG VI e Coordenadores do AG VII`** *(Milestone: Onda 1 - 04/11/2026)*
-  * Criar comando ou fixture para carregar os dados anonimizados de `docs/referencias/coordenadores_ag7.csv` e `gastos_historicos_ag6/alimentacao_gastos_ag6.csv`.
-* **[Issue #17](https://github.com/minoruhaga/sig-reembolso/issues/17): `[Testes] Item 3.i - Procedimentos descritivos de testes e expansão de casos no Django`** *(Milestone: Onda 3 - 27/11/2026)*
-  * Documentar os procedimentos descritivos de testes (Item 3.i) e expandir a cobertura automatizada (`TestCase`).
-* **[Issue #19](https://github.com/minoruhaga/sig-reembolso/issues/19): `[Docs] Item 3.j - Manual de Operação do Sistema (Guia dos Voluntários de Campo)`** *(Milestone: Onda 3 - 27/11/2026)*
-  * Guia ilustrado passo a passo ensinando os coordenadores a tirar fotos legíveis e enviar despesas.
-* **[Issue #20](https://github.com/minoruhaga/sig-reembolso/issues/20): `[Docs] Itens 3.k e 3.l - Manual de Treinamento da Tesouraria e Homologação Formal`** *(Milestone: Onda 3 - 27/11/2026)*
-  * Manual de operação da triagem financeira e minuta do Termo de Homologação com a Diretoria do GE Caramuru.
+### 👤 Giovanni (`@xixinho` — QA, Validação Ponta a Ponta & Item 3.i) — *Reatribuído em 23/11/2026*
+* **[Issue #17](https://github.com/minoruhaga/sig-reembolso/issues/17): `[Testes] Item 3.i - Procedimentos descritivos de testes e evidências de execução`** *(Milestone: Onda 3 - 27/11/2026)*
+  * **Entrega obrigatória:** Criar `docs/fase-2/3i_procedimentos_testes.md` contendo:
+    1. Evidências de execução da suíte automatizada atual (`python manage.py test`, com os 72 casos passando) após carga via `python manage.py carregar_dados_ag6_ag7`.
+    2. Casos de teste descritivos passo a passo (ID, objetivo, pré-condição, passos, resultado esperado, resultado obtido e prints das telas) cobrindo: Login/RBAC, Submissão Mobile com câmera e compressão Pillow (`RNF02`), regras `RN01` a `RN06`, Triagem da Tesouraria, Liquidação Cora PJ e Exportação CSV/Balancete.
+  * **Restrição de segurança (reta final):** Trabalhar em branch própria a partir de `dev` (ex.: `test/#17-procedimentos-testes`) sem alterar `models`, `migrations` ou regras de negócio já consolidadas em `src/`. Caso adicione novos testes automatizados em Python, restringir as alterações a arquivos `test_*.py`.
