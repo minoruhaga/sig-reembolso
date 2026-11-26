@@ -42,7 +42,7 @@ O SIG-Reembolso é uma aplicação web que registra compras operacionais das 15 
 | Banco previsto para produção | PostgreSQL, via variáveis `POSTGRES_*` em `config.settings.prod` |
 | Interface | Templates Django + Bootstrap 5.3.3 e Bootstrap Icons 1.11.3 (CDN) |
 | Precisão monetária | `decimal.Decimal` e `DecimalField` (proibido `float` em valores em reais) |
-| Orçamento modelado | R$ 180.000,00 nas 15 coordenações |
+| Orçamento modelado | R$ 193.320,00 nas 15 coordenações (`src/fixtures/coordenacoes_iniciais.json`) |
 | Conta de liquidação | Banco Cora PJ (comprovante anexado na transição para `PAGO`) |
 
 A pasta `src/` é a raiz do projeto Django. O arquivo `src/manage.py` define `DJANGO_SETTINGS_MODULE=config.settings.dev`. O pacote `config.settings` escolhe produção somente quando a variável `DJANGO_ENV` vale `prod`.
@@ -84,8 +84,8 @@ A árvore abaixo lista os programas que constituem o sistema executável. Arquiv
 
 | Programa | Responsabilidade |
 | :--- | :--- |
-| `src/apps/usuarios/models.py` | `Usuario` (`AbstractUser`) e papéis `COORDENADOR`, `TESOUREIRO`, `ADMIN`. |
-| `src/apps/usuarios/services.py` | `url_pos_login`, `coordenacoes_visiveis`, `despesas_visiveis` e `usuario_pode_acessar_admin`. |
+| `src/apps/usuarios/models.py` | `Usuario` (`AbstractUser`), papéis `COORDENADOR`, `TESOUREIRO`, `ADMIN` e `pode_acessar_painel_auditoria`. |
+| `src/apps/usuarios/services.py` | `url_pos_login`, `coordenacoes_visiveis`, `despesas_visiveis`, `usuario_pode_acessar_admin` e `usuario_pode_acessar_painel_auditoria`. |
 | `src/apps/usuarios/views.py` | Login e logout próprios (logout somente por POST, exigência do Django 5). |
 | `src/apps/usuarios/forms.py` | Formulário de autenticação sobre o modelo `Usuario`. |
 | `src/apps/usuarios/middleware.py` | `BloqueioAdminCoordenadorMiddleware`: anônimo vai ao login do SIG; coordenador não permanece em `/admin/`. |
@@ -113,8 +113,8 @@ A árvore abaixo lista os programas que constituem o sistema executável. Arquiv
 | `src/apps/despesas/services.py` | Orquestração da triagem: listagem, aprovação, reprovação e liquidação. |
 | `src/apps/despesas/forms.py` | Formulários de submissão, rejeição (motivo obrigatório) e liquidação (comprovante Cora). |
 | `src/apps/despesas/views.py` | Telas de campo e painel de triagem. A view só autentica, autoriza e chama o serviço. |
-| `src/apps/despesas/urls.py` | Rotas de submissão, edição, triagem, aprovar, rejeitar e liquidar. |
-| `src/apps/despesas/tests.py`, `test_regras_rn02_rn03.py`, `test_triagem_workflow.py` | Regras RN01–RN06 e o fluxo de triagem. |
+| `src/apps/despesas/urls.py` | Rotas de submissão, prévia de orçamento, edição, auditoria/triagem, comprovante protegido, aprovar, rejeitar e liquidar. |
+| `src/apps/despesas/tests.py`, `test_regras_rn02_rn03.py`, `test_triagem_workflow.py`, `test_tela_mobile.py`, `test_painel_auditoria.py`, `test_correcoes_pos_pr46.py` | Regras RN01–RN06, tela mobile, painel de auditoria com rota de comprovantes e regressões pós-E2E. |
 
 ### 3.6 `apps.relatorios` — prestação de contas (`@Mah-Rod`)
 
@@ -225,15 +225,18 @@ Mapa de rotas da aplicação:
 | `/usuarios/logout/` | `usuarios:logout` | Autenticado (POST) |
 | `/` | `dashboard` | Autenticado; dados recortados pelo papel |
 | `/despesas/nova/` | `despesas:nova` | Autenticado |
+| `/despesas/previa-orcamento/` | `despesas:previa_orcamento` | Autenticado (GET JSON para o termômetro da verba) |
 | `/despesas/minhas/` | `despesas:minhas` | Autenticado; lista as suas |
 | `/despesas/<id>/editar/` | `despesas:editar` | Solicitante, enquanto o estado permitir |
 | `/despesas/<id>/submeter/` | `despesas:submeter` | Solicitante |
-| `/despesas/triagem/` | `despesas:triagem` | Tesoureiro ou Admin (consulta). Botões de ação exigem Tesoureiro |
+| `/despesas/triagem/` | `despesas:triagem` | Somente Tesoureiro ou superusuário (`pode_acessar_painel_auditoria`); Administrador Geral e Coordenador recebem 403 |
+| `/despesas/<id>/comprovante/<nota\|pagamento>/` | `despesas:comprovante` | Somente Tesoureiro ou superusuário (entrega inline com `X-Frame-Options: SAMEORIGIN`) |
 | `/despesas/<id>/aprovar/` | `despesas:aprovar` | Tesoureiro (POST) |
 | `/despesas/<id>/rejeitar/` | `despesas:rejeitar` | Tesoureiro (POST) + justificativa |
 | `/despesas/<id>/liquidar/` | `despesas:liquidar` | Tesoureiro (POST) + comprovante Cora |
 | `/financeiro/saldos/` | `financeiro:saldos` | Autenticado, no recorte do papel |
 | `/financeiro/api/saldos/` | `financeiro:api_saldos` | Autenticado, no recorte do papel |
+| `/financeiro/coordenacoes/<id>/teto/` | `financeiro:atualizar_teto` | Tesoureiro ou Administrador Geral (POST) |
 | `/relatorios/balancete/` | `relatorios:balancete` | Autenticado, no recorte do papel |
 | `/relatorios/exportar.csv` | `relatorios:exportar_csv` | Autenticado, no recorte do papel |
 | `/admin/` | `admin:index` | Tesoureiro, Admin ou superusuário. Coordenador é devolvido ao dashboard |
@@ -283,9 +286,9 @@ Esta seção foi elaborada com apoio de **Marina (`@Mah-Rod`)**, responsável pe
 | :--- | :--- | :--- | :--- | :--- |
 | `COORDENADOR` | Dashboard | Só `Usuario.coordenacao` | Bloqueado pelo middleware, com aviso | Não |
 | `TESOUREIRO` | Dashboard | Todas as coordenações ativas | Permitido (`staff`) | Sim, exceto despesa em que ele mesmo é o solicitante (RN03) |
-| `ADMIN` | `/admin/` | Todas as coordenações ativas | Permitido | Consulta a triagem; as ações de estado exigem `is_tesoureiro` |
+| `ADMIN` | `/admin/` | Todas as coordenações ativas | Permitido | Não (recebe 403 em `/despesas/triagem/`; auditoria é exclusiva de Tesoureiro e superusuário) |
 
-As propriedades `is_coordenador`, `is_tesoureiro`, `is_admin_geral` e `pode_acessar_admin` concentram essa leitura. `is_tesoureiro` e `is_admin_geral` também valem para `is_superuser`, para a conta `admin` de demonstração operar a governança.
+As propriedades `is_coordenador`, `is_tesoureiro`, `is_admin_geral`, `pode_acessar_admin` e `pode_acessar_painel_auditoria` concentram essa leitura. `is_tesoureiro` e `is_admin_geral` também valem para `is_superuser`, para a conta `admin` de demonstração operar a governança.
 
 O recorte de linhas não fica espalhado nas views. `coordenacoes_visiveis` e `despesas_visiveis` (`apps.usuarios.services`) são a fonte usada pelo dashboard e pelos relatórios. Coordenador sem pasta vinculada recebe queryset vazio, em vez da lista global.
 
@@ -450,10 +453,10 @@ Este roteiro verifica a execução ponta a ponta. O treinamento da Tesouraria (I
 
 1. Entre como `coord_cozinha`. Confirme o termômetro da sigla **ALIM** e a ausência da pasta INFRA.
 2. Em **Nova despesa**, lance um item com foto ou PDF. Envie para triagem. Sem anexo, a submissão é recusada (RN01).
-3. Saia e entre como `tesoureiro`. Abra **Triagem** (`/despesas/triagem/`).
-4. Em **Conferir Nota**, o modal mostra o comprovante. Aprove uma despesa `ENVIADO` que não seja sua.
-5. Em outra despesa `ENVIADO`, abra **Reprovar**, deixe a justificativa vazia e confirme: o sistema recusa (RN04). Repita com um parecer (por exemplo, “CNPJ divergente do cupom”) e observe a despesa sair da fila.
-6. Numa despesa `APROVADO`, abra **Liquidar**, anexe o comprovante da transferência Cora PJ e confirme. O estado passa a `PAGO`.
+3. Saia e entre como `tesoureiro`. Abra **Auditoria de Notas** (`/despesas/triagem/`).
+4. Em **Conferir nota**, o modal em tela cheia mostra o comprovante com zoom. Aprove uma despesa `ENVIADO` que não seja sua.
+5. Em outra despesa `ENVIADO`, abra o modal, deixe o campo **Motivo da rejeição** vazio e clique em **Rejeitar**: o sistema recusa (RN04). Repita com um parecer (por exemplo, “CNPJ divergente do cupom”) e observe a despesa sair da fila.
+6. Numa despesa `APROVADO`, abra o modal, anexe o comprovante da transferência Cora PJ e clique em **Registrar pagamento**. O estado passa a `PAGO`.
 7. Abra `/relatorios/balancete/`, filtre se quiser por coordenação, categoria ou status, e use a exportação CSV. O arquivo `prestacao_contas_ag7.csv` abre em planilha com cabeçalho em português de códigos e descrições.
 8. Entre de novo como `coord_cozinha` e abra o mesmo balancete: a planilha e a tela ficam restritas à pasta ALIM.
 
