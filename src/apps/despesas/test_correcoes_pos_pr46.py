@@ -1,10 +1,13 @@
 from decimal import Decimal
+from io import BytesIO
 
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
 from apps.core.exceptions import PermissaoNegadaDominioError
+from apps.core.services import TAMANHO_MAXIMO_COMPRIMIDO_BYTES, gerar_imagem_cupom_simulado
 from apps.despesas.forms import DespesaForm
 from apps.despesas.models import (
     CategoriaDespesa,
@@ -217,3 +220,94 @@ class CorrecoesPosPR46TestCase(TestCase):
             self.assertContains(resp, 'aria-valuenow="53.2"')
             self.assertNotContains(resp, 'style="width: 53,2%"')
             self.assertContains(resp, 'R$ 1.000,00')
+
+    def test_contadores_auditoria_nao_zeram_ao_filtrar_por_pagas(self):
+        """
+        Mantém os contadores reais de pendências no topo da Auditoria mesmo filtrando por Pagas.
+
+        - O que faz: Cria uma despesa `ENVIADO` com estouro, uma `APROVADO` e uma `PAGO` e acessa
+          `despesas:triagem?status=PAGO` como Tesoureiro.
+        - Como faz: Valida que `qtd_enviadas`, `qtd_aprovadas` e `qtd_estouro` no contexto continuam
+          refletindo as pendências reais da fila enquanto a listagem exibe somente a despesa paga.
+        - Qual finalidade atende: Evita falsa impressão de fila zerada ao consultar histórico na Auditoria.
+        """
+        Despesa.objects.create(
+            coordenacao=self.alim,
+            solicitante=self.coordenador,
+            titulo='Pendente com estouro',
+            categoria=CategoriaDespesa.ALIMENTACAO,
+            tipo=TipoDespesa.REEMBOLSO,
+            forma_pagamento_original=FormaPagamentoOriginal.PIX,
+            valor=Decimal('1200.00'),
+            data_despesa=timezone.now().date(),
+            status=StatusDespesa.ENVIADO,
+            excede_teto=True,
+            valor_excedente=Decimal('200.00'),
+        )
+        Despesa.objects.create(
+            coordenacao=self.alim,
+            solicitante=self.coordenador,
+            titulo='Aprovada aguardando PIX',
+            categoria=CategoriaDespesa.ALIMENTACAO,
+            tipo=TipoDespesa.REEMBOLSO,
+            forma_pagamento_original=FormaPagamentoOriginal.PIX,
+            valor=Decimal('100.00'),
+            data_despesa=timezone.now().date(),
+            status=StatusDespesa.APROVADO,
+        )
+        Despesa.objects.create(
+            coordenacao=self.alim,
+            solicitante=self.coordenador,
+            titulo='Ja paga Cora',
+            categoria=CategoriaDespesa.ALIMENTACAO,
+            tipo=TipoDespesa.REEMBOLSO,
+            forma_pagamento_original=FormaPagamentoOriginal.PIX,
+            valor=Decimal('50.00'),
+            data_despesa=timezone.now().date(),
+            status=StatusDespesa.PAGO,
+        )
+
+        self.client.force_login(self.tesoureiro)
+        resp = self.client.get(reverse('despesas:triagem'), {'status': StatusDespesa.PAGO})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['qtd_enviadas'], 1)
+        self.assertEqual(resp.context['qtd_aprovadas'], 1)
+        self.assertEqual(resp.context['qtd_estouro'], 1)
+        self.assertEqual([d.titulo for d in resp.context['despesas']], ['Ja paga Cora'])
+
+    def test_gerar_imagem_cupom_simulado_produz_jpeg_valido_e_nao_monocromatico(self):
+        """
+        Valida a geração de cupons fiscais simulados nítidos para demonstração no modal de zoom.
+
+        - O que faz: Gera os bytes de um cupom via `gerar_imagem_cupom_simulado` e verifica formato,
+          dimensões, tamanho máximo RNF02 e existência de texto desenhado (múltiplas cores).
+        - Como faz: Abre os bytes com `PIL.Image` e inspeciona `size`, `format` e `getcolors()`.
+        - Qual finalidade atende: Garante que a Auditoria de Notas exiba cupons legíveis em vez de
+          quadrados verdes vazios durante a apresentação.
+        """
+        conteudo = gerar_imagem_cupom_simulado(
+            titulo='Verduras e Legumes Frescos (Sacolao)',
+            valor='342,50',
+            data='26/11/2026',
+        )
+        self.assertLessEqual(len(conteudo), TAMANHO_MAXIMO_COMPRIMIDO_BYTES)
+        imagem = Image.open(BytesIO(conteudo))
+        self.assertEqual(imagem.format, 'JPEG')
+        self.assertEqual(imagem.size, (520, 720))
+        cores = imagem.getcolors(maxcolors=256)
+        self.assertTrue(cores is None or len(cores) > 2)
+
+    def test_navbar_usa_container_fluid_e_rotulos_compactos(self):
+        """
+        Garante que a barra de navegação use largura fluida e rótulos compactos para não cortar em 1280px.
+
+        - O que faz: Renderiza o dashboard como Tesoureiro e valida `container-fluid` e os rótulos enxutos.
+        - Como faz: Executa GET em `dashboard` autenticado como `tesoureiro` e checa o HTML retornado.
+        - Qual finalidade atende: Preserva visibilidade do botão do usuário e "Sair" no perfil Tesoureiro.
+        """
+        self.client.force_login(self.tesoureiro)
+        resp = self.client.get(reverse('dashboard'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, '<div class="container-fluid px-lg-4">')
+        self.assertContains(resp, '> Balancete</a>')
+        self.assertContains(resp, 'Auditoria de Notas')
