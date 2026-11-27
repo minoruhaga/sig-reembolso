@@ -137,6 +137,7 @@ python src/manage.py check
 * [Guia de Governança de IA e Uso das Skills](docs/guia-uso-ia-e-skills.md)
 * [Planejamento de Entregas da 2ª Fase (Itens 3.g a 3.l)](docs/fase-2/planejamento_fase_2.md)
 * [Item 3.h — Documentação do sistema desenvolvido (programas-fonte, arquitetura e execução)](docs/fase-2/3h_documentacao_sistema.md)
+* [Item 3.k — Manual de treinamento e operação financeira da Tesouraria](docs/fase-2/3k_manual_treinamento.md)
 * [Guia da Issue #6 — Login, logout e RBAC (o que foi feito e como testar)](docs/fase-2/guia-login-rbac.md)
 * [Requisitos Funcionais (RF01 a RF08)](docs/requisitos/requisitos_funcionais.md)
 * [Regras de Negócio e Domínio (RN01 a RN06)](docs/requisitos/regras_de_negocio.md)
